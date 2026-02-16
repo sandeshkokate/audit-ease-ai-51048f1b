@@ -1,0 +1,154 @@
+import { useState, useMemo } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Search } from 'lucide-react';
+
+export interface Column<T> {
+  key: string;
+  header: string;
+  render?: (row: T) => React.ReactNode;
+  sortable?: boolean;
+}
+
+interface DataTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  pageSize?: number;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  searchKeys?: string[];
+  actions?: React.ReactNode;
+}
+
+export default function DataTable<T extends Record<string, any>>({
+  columns,
+  data,
+  pageSize = 10,
+  searchable = false,
+  searchPlaceholder = 'Search...',
+  searchKeys = [],
+  actions,
+}: DataTableProps<T>) {
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter((row) =>
+      searchKeys.some((key) => String(row[key] ?? '').toLowerCase().includes(q))
+    );
+  }, [data, search, searchKeys]);
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      const aVal = a[sortKey] ?? '';
+      const bVal = b[sortKey] ?? '';
+      const cmp = typeof aVal === 'number' ? aVal - (bVal as number) : String(aVal).localeCompare(String(bVal));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
+
+  const toggleSort = (key: string) => {
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir('asc'); }
+  };
+
+  return (
+    <div className="space-y-4">
+      {(searchable || actions) && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          {searchable && (
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                className="pl-9"
+              />
+            </div>
+          )}
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
+      )}
+
+      <div className="rounded-lg border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              {columns.map((col) => (
+                <TableHead key={col.key} className="whitespace-nowrap">
+                  {col.sortable ? (
+                    <button
+                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                      onClick={() => toggleSort(col.key)}
+                    >
+                      {col.header}
+                      <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  ) : (
+                    col.header
+                  )}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paged.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
+                  No data found
+                </TableCell>
+              </TableRow>
+            ) : (
+              paged.map((row, i) => (
+                <TableRow key={i} className="hover:bg-muted/30">
+                  {columns.map((col) => (
+                    <TableCell key={col.key}>{col.render ? col.render(row) : String(row[col.key] ?? '')}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {sorted.length} result{sorted.length !== 1 ? 's' : ''} — Page {page + 1} of {totalPages}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)}>
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(page - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)}>
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
