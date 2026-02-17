@@ -73,7 +73,7 @@ export default function Contact() {
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
-                    placeholder="John Doe"
+                    placeholder=""
                     value={formData.name}
                     onChange={(e) => updateField('name', e.target.value)}
                     autoComplete="off"
@@ -85,7 +85,7 @@ export default function Contact() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder=""
                     value={formData.email}
                     onChange={(e) => updateField('email', e.target.value)}
                     autoComplete="off"
@@ -99,7 +99,7 @@ export default function Contact() {
                   <Label htmlFor="company">Company Name *</Label>
                   <Input
                     id="company"
-                    placeholder="Acme Inc."
+                    placeholder=""
                     value={formData.company}
                     onChange={(e) => updateField('company', e.target.value)}
                     autoComplete="off"
@@ -111,7 +111,7 @@ export default function Contact() {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder=""
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
                     autoComplete="off"
