@@ -302,16 +302,16 @@ export default function Landing() {
             <div>
               <h4 className="mb-3 text-sm font-semibold text-foreground">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
-                <li><a href="#contact" className="hover:text-foreground transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
+                <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><a href="https://blog.auditease.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Blog</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-3 text-sm font-semibold text-foreground">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Terms of Service</a></li>
+                <li><Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
