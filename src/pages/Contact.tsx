@@ -67,7 +67,7 @@ export default function Contact() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="name">Full Name *</Label>
@@ -76,6 +76,7 @@ export default function Contact() {
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => updateField('name', e.target.value)}
+                    autoComplete="off"
                     required
                   />
                 </div>
@@ -87,6 +88,7 @@ export default function Contact() {
                     placeholder="you@company.com"
                     value={formData.email}
                     onChange={(e) => updateField('email', e.target.value)}
+                    autoComplete="off"
                     required
                   />
                 </div>
@@ -100,6 +102,7 @@ export default function Contact() {
                     placeholder="Acme Inc."
                     value={formData.company}
                     onChange={(e) => updateField('company', e.target.value)}
+                    autoComplete="off"
                     required
                   />
                 </div>
@@ -111,6 +114,7 @@ export default function Contact() {
                     placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
+                    autoComplete="off"
                   />
                 </div>
               </div>
