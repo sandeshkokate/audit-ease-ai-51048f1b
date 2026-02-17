@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockInvoices } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { FileText, Eye } from 'lucide-react';
@@ -18,12 +19,12 @@ export default function AccountantInvoices() {
   const [selected, setSelected] = useState<any>(null);
 
   const columns: Column<any>[] = [
-    { key: 'invoice_number', header: 'Invoice #', sortable: true },
-    { key: 'period', header: 'Period' },
-    { key: 'total_recovered', header: 'Recovered', sortable: true, render: (r) => <span className="font-medium">{formatCurrency(r.total_recovered)}</span> },
-    { key: 'commission', header: 'Commission', render: (r) => formatCurrency(r.commission) },
-    { key: 'net_payable', header: 'Net Payable', render: (r) => <span className="font-semibold">{formatCurrency(r.net_payable)}</span> },
-    { key: 'status', header: 'Status', render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.status]}>{r.status}</Badge> },
+    { key: 'invoice_number', header: <ColumnHeader title="Invoice #" tooltip="Unique invoice reference number" />, sortable: true },
+    { key: 'period', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" /> },
+    { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (r) => <span className="font-medium">{formatCurrency(r.total_recovered)}</span> },
+    { key: 'commission', header: <ColumnHeader title="Commission" tooltip="Platform fee calculated as percentage of recovered amount" />, render: (r) => formatCurrency(r.commission) },
+    { key: 'net_payable', header: <ColumnHeader title="Net Payable" tooltip="Total amount due = Commission + GST" />, render: (r) => <span className="font-semibold">{formatCurrency(r.net_payable)}</span> },
+    { key: 'status', header: <ColumnHeader title="Status" tooltip="Paid (payment received), Pending (awaiting payment), Overdue (past due date)" />, render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.status]}>{r.status}</Badge> },
     { key: 'actions', header: '', render: (r) => <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelected(r)}><Eye className="h-4 w-4" /></Button> },
   ];
 

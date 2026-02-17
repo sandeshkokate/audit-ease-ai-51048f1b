@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockMonthlyRecovery } from '@/lib/tenant-mock-data';
 import { mockCourierAnalysis } from '@/lib/mock-data';
 import { formatCurrency } from '@/lib/utils';
@@ -50,10 +51,10 @@ export default function ViewerReports() {
         <h2 className="text-lg font-semibold text-foreground mb-3">Courier Performance</h2>
         <DataTable
           columns={[
-            { key: 'courier', header: 'Courier', sortable: true },
-            { key: 'shipments', header: 'Shipments', sortable: true, render: (r) => r.shipments.toLocaleString() },
-            { key: 'discrepancy_rate', header: 'Discrepancy Rate', sortable: true, render: (r) => `${r.discrepancy_rate}%` },
-            { key: 'avg_overcharge', header: 'Avg Overcharge', render: (r) => `₹${r.avg_overcharge}` },
+            { key: 'courier', header: <ColumnHeader title="Courier" tooltip="Courier partner name" />, sortable: true },
+            { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments handled by this courier" />, sortable: true, render: (r) => r.shipments.toLocaleString() },
+            { key: 'discrepancy_rate', header: <ColumnHeader title="Discrepancy Rate" tooltip="Percentage of shipments with billing errors" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
+            { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge" tooltip="Average overcharge amount per discrepant shipment" />, render: (r) => `₹${r.avg_overcharge}` },
           ] as Column<any>[]}
           data={mockCourierAnalysis}
           pageSize={10}

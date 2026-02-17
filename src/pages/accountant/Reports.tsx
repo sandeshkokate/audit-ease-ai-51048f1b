@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockMonthlyRecovery } from '@/lib/tenant-mock-data';
 import { mockCourierAnalysis } from '@/lib/mock-data';
 import { formatCurrency, downloadCSV } from '@/lib/utils';
@@ -48,10 +49,10 @@ export default function AccountantReports() {
           </div>
           <DataTable
             columns={[
-              { key: 'courier', header: 'Courier', sortable: true },
-              { key: 'shipments', header: 'Shipments', sortable: true, render: (r) => r.shipments.toLocaleString() },
-              { key: 'discrepancy_rate', header: 'Discrepancy %', sortable: true, render: (r) => `${r.discrepancy_rate}%` },
-              { key: 'avg_overcharge', header: 'Avg Overcharge', render: (r) => `₹${r.avg_overcharge}` },
+              { key: 'courier', header: <ColumnHeader title="Courier" tooltip="Courier partner name" />, sortable: true },
+              { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments handled by this courier" />, sortable: true, render: (r) => r.shipments.toLocaleString() },
+              { key: 'discrepancy_rate', header: <ColumnHeader title="Discrepancy %" tooltip="Percentage of shipments with billing errors" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
+              { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge" tooltip="Average overcharge amount per discrepant shipment" />, render: (r) => `₹${r.avg_overcharge}` },
             ] as Column<any>[]}
             data={mockCourierAnalysis}
             pageSize={10}

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ChartCard from '@/components/dashboard/ChartCard';
 import MetricCard from '@/components/dashboard/MetricCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { Download, FileBarChart, TrendingUp, IndianRupee, Building2 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -107,10 +108,10 @@ export default function Reports() {
           </div>
           <DataTable
             columns={[
-              { key: 'name', header: 'Tenant', sortable: true },
-              { key: 'orders_processed', header: 'Orders', sortable: true, render: (r) => r.orders_processed.toLocaleString() },
-              { key: 'total_recovered', header: 'Recovered', sortable: true, render: (r) => formatCurrency(r.total_recovered) },
-              { key: 'commission', header: 'Commission %', sortable: true, render: (r) => `${r.commission}%` },
+              { key: 'name', header: <ColumnHeader title="Tenant" tooltip="Company name of the tenant" />, sortable: true },
+              { key: 'orders_processed', header: <ColumnHeader title="Orders" tooltip="Total shipments processed for this tenant" />, sortable: true, render: (r) => r.orders_processed.toLocaleString() },
+              { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (r) => formatCurrency(r.total_recovered) },
+              { key: 'commission', header: <ColumnHeader title="Commission %" tooltip="Platform fee percentage charged on recoveries" />, sortable: true, render: (r) => `${r.commission}%` },
             ]}
             data={mockTenants.filter(t => t.status === 'active')}
             pageSize={10}
@@ -137,10 +138,10 @@ export default function Reports() {
           </div>
           <DataTable
             columns={[
-              { key: 'courier', header: 'Courier', sortable: true },
-              { key: 'shipments', header: 'Shipments', sortable: true, render: (r) => r.shipments.toLocaleString() },
-              { key: 'discrepancy_rate', header: 'Discrepancy Rate', sortable: true, render: (r) => `${r.discrepancy_rate}%` },
-              { key: 'avg_overcharge', header: 'Avg Overcharge (₹)', sortable: true, render: (r) => `₹${r.avg_overcharge}` },
+              { key: 'courier', header: <ColumnHeader title="Courier" tooltip="Courier partner name" />, sortable: true },
+              { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments handled by this courier" />, sortable: true, render: (r) => r.shipments.toLocaleString() },
+              { key: 'discrepancy_rate', header: <ColumnHeader title="Discrepancy Rate" tooltip="Percentage of shipments with billing errors" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
+              { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge (₹)" tooltip="Average overcharge amount per discrepant shipment" />, sortable: true, render: (r) => `₹${r.avg_overcharge}` },
             ]}
             data={mockCourierAnalysis}
             pageSize={10}
@@ -167,11 +168,11 @@ export default function Reports() {
           </div>
           <DataTable
             columns={[
-              { key: 'month', header: 'Month', sortable: true },
-              { key: 'recovered', header: 'Recovered', sortable: true, render: (r) => formatCurrency(r.recovered) },
-              { key: 'commission', header: 'Commission', sortable: true, render: (r) => formatCurrency(r.commission) },
-              { key: 'gst', header: 'GST', render: (r) => formatCurrency(r.gst) },
-              { key: 'net_revenue', header: 'Net Revenue', sortable: true, render: (r) => formatCurrency(r.net_revenue) },
+              { key: 'month', header: <ColumnHeader title="Month" tooltip="Billing month for this financial summary" />, sortable: true },
+              { key: 'recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from couriers this month" />, sortable: true, render: (r) => formatCurrency(r.recovered) },
+              { key: 'commission', header: <ColumnHeader title="Commission" tooltip="Platform fee earned on recovered amounts" />, sortable: true, render: (r) => formatCurrency(r.commission) },
+              { key: 'gst', header: <ColumnHeader title="GST" tooltip="18% Goods and Services Tax on commission" />, render: (r) => formatCurrency(r.gst) },
+              { key: 'net_revenue', header: <ColumnHeader title="Net Revenue" tooltip="Commission minus GST — actual platform revenue" />, sortable: true, render: (r) => formatCurrency(r.net_revenue) },
             ]}
             data={financialSummary}
             pageSize={10}

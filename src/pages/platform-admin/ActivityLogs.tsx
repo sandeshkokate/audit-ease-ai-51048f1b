@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockActivityLogs } from '@/lib/mock-data';
 import { formatDistanceToNow } from 'date-fns';
 import { Search } from 'lucide-react';
@@ -20,12 +21,12 @@ export default function ActivityLogs() {
 
   const columns: Column<any>[] = [
     {
-      key: 'time', header: 'Time', sortable: true,
+      key: 'time', header: <ColumnHeader title="Time" tooltip="When this activity occurred" />, sortable: true,
       render: (row) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(row.time), { addSuffix: true })}</span>,
     },
-    { key: 'tenant', header: 'Tenant', sortable: true },
-    { key: 'user', header: 'User', sortable: true },
-    { key: 'action', header: 'Action' },
+    { key: 'tenant', header: <ColumnHeader title="Tenant" tooltip="The company/tenant where this activity happened" />, sortable: true },
+    { key: 'user', header: <ColumnHeader title="User" tooltip="The user who performed this action" />, sortable: true },
+    { key: 'action', header: <ColumnHeader title="Action" tooltip="Description of the activity performed" /> },
   ];
 
   return (
