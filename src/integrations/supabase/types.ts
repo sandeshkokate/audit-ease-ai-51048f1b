@@ -85,6 +85,7 @@ export type Database = {
           courier_name: string | null
           created_at: string | null
           created_by: string | null
+          credit_note_date: string | null
           credit_note_number: string | null
           customer_pincode: string | null
           dead_weight: number | null
@@ -95,8 +96,12 @@ export type Database = {
           dispute_email_id: string | null
           dispute_raised_date: string | null
           dispute_status: string | null
+          escalated: boolean | null
+          escalated_at: string | null
+          escalation_reason: string | null
           expected_amount: number | null
           expected_zone: string | null
+          follow_up_date: string | null
           has_damage_misclassification: boolean | null
           has_rto_overcharge: boolean | null
           has_weight_discrepancy: boolean | null
@@ -109,8 +114,11 @@ export type Database = {
           order_date: string | null
           order_id: string
           origin_pincode: string | null
+          priority: string | null
           recovery_amount: number | null
           recovery_date: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
           rto_reason: string | null
           shipment_status: string | null
           tenant_id: string
@@ -129,6 +137,7 @@ export type Database = {
           courier_name?: string | null
           created_at?: string | null
           created_by?: string | null
+          credit_note_date?: string | null
           credit_note_number?: string | null
           customer_pincode?: string | null
           dead_weight?: number | null
@@ -139,8 +148,12 @@ export type Database = {
           dispute_email_id?: string | null
           dispute_raised_date?: string | null
           dispute_status?: string | null
+          escalated?: boolean | null
+          escalated_at?: string | null
+          escalation_reason?: string | null
           expected_amount?: number | null
           expected_zone?: string | null
+          follow_up_date?: string | null
           has_damage_misclassification?: boolean | null
           has_rto_overcharge?: boolean | null
           has_weight_discrepancy?: boolean | null
@@ -153,8 +166,11 @@ export type Database = {
           order_date?: string | null
           order_id: string
           origin_pincode?: string | null
+          priority?: string | null
           recovery_amount?: number | null
           recovery_date?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           rto_reason?: string | null
           shipment_status?: string | null
           tenant_id: string
@@ -173,6 +189,7 @@ export type Database = {
           courier_name?: string | null
           created_at?: string | null
           created_by?: string | null
+          credit_note_date?: string | null
           credit_note_number?: string | null
           customer_pincode?: string | null
           dead_weight?: number | null
@@ -183,8 +200,12 @@ export type Database = {
           dispute_email_id?: string | null
           dispute_raised_date?: string | null
           dispute_status?: string | null
+          escalated?: boolean | null
+          escalated_at?: string | null
+          escalation_reason?: string | null
           expected_amount?: number | null
           expected_zone?: string | null
+          follow_up_date?: string | null
           has_damage_misclassification?: boolean | null
           has_rto_overcharge?: boolean | null
           has_weight_discrepancy?: boolean | null
@@ -197,8 +218,11 @@ export type Database = {
           order_date?: string | null
           order_id?: string
           origin_pincode?: string | null
+          priority?: string | null
           recovery_amount?: number | null
           recovery_date?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
           rto_reason?: string | null
           shipment_status?: string | null
           tenant_id?: string
@@ -352,6 +376,58 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_notes: {
+        Row: {
+          audit_log_id: string
+          created_at: string | null
+          id: string
+          note: string
+          note_type: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          audit_log_id: string
+          created_at?: string | null
+          id?: string
+          note: string
+          note_type?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          audit_log_id?: string
+          created_at?: string | null
+          id?: string
+          note?: string
+          note_type?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_notes_audit_log_id_fkey"
+            columns: ["audit_log_id"]
+            isOneToOne: false
+            referencedRelation: "audit_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_notes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

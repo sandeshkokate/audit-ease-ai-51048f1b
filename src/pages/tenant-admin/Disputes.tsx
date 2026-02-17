@@ -7,10 +7,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { mockDisputes } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
-import { Mail, Copy, ExternalLink, CheckCircle2, Edit3, X, Loader2, Sparkles, ChevronDown, FileText, Send } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Mail, Copy, ExternalLink, CheckCircle2, Edit3, X, Loader2,
+  Sparkles, ChevronDown, FileText, Send, MoreHorizontal,
+  CheckCircle, XCircle, MessageSquare, AlertTriangle,
+  RotateCcw, Trash2, Calendar,
+} from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground border-border',
@@ -28,6 +42,20 @@ export default function Disputes() {
   const [editBody, setEditBody] = useState('');
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Action modal states
+  const [recoveryModal, setRecoveryModal] = useState<{ open: boolean; dispute: any }>({ open: false, dispute: null });
+  const [rejectModal, setRejectModal] = useState<{ open: boolean; dispute: any }>({ open: false, dispute: null });
+  const [noteModal, setNoteModal] = useState<{ open: boolean; dispute: any }>({ open: false, dispute: null });
+  const [followUpModal, setFollowUpModal] = useState<{ open: boolean; dispute: any }>({ open: false, dispute: null });
+
+  // Form states
+  const [creditNote, setCreditNote] = useState({ number: '', amount: '', date: '' });
+  const [rejectReason, setRejectReason] = useState('');
+  const [noteText, setNoteText] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   const summary = {
     drafts: disputes.filter(d => d.status === 'draft').length,
@@ -58,8 +86,10 @@ export default function Disputes() {
     toast({ title: 'Copied & Gmail opened!' });
   };
 
-  const handleMarkSent = () => {
-    setDisputes(prev => prev.map(d => d.id === selectedDispute.id ? { ...d, is_marked_sent: true, status: 'raised' } : d));
+  const handleMarkSent = (disputeIdOrNull?: string) => {
+    const id = disputeIdOrNull || selectedDispute?.id;
+    if (!id) return;
+    setDisputes(prev => prev.map(d => d.id === id ? { ...d, is_marked_sent: true, status: 'raised' } : d));
     toast({ title: 'Dispute marked as sent' });
     setSelectedDispute(null);
   };
@@ -69,6 +99,176 @@ export default function Disputes() {
     await new Promise(r => setTimeout(r, 3000));
     toast({ title: 'Dispute emails generated!', description: `${summary.drafts} emails ready for review.` });
     setGenerating(false);
+  };
+
+  // Placeholder refetch for when real data is used
+  const refetch = () => {
+    // Will be replaced with real query refetch when connected to live data
+  };
+
+  // Mark as Recovered
+  const handleMarkRecovered = async () => {
+    if (!creditNote.number || !creditNote.amount) {
+      toast({ variant: 'destructive', title: 'Please fill credit note details' });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('audit_logs')
+        .update({
+          dispute_status: 'recovered',
+          credit_note_number: creditNote.number,
+          recovery_amount: parseFloat(creditNote.amount),
+          credit_note_date: creditNote.date || null,
+        })
+        .eq('id', recoveryModal.dispute.id);
+      if (error) throw error;
+
+      await supabase.from('activity_logs').insert({
+        tenant_id: recoveryModal.dispute.tenant_id,
+        user_id: user?.id,
+        action: 'dispute_recovered',
+        entity_type: 'audit_log',
+        entity_id: recoveryModal.dispute.id,
+        details: `Credit note ${creditNote.number}, amount ${creditNote.amount}`,
+      });
+
+      toast({ title: '✅ Marked as recovered!' });
+      setRecoveryModal({ open: false, dispute: null });
+      setCreditNote({ number: '', amount: '', date: '' });
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Mark as Rejected
+  const handleMarkRejected = async () => {
+    if (!rejectReason.trim()) {
+      toast({ variant: 'destructive', title: 'Please enter rejection reason' });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('audit_logs')
+        .update({
+          dispute_status: 'rejected',
+          rejection_reason: rejectReason,
+          rejected_at: new Date().toISOString(),
+        })
+        .eq('id', rejectModal.dispute.id);
+      if (error) throw error;
+
+      toast({ title: 'Dispute marked as rejected' });
+      setRejectModal({ open: false, dispute: null });
+      setRejectReason('');
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Add Note
+  const handleAddNote = async () => {
+    if (!noteText.trim()) {
+      toast({ variant: 'destructive', title: 'Please enter a note' });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('dispute_notes')
+        .insert({
+          tenant_id: noteModal.dispute.tenant_id,
+          audit_log_id: noteModal.dispute.id,
+          user_id: user?.id ?? '',
+          note: noteText,
+          note_type: 'general',
+        });
+      if (error) throw error;
+
+      toast({ title: 'Note added!' });
+      setNoteModal({ open: false, dispute: null });
+      setNoteText('');
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Escalate
+  const handleEscalate = async (dispute: any) => {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('audit_logs')
+        .update({
+          escalated: true,
+          escalated_at: new Date().toISOString(),
+          priority: 'high',
+        })
+        .eq('id', dispute.id);
+      if (error) throw error;
+
+      toast({ title: '⚠️ Dispute escalated!', description: 'Priority set to HIGH' });
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Withdraw/Cancel
+  const handleWithdraw = async (dispute: any) => {
+    if (!confirm('Are you sure you want to withdraw this dispute? This action cannot be undone.')) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('audit_logs')
+        .update({ dispute_status: 'cancelled' })
+        .eq('id', dispute.id);
+      if (error) throw error;
+
+      toast({ title: 'Dispute withdrawn' });
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Set Follow-up
+  const handleSetFollowUp = async () => {
+    if (!followUpDate) {
+      toast({ variant: 'destructive', title: 'Please select a date' });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('audit_logs')
+        .update({ follow_up_date: followUpDate })
+        .eq('id', followUpModal.dispute.id);
+      if (error) throw error;
+
+      toast({ title: '📅 Follow-up scheduled!' });
+      setFollowUpModal({ open: false, dispute: null });
+      setFollowUpDate('');
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -109,9 +309,55 @@ export default function Disputes() {
                 </div>
                 <p className="text-sm text-destructive font-medium">{formatCurrency(dispute.amount)} overcharge</p>
               </div>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
-                <Mail className="h-4 w-4" /> Review & Copy Email
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
+                  <Mail className="h-4 w-4" /> Review & Copy Email
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-popover">
+                    <DropdownMenuItem onClick={() => openEmailModal(dispute)}>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Review & Edit Email
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}>
+                      <Send className="h-4 w-4 mr-2" />
+                      Mark as Sent
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark as Recovered
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setRejectModal({ open: true, dispute })} className="text-destructive focus:text-destructive">
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Mark as Rejected
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Add Note
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Set Follow-up
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleEscalate(dispute)}>
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Escalate
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleWithdraw(dispute)} className="text-destructive focus:text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Withdraw Dispute
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -159,9 +405,153 @@ export default function Disputes() {
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
             <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
-            <Button variant="default" className="gap-2" onClick={handleMarkSent}><Send className="h-4 w-4" /> Mark as Sent</Button>
+            <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Sent</Button>
             <Button variant="ghost" className="gap-2" onClick={() => toast({ title: 'Regenerating...' })}><Edit3 className="h-4 w-4" /> Regenerate</Button>
             <Button variant="ghost" onClick={() => setSelectedDispute(null)}><X className="h-4 w-4" /></Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recovery Modal */}
+      <Dialog open={recoveryModal.open} onOpenChange={(open) => !open && setRecoveryModal({ open: false, dispute: null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-success" />
+              Mark as Recovered
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              AWB: <span className="font-medium text-foreground">{recoveryModal.dispute?.awb_number}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>Credit Note Number *</Label>
+              <Input
+                placeholder="CN-12345"
+                value={creditNote.number}
+                onChange={(e) => setCreditNote({ ...creditNote, number: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Amount Recovered (₹) *</Label>
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={creditNote.amount}
+                onChange={(e) => setCreditNote({ ...creditNote, amount: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Credit Note Date</Label>
+              <Input
+                type="date"
+                value={creditNote.date}
+                onChange={(e) => setCreditNote({ ...creditNote, date: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRecoveryModal({ open: false, dispute: null })}>Cancel</Button>
+            <Button onClick={handleMarkRecovered} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Recovery'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Modal */}
+      <Dialog open={rejectModal.open} onOpenChange={(open) => !open && setRejectModal({ open: false, dispute: null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive" />
+              Mark as Rejected
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              AWB: <span className="font-medium text-foreground">{rejectModal.dispute?.awb_number}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>Rejection Reason *</Label>
+              <Textarea
+                placeholder="Enter the courier's rejection reason..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectModal({ open: false, dispute: null })}>Cancel</Button>
+            <Button variant="destructive" onClick={handleMarkRejected} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Rejection'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Note Modal */}
+      <Dialog open={noteModal.open} onOpenChange={(open) => !open && setNoteModal({ open: false, dispute: null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Add Note
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              AWB: <span className="font-medium text-foreground">{noteModal.dispute?.awb_number}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>Note *</Label>
+              <Textarea
+                placeholder="Add your note or follow-up details..."
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNoteModal({ open: false, dispute: null })}>Cancel</Button>
+            <Button onClick={handleAddNote} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Note'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Follow-up Modal */}
+      <Dialog open={followUpModal.open} onOpenChange={(open) => !open && setFollowUpModal({ open: false, dispute: null })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Set Follow-up Date
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              AWB: <span className="font-medium text-foreground">{followUpModal.dispute?.awb_number}</span>
+            </p>
+            <div className="space-y-2">
+              <Label>Follow-up Date *</Label>
+              <Input
+                type="date"
+                value={followUpDate}
+                onChange={(e) => setFollowUpDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFollowUpModal({ open: false, dispute: null })}>Cancel</Button>
+            <Button onClick={handleSetFollowUp} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set Reminder'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
