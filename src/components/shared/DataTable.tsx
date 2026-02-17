@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Search } from 'lucide-react';
 
 export interface Column<T> {
   key: string;
@@ -95,11 +95,17 @@ export default function DataTable<T extends Record<string, any>>({
                 <TableHead key={col.key} className="whitespace-nowrap">
                   {col.sortable ? (
                     <button
-                      className="flex items-center gap-1 hover:text-foreground transition-colors"
+                      className="flex items-center gap-1 hover:text-foreground transition-colors group"
                       onClick={() => toggleSort(col.key)}
                     >
-                      {col.header}
-                      <ArrowUpDown className="h-3 w-3" />
+                      {typeof col.header === 'string' ? col.header : col.header}
+                      {sortKey === col.key ? (
+                        sortDir === 'asc' ? 
+                          <ArrowUp className="h-3.5 w-3.5 text-primary" /> : 
+                          <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                      ) : (
+                        <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+                      )}
                     </button>
                   ) : (
                     col.header
