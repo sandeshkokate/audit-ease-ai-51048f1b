@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockInvoices } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -25,13 +26,13 @@ export default function Invoices() {
   };
 
   const columns: Column<any>[] = [
-    { key: 'invoice_number', header: 'Invoice #', sortable: true },
-    { key: 'period', header: 'Period', sortable: true },
-    { key: 'total_recovered', header: 'Recovered', sortable: true, render: (r) => formatCurrency(r.total_recovered) },
-    { key: 'commission', header: 'Commission', render: (r) => formatCurrency(r.commission) },
-    { key: 'gst', header: 'GST', render: (r) => formatCurrency(r.gst) },
-    { key: 'net_payable', header: 'Net Payable', sortable: true, render: (r) => <span className="font-semibold">{formatCurrency(r.net_payable)}</span> },
-    { key: 'status', header: 'Status', render: (r) => (
+    { key: 'invoice_number', header: <ColumnHeader title="Invoice #" tooltip="Unique invoice reference number" />, sortable: true },
+    { key: 'period', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" />, sortable: true },
+    { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Sum of all credit notes received from couriers during this period" />, sortable: true, render: (r) => formatCurrency(r.total_recovered) },
+    { key: 'commission', header: <ColumnHeader title="Commission" tooltip="AuditEase platform fee — calculated as percentage of recovered amount" />, render: (r) => formatCurrency(r.commission) },
+    { key: 'gst', header: <ColumnHeader title="GST" tooltip="18% Goods and Services Tax applicable on commission" />, render: (r) => formatCurrency(r.gst) },
+    { key: 'net_payable', header: <ColumnHeader title="Net Payable" tooltip="Total amount due = Commission + GST" />, sortable: true, render: (r) => <span className="font-semibold">{formatCurrency(r.net_payable)}</span> },
+    { key: 'status', header: <ColumnHeader title="Status" tooltip="Pending (awaiting payment), Paid (payment received)" />, render: (r) => (
       <Badge variant="outline" className={r.status === 'paid' ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20'}>
         {r.status}
       </Badge>
