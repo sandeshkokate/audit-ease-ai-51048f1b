@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   BarChart3, Upload, ScrollText, Mail, IndianRupee,
@@ -26,8 +26,15 @@ const NAV_ITEMS = [
 ];
 
 export default function TenantAdminLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
+  }, [collapsed]);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
