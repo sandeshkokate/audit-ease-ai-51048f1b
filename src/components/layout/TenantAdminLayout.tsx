@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const NAV_ITEMS = [
   { title: 'Dashboard', url: '/tenant-admin/dashboard', icon: BarChart3 },
@@ -28,6 +30,22 @@ export default function TenantAdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const { data: tenantInfo } = useQuery({
+    queryKey: ['tenant-info', user?.id],
+    queryFn: async () => {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('tenant_id, tenants(company_name)')
+        .eq('id', user?.id!)
+        .single();
+      return {
+        companyName: (userData?.tenants as any)?.company_name || 'Your Company'
+      };
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 30,
+  });
 
   const handleLogout = async () => {
     await signOut();
@@ -101,7 +119,7 @@ export default function TenantAdminLayout() {
               <h1 className="text-sm font-semibold text-foreground whitespace-nowrap">
                 {user?.full_name || 'Tenant Admin'}
               </h1>
-              <p className="text-xs text-muted-foreground">FastShip Logistics</p>
+              <p className="text-xs text-muted-foreground">{tenantInfo?.companyName || 'Loading...'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
