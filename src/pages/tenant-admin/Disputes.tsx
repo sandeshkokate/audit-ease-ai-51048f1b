@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Disputes() {
+  useDocumentTitle('Disputes');
   const [disputes, setDisputes] = useState(mockDisputes);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
   const [editTo, setEditTo] = useState('');

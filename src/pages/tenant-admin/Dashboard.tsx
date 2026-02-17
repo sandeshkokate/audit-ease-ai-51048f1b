@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Package, AlertTriangle, Mail, IndianRupee, Upload } from 'lucide-react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +30,7 @@ export default function TenantDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('30');
+  useDocumentTitle('Dashboard');
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery({

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 };
 
 export default function Team() {
+  useDocumentTitle('Team');
   const [members] = useState(mockTeamMembers);
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');

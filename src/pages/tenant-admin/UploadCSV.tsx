@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ const REQUIRED_COLUMNS = ['awb_number', 'courier', 'weight', 'zone', 'amount', '
 const SAMPLE_CSV = `awb_number,courier,weight,zone,amount,order_id,dimensions_l,dimensions_w,dimensions_h\nAWB100001,Delhivery,2.5,B,125.00,ORD-5001,20,15,10\nAWB100002,BlueDart,1.8,A,95.50,ORD-5002,15,12,8`;
 
 export default function UploadCSV() {
+  useDocumentTitle('Upload CSV');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]);

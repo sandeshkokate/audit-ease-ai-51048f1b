@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,6 +20,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AuditLogs() {
+  useDocumentTitle('Audit Logs');
   const [statusFilter, setStatusFilter] = useState('all');
   const [courierFilter, setCourierFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
