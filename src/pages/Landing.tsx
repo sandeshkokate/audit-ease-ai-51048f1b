@@ -71,8 +71,8 @@ export default function Landing() {
     },
     {
       icon: Search,
-      title: 'AI Audits Every Shipment',
-      description: 'AI checks each shipment against your contracted rate cards',
+      title: 'System Audits Every Shipment',
+      description: 'Each shipment is checked against your contracted rate cards',
       color: 'text-secondary',
       bg: 'bg-secondary/10',
     },
@@ -86,7 +86,7 @@ export default function Landing() {
     {
       icon: Mail,
       title: 'Dispute & Track Recovery',
-      description: 'AI-generated dispute emails and a recovery tracker',
+      description: 'Ready-made dispute emails and a recovery tracker',
       color: 'text-success',
       bg: 'bg-success/10',
     },
@@ -95,15 +95,15 @@ export default function Landing() {
   const features = [
     {
       icon: Search,
-      title: 'AI-Powered Detection',
+      title: 'Smart Detection',
       description: 'Advanced algorithms check every shipment against your rate cards to spot discrepancies instantly.',
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
       icon: Mail,
-      title: 'Smart Dispute Emails',
-      description: "AI drafts professional dispute emails in each courier's preferred format — ready to send.",
+      title: 'Dispute Email Templates',
+      description: "Professional dispute email templates tailored to each courier's preferred format — ready to send.",
       color: 'text-secondary',
       bg: 'bg-secondary/10',
     },
@@ -139,8 +139,8 @@ export default function Landing() {
 
   const faqs = [
     {
-      q: 'How does AuditEase AI detect billing discrepancies?',
-      a: 'Our AI analyses your shipment data against your courier rate cards, checking for weight mismatches (billed vs actual/volumetric weight), zone classification errors, RTO overcharges, and COD discrepancies. Any shipment where the billed amount exceeds the expected amount is flagged for review.',
+      q: 'How does AuditEase detect billing discrepancies?',
+      a: 'Our system analyses your shipment data against your courier rate cards, checking for weight mismatches (billed vs actual/volumetric weight), zone classification errors, RTO overcharges, and COD discrepancies. Any shipment where the billed amount exceeds the expected amount is flagged for review.',
     },
     {
       q: 'Which courier partners do you support?',
@@ -170,7 +170,7 @@ export default function Landing() {
       subtitle: 'Up to 5,000 shipments/month',
       rate: '15%',
       rateLabel: 'of recovered amount',
-      features: ['AI discrepancy detection', 'Dispute email generation', 'Basic dashboard', 'Email support'],
+      features: ['Discrepancy detection', 'Dispute email templates', 'Basic dashboard', 'Email support'],
       cta: 'Get Started',
       featured: false,
     },
@@ -289,8 +289,8 @@ export default function Landing() {
               {/* Sub */}
               <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
                 Industry data shows 10–15% of courier invoices contain billing errors.
-                Our AI-powered platform helps you detect discrepancies, generate dispute emails,
-                and recover your money automatically.
+                Our platform helps you detect discrepancies, generate dispute emails,
+                and recover your money.
               </p>
 
               {/* CTAs */}
@@ -307,15 +307,6 @@ export default function Landing() {
                 </a>
               </div>
 
-              {/* Value props */}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start animate-fade-in-up" style={{ animationDelay: '400ms', opacity: 0 }}>
-                {['No upfront costs', 'Pay only on recovery', 'All major couriers supported'].map(v => (
-                  <span key={v} className="flex items-center gap-1.5">
-                    <CheckCircle className="h-3.5 w-3.5 text-success" />
-                    {v}
-                  </span>
-                ))}
-              </div>
             </div>
 
             {/* Right — mock dashboard */}
@@ -392,7 +383,7 @@ export default function Landing() {
                   </div>
                   <div>
                     <div className="text-foreground">Dispute Email Ready</div>
-                    <div className="text-muted-foreground">AI-generated draft</div>
+                    <div className="text-muted-foreground">Template draft</div>
                   </div>
                 </div>
               </div>
@@ -479,7 +470,7 @@ export default function Landing() {
             </div>
             <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">From Invoice Upload to Recovery</h2>
             <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-              Our AI handles the complex analysis while you focus on your business
+              Our system handles the complex analysis while you focus on your business
             </p>
           </div>
 
@@ -563,7 +554,7 @@ export default function Landing() {
                     <div className="rounded-xl border border-border bg-muted/30 p-4">
                       <div className="mb-1 flex items-center gap-2">
                         <Mail className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI-Generated Email Draft</span>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispute Email Draft</span>
                       </div>
                       <div className="text-sm font-medium text-foreground">Subject: Billing Discrepancy — AWB DEL789456</div>
                       <div className="mt-1 text-xs text-muted-foreground">Dear Support Team, We have identified a billing discrepancy on the above shipment. The charged weight (2.5 kg) exceeds the actual volumetric weight (1.8 kg)...</div>
@@ -714,7 +705,7 @@ export default function Landing() {
             </div>
             <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">Pay Only When We Recover Your Money</h2>
             <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-              No setup fees. No monthly commitments. Zero risk.
+              Minimal setup fees. No monthly commitments. Low risk.
             </p>
           </div>
 
@@ -758,12 +749,6 @@ export default function Landing() {
             ))}
           </div>
 
-          <div className="mt-10 text-center">
-            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <Shield className="h-4 w-4 text-success" />
-              No payment until you see results
-            </div>
-          </div>
         </div>
       </section>
 
