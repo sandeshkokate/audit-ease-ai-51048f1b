@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ const mockRateCards = [
 ];
 
 export default function TenantSettings() {
+  useDocumentTitle('Settings');
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [company, setCompany] = useState({

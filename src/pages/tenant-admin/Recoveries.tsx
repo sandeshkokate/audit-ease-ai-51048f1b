@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ const MATCH_COLORS: Record<string, string> = {
 };
 
 export default function Recoveries() {
+  useDocumentTitle('Recoveries');
   const [creditNotes, setCreditNotes] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);

@@ -10,8 +10,10 @@ import { mockInvoices } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Download, Plus, Loader2 } from 'lucide-react';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function Invoices() {
+  useDocumentTitle('Invoices');
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [generateMonth, setGenerateMonth] = useState('');
   const [generating, setGenerating] = useState(false);
