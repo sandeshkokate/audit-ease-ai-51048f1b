@@ -1,8 +1,9 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
@@ -13,7 +14,7 @@ import AccountantLayout from "@/components/layout/AccountantLayout";
 import ViewerLayout from "@/components/layout/ViewerLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
+// Signup removed — redirects to /contact
 import ForgotPassword from "./pages/auth/ForgotPassword";
 // Platform Admin
 import PlatformDashboard from "./pages/platform-admin/Dashboard";
@@ -40,7 +41,7 @@ import AccountantReports from "./pages/accountant/Reports";
 // Viewer
 import ViewerDashboard from "./pages/viewer/Dashboard";
 import ViewerReports from "./pages/viewer/Reports";
-import Contact from "./pages/Contact";
+const Contact = lazy(() => import('./pages/Contact'));
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,10 +56,10 @@ const App = () => (
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/contact" element={<Suspense fallback={null}><Contact /></Suspense>} />
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/contact" element={<Contact />} />
 
               {/* Platform Admin Routes */}
               <Route path="/platform-admin" element={
