@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, UserRole } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -18,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
@@ -65,6 +67,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [fetchUserProfile]);
+
+  // Session expiry check (24h max)
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.expires_at) {
+        // Supabase JWT has expires_at (unix seconds). If token lifespan is default 1h,
+        // we enforce a 24h hard limit using a localStorage timestamp.
+        const loginTime = localStorage.getItem('session_start');
+        if (!loginTime) {
+          localStorage.setItem('session_start', Date.now().toString());
+        } else {
+          const age = Date.now() - parseInt(loginTime, 10);
+          if (age > 24 * 60 * 60 * 1000) {
+            localStorage.removeItem('session_start');
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+            toast({
+              title: 'Session Expired',
+              description: 'Please log in again for security.',
+            });
+          }
+        }
+      }
+    };
+
+    checkSession();
+    const interval = setInterval(checkSession, 60000);
+    return () => clearInterval(interval);
+  }, [toast]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
