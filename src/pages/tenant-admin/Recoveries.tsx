@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mockRecoveries } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { cn } from '@/lib/utils';
 
 const MATCH_COLORS: Record<string, string> = {
@@ -131,7 +132,12 @@ export default function Recoveries() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead>Credit Note</TableHead><TableHead>AWB</TableHead><TableHead>Order</TableHead><TableHead>Amount</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead>
+                  <TableHead><ColumnHeader title="Credit Note" tooltip="Reference number from courier acknowledging the credit" /></TableHead>
+                  <TableHead><ColumnHeader title="AWB" tooltip="Air Waybill linked to this credit note" /></TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead><ColumnHeader title="Amount" tooltip="Credit amount received from courier" /></TableHead>
+                  <TableHead><ColumnHeader title="Date" tooltip="Date the credit note was issued" /></TableHead>
+                  <TableHead><ColumnHeader title="Status" tooltip="Auto-matched (exact AWB match found), Review (partial match needs verification), Unmatched (no corresponding dispute found)" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
