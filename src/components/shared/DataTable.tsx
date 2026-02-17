@@ -13,7 +13,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Ar
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: string | React.ReactNode;
   render?: (row: T) => React.ReactNode;
   sortable?: boolean;
 }
