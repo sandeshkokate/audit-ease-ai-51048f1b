@@ -1,43 +1,76 @@
-import { Upload, Search, SendHorizonal, IndianRupee } from 'lucide-react';
+import { Upload, Search, Mail, IndianRupee, Layers } from 'lucide-react';
 
 const steps = [
-  { icon: Upload, title: 'Upload CSV', description: 'Upload your courier billing CSV file in seconds' },
-  { icon: Search, title: 'AI Detects', description: 'AI instantly detects overcharges and discrepancies' },
-  { icon: SendHorizonal, title: 'Send Disputes', description: 'Review AI-generated dispute emails and send' },
-  { icon: IndianRupee, title: 'Save Money', description: 'Track recoveries and watch savings grow' },
+  {
+    step: '01',
+    icon: Upload,
+    title: 'Upload CSV',
+    description: 'Export your courier invoices and upload to AuditEase',
+  },
+  {
+    step: '02',
+    icon: Search,
+    title: 'AI Audits',
+    description: 'Our AI scans every shipment for weight, zone & RTO errors',
+  },
+  {
+    step: '03',
+    icon: Mail,
+    title: 'Auto Dispute',
+    description: 'AI generates professional dispute emails ready to send',
+  },
+  {
+    step: '04',
+    icon: IndianRupee,
+    title: 'Get Refunds',
+    description: 'Track recoveries and credit notes in one dashboard',
+  },
 ];
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative border-y border-border/50 bg-muted/30 py-24 md:py-32">
-      <div className="container mx-auto px-4">
+    <section id="how-it-works" className="relative section-dark py-24 md:py-32 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-20" />
+
+      <div className="container relative mx-auto px-4">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
-            How It Works
-          </p>
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-5xl">
-            Four simple steps to savings
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <Layers className="h-4 w-4" />
+            Simple 4-Step Process
+          </div>
+          <h2 className="mb-4 text-3xl font-bold section-dark-text md:text-5xl">
+            From Upload to Recovery in <span className="text-gradient">72 Hours</span>
           </h2>
-          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-            Start recovering money from courier overcharges in minutes.
+          <p className="mx-auto max-w-xl section-dark-muted md:text-lg">
+            Our AI handles the heavy lifting while you focus on growing your business.
           </p>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
-          {steps.map((step, i) => (
-            <div key={step.title} className="relative text-center">
-              <div className="relative mb-6 mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-primary shadow-button">
-                <step.icon className="h-8 w-8 text-primary-foreground" />
-                <div className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-card text-xs font-bold text-primary border-2 border-primary">
-                  {i + 1}
-                </div>
-              </div>
-              <h3 className="mb-2 text-lg font-bold text-foreground">{step.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
-
-              {i < steps.length - 1 && (
-                <div className="absolute right-0 top-10 hidden h-px w-8 translate-x-full bg-border lg:block" />
+        <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((item, index) => (
+            <div key={item.title} className="relative text-center">
+              {/* Connector line */}
+              {index < 3 && (
+                <div className="absolute right-0 top-12 hidden h-px w-8 translate-x-full bg-[hsl(var(--section-dark-border))] lg:block" />
               )}
+
+              {/* Card */}
+              <div className="section-dark-card rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
+                {/* Step number */}
+                <div className="mb-4 text-xs font-bold uppercase tracking-widest text-primary">
+                  {item.step}
+                </div>
+
+                {/* Icon */}
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl gradient-primary shadow-button">
+                  <item.icon className="h-7 w-7 text-primary-foreground" />
+                </div>
+
+                {/* Content */}
+                <h3 className="mb-2 text-lg font-bold section-dark-text">{item.title}</h3>
+                <p className="text-sm section-dark-muted leading-relaxed">{item.description}</p>
+              </div>
             </div>
           ))}
         </div>

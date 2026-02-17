@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const plans = [
@@ -37,24 +37,25 @@ export default function PricingSection() {
     <section id="pricing" className="py-24 md:py-32">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
-            Pricing
-          </p>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <Sparkles className="h-4 w-4" />
+            Zero Risk Pricing
+          </div>
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-5xl">
-            Simple, Transparent Pricing
+            Pay Only When You <span className="text-gradient">Save</span>
           </h2>
           <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-            No upfront costs. Pay only when you save money.
+            No setup fees. No monthly minimums. You only pay a percentage of what we recover for you.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.name}
               className={`relative rounded-2xl p-8 text-center transition-all duration-300 hover:-translate-y-1 ${
                 plan.featured
-                  ? 'border-2 border-primary bg-card shadow-card-hover scale-[1.02]'
+                  ? 'border-2 border-primary bg-card shadow-card-hover md:scale-105'
                   : 'border border-border/60 bg-card shadow-card'
               }`}
             >
@@ -68,7 +69,7 @@ export default function PricingSection() {
               <p className="text-muted-foreground text-sm mb-6">{plan.subtitle}</p>
 
               <div className="mb-8">
-                <span className={`text-5xl font-extrabold ${plan.featured ? 'text-primary' : 'text-foreground'}`}>
+                <span className={`text-5xl font-extrabold ${plan.featured ? 'text-gradient' : 'text-foreground'}`}>
                   {plan.rate}
                 </span>
                 <p className="text-muted-foreground text-sm mt-1">of recovered amount</p>
@@ -93,6 +94,14 @@ export default function PricingSection() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* Guarantee */}
+        <div className="mt-12 text-center">
+          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 text-success" />
+            30-Day Money Back Guarantee — No questions asked
+          </div>
         </div>
       </div>
     </section>
