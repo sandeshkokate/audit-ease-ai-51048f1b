@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Menu,
   X,
+  CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -77,8 +78,8 @@ export default function Landing() {
             <Link to="/login">
               <Button variant="ghost" size="sm">Log in</Button>
             </Link>
-            <Link to="/signup">
-              <Button variant="hero" size="sm">Get Started Free</Button>
+            <Link to="/contact">
+              <Button variant="hero" size="sm">Request Demo</Button>
             </Link>
           </div>
 
@@ -95,7 +96,7 @@ export default function Landing() {
               <a href="#pricing" className="text-sm font-medium text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
               <a href="#contact" className="text-sm font-medium text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Contact</a>
               <Link to="/login"><Button variant="ghost" className="w-full">Log in</Button></Link>
-              <Link to="/signup"><Button variant="hero" className="w-full">Get Started Free</Button></Link>
+              <Link to="/contact"><Button variant="hero" className="w-full">Request Demo</Button></Link>
             </div>
           </div>
         )}
@@ -107,7 +108,7 @@ export default function Landing() {
           <div className="mx-auto max-w-3xl animate-fade-in">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
               <IndianRupee className="h-4 w-4" />
-              Trusted by 100+ Indian e-commerce brands
+              Built for Indian E-commerce
             </div>
             <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground md:text-6xl">
               Recover 10-15% of Your Logistics Spend.{' '}
@@ -117,9 +118,9 @@ export default function Landing() {
               AI-powered courier billing audit that detects overcharges, generates dispute emails, and tracks recoveries — all in one platform.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/signup">
+              <Link to="/contact">
                 <Button variant="hero" size="lg" className="gap-2 text-base px-8 py-6">
-                  Start Free Trial <ArrowRight className="h-5 w-5" />
+                  Schedule a Demo <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
               <a href="#how-it-works">
@@ -192,6 +193,72 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 md:py-28 border-t border-border">
+        <div className="container mx-auto px-4">
+          <div className="mb-14 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-muted-foreground md:text-lg">
+              No upfront costs. Pay only when you save money.
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+            {/* Starter */}
+            <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+              <h3 className="text-xl font-bold text-foreground mb-2">Starter</h3>
+              <p className="text-muted-foreground text-sm mb-4">Up to 5,000 shipments/month</p>
+              <div className="my-6">
+                <span className="text-4xl font-extrabold">15%</span>
+                <p className="text-muted-foreground mt-1">of recovered amount</p>
+              </div>
+              <ul className="text-left space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />AI discrepancy detection</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Automated dispute emails</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Basic dashboard</li>
+              </ul>
+              <Link to="/contact"><Button variant="outline" className="w-full">Get Started</Button></Link>
+            </div>
+
+            {/* Growth - Featured */}
+            <div className="rounded-2xl border-2 border-primary bg-card p-8 text-center shadow-card-hover relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">MOST POPULAR</div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Growth</h3>
+              <p className="text-muted-foreground text-sm mb-4">5,000 - 50,000 shipments/month</p>
+              <div className="my-6">
+                <span className="text-4xl font-extrabold text-primary">12%</span>
+                <p className="text-muted-foreground mt-1">of recovered amount</p>
+              </div>
+              <ul className="text-left space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Everything in Starter</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Priority support</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Advanced analytics</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Custom email templates</li>
+              </ul>
+              <Link to="/contact"><Button variant="hero" className="w-full">Get Started</Button></Link>
+            </div>
+
+            {/* Enterprise */}
+            <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+              <h3 className="text-xl font-bold text-foreground mb-2">Enterprise</h3>
+              <p className="text-muted-foreground text-sm mb-4">50,000+ shipments/month</p>
+              <div className="my-6">
+                <span className="text-4xl font-extrabold">10%</span>
+                <p className="text-muted-foreground mt-1">of recovered amount</p>
+              </div>
+              <ul className="text-left space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Everything in Growth</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Dedicated account manager</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />Custom integrations</li>
+                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-success" />SLA guarantee</li>
+              </ul>
+              <Link to="/contact"><Button variant="outline" className="w-full">Contact Sales</Button></Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4 text-center">
@@ -200,11 +267,11 @@ export default function Landing() {
               Ready to recover your logistics spend?
             </h2>
             <p className="mb-8 text-primary-foreground/80 md:text-lg">
-              Join hundreds of Indian e-commerce brands saving lakhs every month.
+              Start saving on your logistics costs today
             </p>
-            <Link to="/signup">
+            <Link to="/contact">
               <Button size="lg" className="bg-card text-foreground hover:bg-card/90 text-base px-8 py-6 gap-2">
-                Start Free Trial <ArrowRight className="h-5 w-5" />
+                Contact Sales <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           </div>
