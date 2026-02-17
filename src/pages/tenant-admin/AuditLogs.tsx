@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockAuditLogs } from '@/lib/tenant-mock-data';
 import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -39,15 +40,15 @@ export default function AuditLogs() {
   };
 
   const columns: Column<any>[] = [
-    { key: 'awb_number', header: 'AWB', sortable: true },
-    { key: 'courier', header: 'Courier', sortable: true },
-    { key: 'order_id', header: 'Order ID' },
-    { key: 'discrepancy_type', header: 'Type', render: (r) => <Badge variant="outline" className="capitalize">{r.discrepancy_type}</Badge> },
-    { key: 'billed_weight', header: 'Billed Wt', sortable: true, render: (r) => `${r.billed_weight} kg` },
-    { key: 'actual_weight', header: 'Actual Wt', render: (r) => `${r.actual_weight} kg` },
-    { key: 'discrepancy_amount', header: 'Discrepancy', sortable: true, render: (r) => <span className="font-medium text-destructive">₹{r.discrepancy_amount}</span> },
-    { key: 'status', header: 'Status', sortable: true, render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.status]}>{r.status}</Badge> },
-    { key: 'created_at', header: 'Date', render: (r) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span> },
+    { key: 'awb_number', header: <ColumnHeader title="AWB" tooltip="Air Waybill Number — unique shipment tracking ID assigned by the courier partner" />, sortable: true },
+    { key: 'courier', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment (e.g., Delhivery, Blue Dart)" />, sortable: true },
+    { key: 'order_id', header: <ColumnHeader title="Order ID" tooltip="Your internal order reference number from your e-commerce platform" /> },
+    { key: 'discrepancy_type', header: <ColumnHeader title="Type" tooltip="Category of billing error: Weight (incorrect weight charged), Zone (wrong delivery zone), RTO (return shipment overcharge), COD (cash collection issues)" />, render: (r) => <Badge variant="outline" className="capitalize">{r.discrepancy_type}</Badge> },
+    { key: 'billed_weight', header: <ColumnHeader title="Billed Wt" tooltip="Weight charged by courier (kg). This may include volumetric weight adjustment based on package dimensions." />, sortable: true, render: (r) => `${r.billed_weight} kg` },
+    { key: 'actual_weight', header: <ColumnHeader title="Actual Wt" tooltip="Expected chargeable weight — the higher of dead weight (scale weight) or volumetric weight (L×B×H÷5000)" />, render: (r) => `${r.actual_weight} kg` },
+    { key: 'discrepancy_amount', header: <ColumnHeader title="Discrepancy" tooltip="Amount overcharged = Billed Amount − Expected Amount (calculated using your rate card)" />, sortable: true, render: (r) => <span className="font-medium text-destructive">₹{r.discrepancy_amount}</span> },
+    { key: 'status', header: <ColumnHeader title="Status" tooltip="Detected (issue found), Disputed (email sent to courier), Resolved (credit note received), Rejected (courier denied claim)" />, sortable: true, render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.status]}>{r.status}</Badge> },
+    { key: 'created_at', header: <ColumnHeader title="Date" tooltip="When this shipment record was uploaded and processed" />, render: (r) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span> },
     { key: 'actions', header: '', render: (r) => <Button variant="ghost" size="sm" onClick={() => setSelectedLog(r)}>View</Button> },
   ];
 
