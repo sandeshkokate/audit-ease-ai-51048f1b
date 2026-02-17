@@ -42,6 +42,9 @@ import AccountantReports from "./pages/accountant/Reports";
 import ViewerDashboard from "./pages/viewer/Dashboard";
 import ViewerReports from "./pages/viewer/Reports";
 const Contact = lazy(() => import('./pages/Contact'));
+const About = lazy(() => import('./pages/About'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +60,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/contact" element={<Suspense fallback={null}><Contact /></Suspense>} />
+              <Route path="/about" element={<Suspense fallback={null}><About /></Suspense>} />
+              <Route path="/privacy" element={<Suspense fallback={null}><Privacy /></Suspense>} />
+              <Route path="/terms" element={<Suspense fallback={null}><Terms /></Suspense>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
