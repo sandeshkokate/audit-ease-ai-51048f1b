@@ -29,20 +29,17 @@ const steps = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative section-dark py-24 md:py-32 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-20" />
-
-      <div className="container relative mx-auto px-4">
+    <section id="how-it-works" className="relative border-y border-border/50 bg-muted/30 py-24 md:py-32">
+      <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
             <Layers className="h-4 w-4" />
             Simple 4-Step Process
           </div>
-          <h2 className="mb-4 text-3xl font-bold section-dark-text md:text-5xl">
-            From Upload to Recovery in <span className="text-gradient">72 Hours</span>
+          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-5xl">
+            From Upload to Recovery in <span className="text-gradient">Days</span>
           </h2>
-          <p className="mx-auto max-w-xl section-dark-muted md:text-lg">
+          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
             Our AI handles the heavy lifting while you focus on growing your business.
           </p>
         </div>
@@ -50,26 +47,19 @@ export default function HowItWorksSection() {
         <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((item, index) => (
             <div key={item.title} className="relative text-center">
-              {/* Connector line */}
               {index < 3 && (
-                <div className="absolute right-0 top-12 hidden h-px w-8 translate-x-full bg-[hsl(var(--section-dark-border))] lg:block" />
+                <div className="absolute right-0 top-12 hidden h-px w-8 translate-x-full bg-border lg:block" />
               )}
 
-              {/* Card */}
-              <div className="section-dark-card rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
-                {/* Step number */}
+              <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-primary/20">
                 <div className="mb-4 text-xs font-bold uppercase tracking-widest text-primary">
                   {item.step}
                 </div>
-
-                {/* Icon */}
                 <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl gradient-primary shadow-button">
                   <item.icon className="h-7 w-7 text-primary-foreground" />
                 </div>
-
-                {/* Content */}
-                <h3 className="mb-2 text-lg font-bold section-dark-text">{item.title}</h3>
-                <p className="text-sm section-dark-muted leading-relaxed">{item.description}</p>
+                <h3 className="mb-2 text-lg font-bold text-foreground">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
               </div>
             </div>
           ))}
