@@ -40,6 +40,7 @@ import AccountantReports from "./pages/accountant/Reports";
 // Viewer
 import ViewerDashboard from "./pages/viewer/Dashboard";
 import ViewerReports from "./pages/viewer/Reports";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/contact" element={<Contact />} />
 
               {/* Platform Admin Routes */}
               <Route path="/platform-admin" element={
