@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import { mockTeamMembers } from '@/lib/tenant-mock-data';
 import { formatDistanceToNow } from 'date-fns';
@@ -36,11 +37,11 @@ export default function Team() {
   const { toast } = useToast();
 
   const columns: Column<any>[] = [
-    { key: 'name', header: 'Name', sortable: true },
-    { key: 'email', header: 'Email' },
-    { key: 'role', header: 'Role', render: (r) => <Badge variant="outline" className={ROLE_COLORS[r.role]}>{r.role.replace('_', ' ')}</Badge> },
-    { key: 'status', header: 'Status', render: (r) => <Badge variant="outline" className={r.status === 'active' ? 'bg-success/10 text-success border-success/20' : 'bg-muted text-muted-foreground'}>{r.status}</Badge> },
-    { key: 'last_login', header: 'Last Login', render: (r) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(r.last_login), { addSuffix: true })}</span> },
+    { key: 'name', header: <ColumnHeader title="Name" tooltip="Full name of the team member" />, sortable: true },
+    { key: 'email', header: <ColumnHeader title="Email" tooltip="Team member's email address used for login" /> },
+    { key: 'role', header: <ColumnHeader title="Role" tooltip="Tenant Admin (full access), Accountant (financial data), Viewer (read-only dashboards)" />, render: (r) => <Badge variant="outline" className={ROLE_COLORS[r.role]}>{r.role.replace('_', ' ')}</Badge> },
+    { key: 'status', header: <ColumnHeader title="Status" tooltip="Active (can log in), Inactive (access revoked)" />, render: (r) => <Badge variant="outline" className={r.status === 'active' ? 'bg-success/10 text-success border-success/20' : 'bg-muted text-muted-foreground'}>{r.status}</Badge> },
+    { key: 'last_login', header: <ColumnHeader title="Last Login" tooltip="When this team member last signed in" />, render: (r) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(r.last_login), { addSuffix: true })}</span> },
     { key: 'actions', header: '', render: (r) => (
       <div className="flex gap-1">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: `Edit ${r.name}` })}><Pencil className="h-4 w-4" /></Button>

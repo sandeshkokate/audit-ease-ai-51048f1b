@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { mockTenants } from '@/lib/mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { Pencil, CheckCircle2, Ban, Search } from 'lucide-react';
@@ -39,21 +40,21 @@ export default function Tenants() {
   };
 
   const columns: Column<any>[] = [
-    { key: 'name', header: 'Company Name', sortable: true },
-    { key: 'email', header: 'Contact Email' },
+    { key: 'name', header: <ColumnHeader title="Company Name" tooltip="Registered company name of the tenant" />, sortable: true },
+    { key: 'email', header: <ColumnHeader title="Contact Email" tooltip="Primary contact email for this tenant" /> },
     {
-      key: 'status', header: 'Status', sortable: true,
+      key: 'status', header: <ColumnHeader title="Status" tooltip="Active (operational), Pending (awaiting approval), Suspended (temporarily disabled), Cancelled (deactivated)" />, sortable: true,
       render: (row) => (
         <Badge variant="outline" className={STATUS_COLORS[row.status] || ''}>
           {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
         </Badge>
       ),
     },
-    { key: 'commission', header: 'Commission %', sortable: true, render: (row) => `${row.commission}%` },
-    { key: 'credit_balance', header: 'Credit Balance', sortable: true, render: (row) => formatCurrency(row.credit_balance) },
-    { key: 'orders_processed', header: 'Orders', sortable: true, render: (row) => row.orders_processed.toLocaleString() },
-    { key: 'total_recovered', header: 'Recovered', sortable: true, render: (row) => formatCurrency(row.total_recovered) },
-    { key: 'onboarding_date', header: 'Onboarding' },
+    { key: 'commission', header: <ColumnHeader title="Commission %" tooltip="Percentage of recovered amount charged as platform fee" />, sortable: true, render: (row) => `${row.commission}%` },
+    { key: 'credit_balance', header: <ColumnHeader title="Credit Balance" tooltip="Prepaid balance available for the tenant" />, sortable: true, render: (row) => formatCurrency(row.credit_balance) },
+    { key: 'orders_processed', header: <ColumnHeader title="Orders" tooltip="Total number of shipments processed through the platform" />, sortable: true, render: (row) => row.orders_processed.toLocaleString() },
+    { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (row) => formatCurrency(row.total_recovered) },
+    { key: 'onboarding_date', header: <ColumnHeader title="Onboarding" tooltip="Date when the tenant was onboarded to the platform" /> },
     {
       key: 'actions', header: 'Actions',
       render: (row) => (

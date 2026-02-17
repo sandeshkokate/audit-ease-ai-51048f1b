@@ -136,7 +136,7 @@ export default function Recoveries() {
                 <TableRow className="bg-muted/50">
                   <TableHead><ColumnHeader title="Credit Note" tooltip="Reference number from courier acknowledging the credit" /></TableHead>
                   <TableHead><ColumnHeader title="AWB" tooltip="Air Waybill linked to this credit note" /></TableHead>
-                  <TableHead>Order</TableHead>
+                  <TableHead><ColumnHeader title="Order" tooltip="Your internal order reference number" /></TableHead>
                   <TableHead><ColumnHeader title="Amount" tooltip="Credit amount received from courier" /></TableHead>
                   <TableHead><ColumnHeader title="Date" tooltip="Date the credit note was issued" /></TableHead>
                   <TableHead><ColumnHeader title="Status" tooltip="Auto-matched (exact AWB match found), Review (partial match needs verification), Unmatched (no corresponding dispute found)" /></TableHead>

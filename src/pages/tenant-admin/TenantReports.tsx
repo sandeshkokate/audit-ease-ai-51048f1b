@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ChartCard from '@/components/dashboard/ChartCard';
 import MetricCard from '@/components/dashboard/MetricCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import ColumnHeader from '@/components/shared/ColumnHeader';
 import { Download, Package, TrendingUp, IndianRupee, AlertTriangle } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -83,10 +84,10 @@ export default function TenantReports() {
         <TabsContent value="courier" className="space-y-4">
           <div className="flex justify-end"><Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(mockCourierAnalysis, 'courier_performance')}><Download className="h-4 w-4" /> CSV</Button></div>
           <DataTable columns={[
-            { key: 'courier', header: 'Courier', sortable: true },
-            { key: 'shipments', header: 'Shipments', sortable: true, render: r => r.shipments.toLocaleString() },
-            { key: 'discrepancy_rate', header: 'Discrepancy %', sortable: true, render: r => `${r.discrepancy_rate}%` },
-            { key: 'avg_overcharge', header: 'Avg Overcharge', sortable: true, render: r => `₹${r.avg_overcharge}` },
+            { key: 'courier', header: <ColumnHeader title="Courier" tooltip="Courier partner name" />, sortable: true },
+            { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments handled by this courier" />, sortable: true, render: r => r.shipments.toLocaleString() },
+            { key: 'discrepancy_rate', header: <ColumnHeader title="Discrepancy %" tooltip="Percentage of shipments with billing errors" />, sortable: true, render: r => `${r.discrepancy_rate}%` },
+            { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge" tooltip="Average overcharge amount per discrepant shipment" />, sortable: true, render: r => `₹${r.avg_overcharge}` },
           ]} data={mockCourierAnalysis} pageSize={10} />
           <ChartCard title="Courier Comparison">
             <ResponsiveContainer width="100%" height={250}>
@@ -114,10 +115,10 @@ export default function TenantReports() {
         <TabsContent value="recovery" className="space-y-4">
           <div className="flex justify-end"><Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(mockMonthlyRecovery, 'recovery_tracker')}><Download className="h-4 w-4" /> CSV</Button></div>
           <DataTable columns={[
-            { key: 'month', header: 'Month' },
-            { key: 'disputes', header: 'Disputes', sortable: true },
-            { key: 'resolved', header: 'Resolved', sortable: true },
-            { key: 'recovered', header: 'Recovered', sortable: true, render: r => formatCurrency(r.recovered) },
+            { key: 'month', header: <ColumnHeader title="Month" tooltip="Calendar month for this recovery data" /> },
+            { key: 'disputes', header: <ColumnHeader title="Disputes" tooltip="Number of disputes raised this month" />, sortable: true },
+            { key: 'resolved', header: <ColumnHeader title="Resolved" tooltip="Number of disputes resolved (credit note received)" />, sortable: true },
+            { key: 'recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from couriers this month" />, sortable: true, render: r => formatCurrency(r.recovered) },
           ]} data={mockMonthlyRecovery} pageSize={10} />
           <ChartCard title="Recovery Funnel">
             <ResponsiveContainer width="100%" height={250}>
@@ -134,10 +135,10 @@ export default function TenantReports() {
           </div>
           <div className="flex justify-end"><Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(financialImpact, 'financial_impact')}><Download className="h-4 w-4" /> CSV</Button></div>
           <DataTable columns={[
-            { key: 'month', header: 'Month' },
-            { key: 'gross_savings', header: 'Gross Savings', sortable: true, render: r => formatCurrency(r.gross_savings) },
-            { key: 'commission', header: 'Commission', render: r => formatCurrency(r.commission) },
-            { key: 'net_savings', header: 'Net Savings', sortable: true, render: r => <span className="font-semibold text-success">{formatCurrency(r.net_savings)}</span> },
+            { key: 'month', header: <ColumnHeader title="Month" tooltip="Calendar month for this financial data" /> },
+            { key: 'gross_savings', header: <ColumnHeader title="Gross Savings" tooltip="Total amount recovered before deducting platform commission" />, sortable: true, render: r => formatCurrency(r.gross_savings) },
+            { key: 'commission', header: <ColumnHeader title="Commission" tooltip="Platform fee deducted from gross savings" />, render: r => formatCurrency(r.commission) },
+            { key: 'net_savings', header: <ColumnHeader title="Net Savings" tooltip="Your actual savings = Gross Savings − Commission" />, sortable: true, render: r => <span className="font-semibold text-success">{formatCurrency(r.net_savings)}</span> },
           ]} data={financialImpact} pageSize={10} />
           <ChartCard title="Savings Trend">
             <ResponsiveContainer width="100%" height={250}>
