@@ -1,18 +1,19 @@
+import { useState } from 'react';
 import { Package, AlertTriangle, Mail, IndianRupee, Upload } from 'lucide-react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, subDays, format, formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import MetricCard from '@/components/dashboard/MetricCard';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeleton';
 import { formatCurrency } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
 
 const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
 const STATUS_COLORS: Record<string, string> = {
@@ -27,42 +28,42 @@ const STATUS_COLORS: Record<string, string> = {
 export default function TenantDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [dateRange, setDateRange] = useState('30');
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-stats', user?.tenant_id],
+    queryKey: ['dashboard-stats', user?.tenant_id, dateRange],
     queryFn: async () => {
       const tenantId = user?.tenant_id;
       if (!tenantId) throw new Error('No tenant found');
 
-      const now = new Date();
-      const currentMonthStart = startOfMonth(now);
-      const lastMonthStart = startOfMonth(subMonths(now, 1));
-      const lastMonthEnd = endOfMonth(subMonths(now, 1));
+      const days = parseInt(dateRange);
+      const startDate = subDays(new Date(), days);
+      const prevStartDate = subDays(startDate, days);
 
-      const [{ data: currentMonth }, { data: lastMonth }] = await Promise.all([
+      const [{ data: currentPeriod }, { data: prevPeriod }] = await Promise.all([
         supabase
           .from('audit_logs')
           .select('id, discrepancy_amount, recovery_amount, dispute_status')
           .eq('tenant_id', tenantId)
-          .gte('created_at', currentMonthStart.toISOString()),
+          .gte('created_at', startDate.toISOString()),
         supabase
           .from('audit_logs')
           .select('id, discrepancy_amount, recovery_amount, dispute_status')
           .eq('tenant_id', tenantId)
-          .gte('created_at', lastMonthStart.toISOString())
-          .lte('created_at', lastMonthEnd.toISOString()),
+          .gte('created_at', prevStartDate.toISOString())
+          .lt('created_at', startDate.toISOString()),
       ]);
 
-      const currentOrders = currentMonth?.length || 0;
-      const currentDiscrepancies = currentMonth?.filter(l => (l.discrepancy_amount ?? 0) > 0) || [];
-      const currentRecovered = currentMonth?.filter(l => l.dispute_status === 'recovered') || [];
+      const currentOrders = currentPeriod?.length || 0;
+      const currentDiscrepancies = currentPeriod?.filter(l => (l.discrepancy_amount ?? 0) > 0) || [];
+      const currentRecovered = currentPeriod?.filter(l => l.dispute_status === 'recovered') || [];
       const currentRecoveredAmount = currentRecovered.reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
       const currentDiscrepancyAmount = currentDiscrepancies.reduce((sum, l) => sum + (l.discrepancy_amount ?? 0), 0);
-      const activeDisputes = currentMonth?.filter(l => l.dispute_status === 'raised').length || 0;
+      const activeDisputes = currentPeriod?.filter(l => l.dispute_status === 'raised').length || 0;
 
-      const lastOrders = lastMonth?.length || 0;
-      const lastRecoveredAmount = lastMonth?.filter(l => l.dispute_status === 'recovered')
+      const lastOrders = prevPeriod?.length || 0;
+      const lastRecoveredAmount = prevPeriod?.filter(l => l.dispute_status === 'recovered')
         .reduce((sum, l) => sum + (l.recovery_amount || 0), 0) || 0;
 
       const ordersChange = lastOrders > 0 ? ((currentOrders - lastOrders) / lastOrders * 100) : 0;
@@ -196,7 +197,23 @@ export default function TenantDashboard() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-foreground">Dashboard</h1><p className="text-sm text-muted-foreground">Your audit performance overview</p></div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Welcome back, {user?.full_name}</p>
+        </div>
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">Last 7 days</SelectItem>
+            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="90">Last 90 days</SelectItem>
+            <SelectItem value="365">This year</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Orders Processed" value={(stats?.totalOrders ?? 0).toLocaleString()} change={stats?.ordersChange ?? 0} icon={Package} />
