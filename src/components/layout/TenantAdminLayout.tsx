@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import Breadcrumbs from '@/components/shared/Breadcrumbs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -142,6 +143,7 @@ export default function TenantAdminLayout() {
           </div>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>
