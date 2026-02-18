@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
@@ -31,15 +32,49 @@ export default function Contact() {
     }
 
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CONTACT || '';
 
-    toast({
-      title: '✅ Request Submitted!',
-      description: 'Our team will contact you within 24 hours.',
-    });
+      if (!webhookUrl) {
+        const { error } = await supabase.from('leads').insert({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          phone: formData.phone,
+          monthly_shipments: formData.monthlyShipments,
+          message: formData.message,
+          source: 'contact_form'
+        });
+        if (error) throw error;
+      } else {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            company: formData.company,
+            phone: formData.phone,
+            monthly_shipments: formData.monthlyShipments,
+            message: formData.message,
+            source: 'contact_form'
+          })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+      }
 
-    setLoading(false);
-    navigate('/');
+      toast({ title: '✅ Thank you!', description: 'We will contact you within 24 hours.' });
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Submission failed',
+        description: error.message || 'Please try again'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateField = (field: string, value: string) => {
