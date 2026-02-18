@@ -293,6 +293,63 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_notes: {
+        Row: {
+          amount: number
+          awb: string | null
+          courier_name: string | null
+          created_at: string | null
+          created_by: string | null
+          credit_date: string | null
+          credit_note_number: string
+          id: string
+          match_status: string | null
+          matched_at: string | null
+          matched_audit_log_id: string | null
+          matched_by: string | null
+          notes: string | null
+          order_id: string | null
+          tenant_id: string
+          upload_batch_id: string | null
+        }
+        Insert: {
+          amount: number
+          awb?: string | null
+          courier_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          credit_date?: string | null
+          credit_note_number: string
+          id?: string
+          match_status?: string | null
+          matched_at?: string | null
+          matched_audit_log_id?: string | null
+          matched_by?: string | null
+          notes?: string | null
+          order_id?: string | null
+          tenant_id: string
+          upload_batch_id?: string | null
+        }
+        Update: {
+          amount?: number
+          awb?: string | null
+          courier_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          credit_date?: string | null
+          credit_note_number?: string
+          id?: string
+          match_status?: string | null
+          matched_at?: string | null
+          matched_audit_log_id?: string | null
+          matched_by?: string | null
+          notes?: string | null
+          order_id?: string | null
+          tenant_id?: string
+          upload_batch_id?: string | null
+        }
+        Relationships: []
+      }
       dispute_emails: {
         Row: {
           attachments: Json | null
@@ -432,6 +489,54 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          body_template: string
+          courier_name: string | null
+          created_at: string | null
+          description: string | null
+          discrepancy_type: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          language: string | null
+          subject_template: string
+          template_code: string
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_template: string
+          courier_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          discrepancy_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          language?: string | null
+          subject_template: string
+          template_code: string
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_template?: string
+          courier_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          discrepancy_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          language?: string | null
+          subject_template?: string
+          template_code?: string
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
           beta_tenants: string[] | null
@@ -468,6 +573,45 @@ export type Database = {
           rollout_percentage?: number | null
           updated_at?: string | null
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invite_status: string | null
+          invited_by: string
+          role: string
+          tenant_id: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          invite_status?: string | null
+          invited_by: string
+          role?: string
+          tenant_id: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_status?: string | null
+          invited_by?: string
+          role?: string
+          tenant_id?: string
+          token?: string
         }
         Relationships: []
       }
@@ -559,6 +703,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      leads: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          lead_status: string | null
+          message: string | null
+          monthly_shipments: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          lead_status?: string | null
+          message?: string | null
+          monthly_shipments?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          lead_status?: string | null
+          message?: string | null
+          monthly_shipments?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+        }
+        Relationships: []
       }
       pincode_zone_master: {
         Row: {

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,14 +49,82 @@ export default function UploadCSV() {
   }, [handleFile]);
 
   const handleProcess = async () => {
+    if (!file) return;
     setProcessing(true);
-    // Simulate processing
-    await new Promise(r => setTimeout(r, 3000));
-    toast({ title: 'Upload complete!', description: `${preview.length} orders processed, ${Math.floor(preview.length * 0.3)} discrepancies found.` });
-    setProcessing(false);
-    setFile(null);
-    setPreview([]);
-    setHeaders([]);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userData?.tenant_id) throw new Error('No tenant found');
+
+      const batchId = crypto.randomUUID();
+      const { error: batchError } = await supabase
+        .from('upload_batches')
+        .insert({
+          id: batchId,
+          tenant_id: userData.tenant_id,
+          filename: file.name,
+          file_size: file.size,
+          total_rows: preview.length,
+          status: 'processing',
+          created_by: user.id,
+          started_at: new Date().toISOString()
+        });
+
+      if (batchError) throw batchError;
+
+      const text = await file.text();
+      const lines = text.trim().split('\n');
+      const csvHeaders = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const rows = lines.slice(1).map(line => {
+        const values = line.split(',');
+        const row: Record<string, string> = {};
+        csvHeaders.forEach((h, i) => { row[h] = values[i]?.trim() || ''; });
+        return row;
+      });
+
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CSV || '';
+      if (!webhookUrl) throw new Error('Webhook URL not configured');
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: userData.tenant_id,
+          user_id: user.id,
+          batch_id: batchId,
+          rows: rows
+        })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) throw new Error(result.error || 'Processing failed');
+
+      toast({
+        title: '✅ Upload complete!',
+        description: `${result.data.processed} orders processed, ${result.data.discrepancies_found} discrepancies found.`
+      });
+
+      setFile(null);
+      setPreview([]);
+      setHeaders([]);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: error.message
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const downloadSample = () => {
