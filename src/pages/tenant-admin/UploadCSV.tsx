@@ -51,48 +51,48 @@ export default function UploadCSV() {
   const handleProcess = async () => {
     if (!file) return;
     setProcessing(true);
-
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
-
+      
       const { data: userData } = await supabase
         .from('users')
         .select('tenant_id')
         .eq('id', user.id)
         .single();
-
+      
       if (!userData?.tenant_id) throw new Error('No tenant found');
-
+      
       const batchId = crypto.randomUUID();
-      const { error: batchError } = await supabase
-        .from('upload_batches')
-        .insert({
-          id: batchId,
-          tenant_id: userData.tenant_id,
-          filename: file.name,
-          file_size: file.size,
-          total_rows: preview.length,
-          status: 'processing',
-          created_by: user.id,
-          started_at: new Date().toISOString()
-        });
-
-      if (batchError) throw batchError;
-
+      
+      // Create batch record
+      await supabase.from('upload_batches').insert({
+        id: batchId,
+        tenant_id: userData.tenant_id,
+        filename: file.name,
+        file_size: file.size,
+        total_rows: preview.length,
+        status: 'processing',
+        created_by: user.id,
+        started_at: new Date().toISOString()
+      });
+      
+      // Parse CSV
       const text = await file.text();
       const lines = text.trim().split('\n');
-      const csvHeaders = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
         const row: Record<string, string> = {};
-        csvHeaders.forEach((h, i) => { row[h] = values[i]?.trim() || ''; });
+        hdrs.forEach((h, i) => { row[h] = values[i]?.trim() || ''; });
         return row;
       });
-
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CSV || '';
-      if (!webhookUrl) throw new Error('Webhook URL not configured');
-
+      
+      // Call n8n
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CSV;
+      if (!webhookUrl) throw new Error('Webhook not configured');
+      
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,28 +100,23 @@ export default function UploadCSV() {
           tenant_id: userData.tenant_id,
           user_id: user.id,
           batch_id: batchId,
-          rows: rows
+          rows
         })
       });
-
+      
       const result = await response.json();
-
-      if (!result.success) throw new Error(result.error || 'Processing failed');
-
+      if (!result.success) throw new Error(result.error);
+      
       toast({
         title: '✅ Upload complete!',
-        description: `${result.data.processed} orders processed, ${result.data.discrepancies_found} discrepancies found.`
+        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`
       });
-
+      
       setFile(null);
       setPreview([]);
       setHeaders([]);
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: error.message
-      });
+      toast({ variant: 'destructive', title: 'Failed', description: error.message });
     } finally {
       setProcessing(false);
     }
