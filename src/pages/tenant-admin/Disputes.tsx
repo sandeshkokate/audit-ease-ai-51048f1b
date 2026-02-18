@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockDisputes } from '@/lib/tenant-mock-data';
+import { mockDisputes } from '@/lib/tenant-mock-data'; // kept as fallback type reference
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -37,7 +38,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function Disputes() {
   useDocumentTitle('Disputes');
-  const [disputes, setDisputes] = useState(mockDisputes);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
   const [editTo, setEditTo] = useState('');
   const [editSubject, setEditSubject] = useState('');
@@ -45,6 +45,7 @@ export default function Disputes() {
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Action modal states
   const [recoveryModal, setRecoveryModal] = useState<{ open: boolean; dispute: any }>({ open: false, dispute: null });
@@ -59,10 +60,61 @@ export default function Disputes() {
   const [followUpDate, setFollowUpDate] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Fetch disputes (audit logs with discrepancies)
+  const { data: disputes = [], isLoading } = useQuery({
+    queryKey: ['disputes', user?.id],
+    queryFn: async () => {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('tenant_id')
+        .eq('id', user!.id)
+        .maybeSingle();
+
+      if (!userData?.tenant_id) return [];
+
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select(`
+          *,
+          dispute_emails(*)
+        `)
+        .eq('tenant_id', userData.tenant_id)
+        .gt('discrepancy_amount', 0)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(log => ({
+        id: log.id,
+        awb_number: log.awb,
+        order_id: log.order_id,
+        courier: log.courier_name,
+        courier_name: log.courier_name,
+        discrepancy_type: log.has_weight_discrepancy ? 'Weight' : log.has_zone_discrepancy ? 'Zone' : 'RTO',
+        amount: log.discrepancy_amount,
+        discrepancy_amount: log.discrepancy_amount,
+        status: log.dispute_status || 'detected',
+        courier_email: `billing@${(log.courier_name || 'courier').toLowerCase().replace(/\s+/g, '')}.com`,
+        email_subject: log.dispute_emails?.[0]?.subject || '',
+        email_body: log.dispute_emails?.[0]?.body || '',
+        is_copied: log.dispute_emails?.[0]?.is_copied || false,
+        is_marked_sent: log.dispute_status === 'disputed' || log.dispute_status === 'raised',
+        dispute_email: log.dispute_emails?.[0] || null,
+        dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
+        tenant_id: log.tenant_id,
+      }));
+    },
+    enabled: !!user?.id
+  });
+
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ['disputes'] });
+  };
+
   const summary = {
-    drafts: disputes.filter(d => d.status === 'draft').length,
+    drafts: disputes.filter(d => d.status === 'draft' || d.status === 'detected' || d.status === 'no_issue').length,
     copied: disputes.filter(d => d.status === 'email_copied').length,
-    awaiting: disputes.filter(d => d.status === 'raised').length,
+    awaiting: disputes.filter(d => d.status === 'raised' || d.status === 'disputed').length,
     recovered: disputes.filter(d => d.status === 'recovered').length,
     rejected: disputes.filter(d => d.status === 'rejected').length,
   };
@@ -74,38 +126,83 @@ export default function Disputes() {
     setEditBody(dispute.email_body);
   };
 
-  const handleCopyEmail = () => {
+  const handleCopyEmail = async () => {
     navigator.clipboard.writeText(editBody);
-    setDisputes(prev => prev.map(d => d.id === selectedDispute.id ? { ...d, is_copied: true, status: 'email_copied' } : d));
+    if (selectedDispute?.dispute_email?.id) {
+      await supabase.from('dispute_emails').update({ is_copied: true, copied_at: new Date().toISOString() }).eq('id', selectedDispute.dispute_email.id);
+    }
     toast({ title: 'Email copied to clipboard!' });
+    refetch();
   };
 
-  const handleCopyAndGmail = () => {
+  const handleCopyAndGmail = async () => {
     navigator.clipboard.writeText(editBody);
     const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(editTo)}&su=${encodeURIComponent(editSubject)}&body=${encodeURIComponent(editBody)}`;
     window.open(gmailUrl, '_blank');
-    setDisputes(prev => prev.map(d => d.id === selectedDispute.id ? { ...d, is_copied: true, status: 'email_copied' } : d));
+    if (selectedDispute?.dispute_email?.id) {
+      await supabase.from('dispute_emails').update({ is_copied: true, copied_at: new Date().toISOString() }).eq('id', selectedDispute.dispute_email.id);
+    }
     toast({ title: 'Copied & Gmail opened!' });
+    refetch();
   };
 
-  const handleMarkSent = (disputeIdOrNull?: string) => {
+  const handleMarkSent = async (disputeIdOrNull?: string) => {
     const id = disputeIdOrNull || selectedDispute?.id;
     if (!id) return;
-    setDisputes(prev => prev.map(d => d.id === id ? { ...d, is_marked_sent: true, status: 'raised' } : d));
-    toast({ title: 'Dispute marked as sent' });
-    setSelectedDispute(null);
+    try {
+      await supabase.from('audit_logs').update({ dispute_status: 'raised', dispute_raised_date: new Date().toISOString().split('T')[0] }).eq('id', id);
+      const emailId = disputeIdOrNull
+        ? disputes.find(d => d.id === disputeIdOrNull)?.dispute_email?.id
+        : selectedDispute?.dispute_email?.id;
+      if (emailId) {
+        await supabase.from('dispute_emails').update({ is_marked_sent: true, marked_sent_at: new Date().toISOString(), marked_sent_by: user?.id }).eq('id', emailId);
+      }
+      toast({ title: 'Dispute marked as sent' });
+      setSelectedDispute(null);
+      refetch();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    }
   };
 
   const handleGenerateAll = async () => {
     setGenerating(true);
-    await new Promise(r => setTimeout(r, 3000));
-    toast({ title: 'Dispute emails generated!', description: `${summary.drafts} emails ready for review.` });
-    setGenerating(false);
-  };
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('tenant_id')
+        .eq('id', user!.id)
+        .maybeSingle();
 
-  // Placeholder refetch for when real data is used
-  const refetch = () => {
-    // Will be replaced with real query refetch when connected to live data
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES || '';
+      if (!webhookUrl) throw new Error('Webhook not configured');
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: userData?.tenant_id,
+          user_id: user?.id
+        })
+      });
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+
+      toast({
+        title: '✅ Dispute emails generated!',
+        description: `${result.emails_generated} emails ready for review.`
+      });
+      refetch();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Generation failed',
+        description: error.message
+      });
+    } finally {
+      setGenerating(false);
+    }
   };
 
   // Mark as Recovered
@@ -273,12 +370,20 @@ export default function Disputes() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-foreground">Disputes</h1><p className="text-sm text-muted-foreground">Manage and send dispute emails to couriers</p></div>
         <Button variant="hero" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-          {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating with AI...</> : <><Sparkles className="h-4 w-4" /> Generate All Dispute Emails</>}
+          {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate All Dispute Emails</>}
         </Button>
       </div>
 
