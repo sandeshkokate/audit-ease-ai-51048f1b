@@ -539,40 +539,31 @@ export type Database = {
       }
       feature_flags: {
         Row: {
-          beta_tenants: string[] | null
           created_at: string | null
-          created_by: string | null
           description: string | null
-          feature_name: string
+          enabled: boolean | null
+          flag_key: string
           id: string
-          is_enabled: boolean | null
-          rollout_percentage: number | null
+          label: string
           updated_at: string | null
-          updated_by: string | null
         }
         Insert: {
-          beta_tenants?: string[] | null
           created_at?: string | null
-          created_by?: string | null
           description?: string | null
-          feature_name: string
+          enabled?: boolean | null
+          flag_key: string
           id?: string
-          is_enabled?: boolean | null
-          rollout_percentage?: number | null
+          label: string
           updated_at?: string | null
-          updated_by?: string | null
         }
         Update: {
-          beta_tenants?: string[] | null
           created_at?: string | null
-          created_by?: string | null
           description?: string | null
-          feature_name?: string
+          enabled?: boolean | null
+          flag_key?: string
           id?: string
-          is_enabled?: boolean | null
-          rollout_percentage?: number | null
+          label?: string
           updated_at?: string | null
-          updated_by?: string | null
         }
         Relationships: []
       }
