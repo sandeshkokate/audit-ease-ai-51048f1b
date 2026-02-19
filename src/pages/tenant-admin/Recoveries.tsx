@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { mockRecoveries } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
 import ColumnHeader from '@/components/shared/ColumnHeader';
@@ -15,16 +17,44 @@ const MATCH_COLORS: Record<string, string> = {
   matched: 'bg-success/10 text-success border-success/20',
   review: 'bg-warning/10 text-warning border-warning/20',
   unmatched: 'bg-destructive/10 text-destructive border-destructive/20',
+  recovered: 'bg-success/10 text-success border-success/20',
 };
 
 export default function Recoveries() {
   useDocumentTitle('Recoveries');
+  const { user } = useAuth();
   const [creditNotes, setCreditNotes] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [results, setResults] = useState(mockRecoveries);
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
+
+  const { data: recoveries = [], isLoading } = useQuery({
+    queryKey: ['recoveries', user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*, credit_notes(*)')
+        .eq('tenant_id', user.tenant_id)
+        .eq('dispute_status', 'recovered')
+        .not('recovery_amount', 'is', null)
+        .order('recovery_date', { ascending: false });
+      if (error) throw error;
+      return (data || []).map(log => ({
+        id: log.id,
+        awb: log.awb,
+        order_id: log.order_id,
+        courier: log.courier_name,
+        disputed_amount: log.discrepancy_amount,
+        amount: log.recovery_amount ?? 0,
+        credit_note_number: log.credit_note_number,
+        date: log.recovery_date,
+        status: 'recovered'
+      }));
+    },
+    enabled: !!user?.tenant_id
+  });
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.endsWith('.csv')) { toast({ variant: 'destructive', title: 'Only CSV files' }); return; }
@@ -55,9 +85,17 @@ export default function Recoveries() {
     setProcessing(false);
   };
 
-  const matched = results.filter(r => r.status === 'matched');
-  const review = results.filter(r => r.status === 'review');
-  const unmatched = results.filter(r => r.status === 'unmatched');
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const matched = recoveries.filter(r => r.status === 'recovered');
+  const review: any[] = [];
+  const unmatched: any[] = [];
 
   return (
     <div className="space-y-6">
@@ -143,7 +181,7 @@ export default function Recoveries() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map(r => (
+                {recoveries.map(r => (
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.credit_note_number}</TableCell>
                     <TableCell>{r.awb || '—'}</TableCell>
