@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
-import { mockInvoices } from '@/lib/tenant-mock-data';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Download, Plus, Loader2 } from 'lucide-react';
@@ -14,10 +16,34 @@ import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function Invoices() {
   useDocumentTitle('Invoices');
+  const { user } = useAuth();
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [generateMonth, setGenerateMonth] = useState('');
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+
+  const { data: invoices = [], isLoading } = useQuery({
+    queryKey: ['invoices', user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('tenant_id', user.tenant_id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.tenant_id
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const handleGenerate = async () => {
     if (!generateMonth) { toast({ variant: 'destructive', title: 'Select a month' }); return; }
@@ -29,11 +55,11 @@ export default function Invoices() {
 
   const columns: Column<any>[] = [
     { key: 'invoice_number', header: <ColumnHeader title="Invoice #" tooltip="Unique invoice reference number" />, sortable: true },
-    { key: 'period', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" />, sortable: true },
+    { key: 'invoice_period_start', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" />, sortable: true, render: (r) => `${r.invoice_period_start} – ${r.invoice_period_end}` },
     { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Sum of all credit notes received from couriers during this period" />, sortable: true, render: (r) => formatCurrency(r.total_recovered) },
-    { key: 'commission', header: <ColumnHeader title="Commission" tooltip="AuditEase platform fee — calculated as percentage of recovered amount" />, render: (r) => formatCurrency(r.commission) },
-    { key: 'gst', header: <ColumnHeader title="GST" tooltip="18% Goods and Services Tax applicable on commission" />, render: (r) => formatCurrency(r.gst) },
-    { key: 'net_payable', header: <ColumnHeader title="Net Payable" tooltip="Total amount due = Commission + GST" />, sortable: true, render: (r) => <span className="font-semibold">{formatCurrency(r.net_payable)}</span> },
+    { key: 'commission_amount', header: <ColumnHeader title="Commission" tooltip="AuditEase platform fee — calculated as percentage of recovered amount" />, render: (r) => formatCurrency(r.commission_amount) },
+    { key: 'gst_amount', header: <ColumnHeader title="GST" tooltip="GST applicable on commission" />, render: (r) => formatCurrency(r.gst_amount ?? 0) },
+    { key: 'total_amount', header: <ColumnHeader title="Net Payable" tooltip="Total amount due = Commission + GST" />, sortable: true, render: (r) => <span className="font-semibold">{formatCurrency(r.total_amount)}</span> },
     { key: 'status', header: <ColumnHeader title="Status" tooltip="Pending (awaiting payment), Paid (payment received)" />, render: (r) => (
       <Badge variant="outline" className={r.status === 'paid' ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20'}>
         {r.status}
@@ -70,7 +96,7 @@ export default function Invoices() {
         </CardContent>
       </Card>
 
-      <DataTable columns={columns} data={mockInvoices} pageSize={10} />
+      <DataTable columns={columns} data={invoices} pageSize={10} />
 
       {/* Invoice Detail Modal */}
       <Dialog open={!!selectedInvoice} onOpenChange={() => setSelectedInvoice(null)}>
@@ -79,16 +105,16 @@ export default function Invoices() {
           {selectedInvoice && (
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-muted-foreground text-xs">Period</p><p className="font-medium">{selectedInvoice.period}</p></div>
-                <div><p className="text-muted-foreground text-xs">Line Items</p><p className="font-medium">{selectedInvoice.line_items}</p></div>
+                <div><p className="text-muted-foreground text-xs">Period</p><p className="font-medium">{selectedInvoice.invoice_period_start} – {selectedInvoice.invoice_period_end}</p></div>
+                <div><p className="text-muted-foreground text-xs">Line Items</p><p className="font-medium">{Array.isArray(selectedInvoice.line_items) ? selectedInvoice.line_items.length : '-'}</p></div>
                 <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={selectedInvoice.status === 'paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}>{selectedInvoice.status}</Badge></div>
-                <div><p className="text-muted-foreground text-xs">Created</p><p className="font-medium">{selectedInvoice.created_at}</p></div>
+                <div><p className="text-muted-foreground text-xs">Created</p><p className="font-medium">{selectedInvoice.created_at ? new Date(selectedInvoice.created_at).toLocaleDateString() : '-'}</p></div>
               </div>
               <Card className="bg-muted/30"><CardContent className="p-4 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Total Recovered</span><span className="font-medium">{formatCurrency(selectedInvoice.total_recovered)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Commission (12%)</span><span className="font-medium">{formatCurrency(selectedInvoice.commission)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">GST (18%)</span><span className="font-medium">{formatCurrency(selectedInvoice.gst)}</span></div>
-                <div className="border-t border-border pt-2 flex justify-between"><span className="font-semibold">Net Payable</span><span className="font-bold text-primary">{formatCurrency(selectedInvoice.net_payable)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Commission ({selectedInvoice.commission_percentage}%)</span><span className="font-medium">{formatCurrency(selectedInvoice.commission_amount)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">GST ({selectedInvoice.gst_percentage ?? 18}%)</span><span className="font-medium">{formatCurrency(selectedInvoice.gst_amount ?? 0)}</span></div>
+                <div className="border-t border-border pt-2 flex justify-between"><span className="font-semibold">Net Payable</span><span className="font-bold text-primary">{formatCurrency(selectedInvoice.total_amount)}</span></div>
               </CardContent></Card>
               <div className="flex justify-end">
                 <Button variant="outline" className="gap-2" onClick={() => toast({ title: 'PDF downloaded' })}><Download className="h-4 w-4" /> Download PDF</Button>
