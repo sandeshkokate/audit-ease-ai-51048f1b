@@ -1,37 +1,158 @@
-import { Building2, Users, IndianRupee, TrendingUp } from 'lucide-react';
+import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import MetricCard from '@/components/dashboard/MetricCard';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
-import { Badge } from '@/components/ui/badge';
-import { mockTenants, mockTenantGrowth, mockRevenueByMonth, mockActivityLogs } from '@/lib/mock-data';
 import { formatCurrency } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-
-const activityColumns: Column<any>[] = [
-  {
-    key: 'time',
-    header: 'Time',
-    render: (row) => (
-      <span className="text-sm text-muted-foreground">
-        {formatDistanceToNow(new Date(row.time), { addSuffix: true })}
-      </span>
-    ),
-  },
-  { key: 'tenant', header: 'Tenant' },
-  { key: 'user', header: 'User' },
-  {
-    key: 'action',
-    header: 'Action',
-    render: (row) => <span className="text-sm">{row.action}</span>,
-  },
-];
 
 export default function PlatformDashboard() {
-  const totalTenants = mockTenants.length;
-  const activeTenants = mockTenants.filter((t) => t.status === 'active').length;
-  const monthlyRevenue = 690000;
-  const totalRecoveries = 13350000;
+  // Fetch all tenants
+  const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
+    queryKey: ['platform-tenants'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Fetch platform-wide stats
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['platform-stats'],
+    queryFn: async () => {
+      const { data: auditLogs } = await supabase
+        .from('audit_logs')
+        .select('id, discrepancy_amount, recovery_amount, dispute_status, created_at');
+
+      const totalRecovered = auditLogs?.reduce((sum, log) => sum + (log.recovery_amount || 0), 0) || 0;
+      const totalDiscrepancy = auditLogs?.reduce((sum, log) => sum + (log.discrepancy_amount || 0), 0) || 0;
+
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('commission_amount, created_at')
+        .gte('created_at', subMonths(new Date(), 1).toISOString());
+
+      const monthlyRevenue = invoices?.reduce((sum, inv) => sum + (inv.commission_amount || 0), 0) || 0;
+
+      return { totalRecovered, totalDiscrepancy, monthlyRevenue };
+    }
+  });
+
+  // Fetch tenant growth (last 6 months)
+  const { data: tenantGrowth = [] } = useQuery({
+    queryKey: ['platform-tenant-growth'],
+    queryFn: async () => {
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
+        
+        const { count } = await supabase
+          .from('tenants')
+          .select('*', { count: 'exact', head: true })
+          .lte('created_at', monthEnd.toISOString());
+
+        months.push({
+          month: format(monthStart, 'MMM'),
+          count: count || 0
+        });
+      }
+      return months;
+    }
+  });
+
+  // Fetch revenue by month (last 6 months)
+  const { data: revenueByMonth = [] } = useQuery({
+    queryKey: ['platform-revenue-by-month'],
+    queryFn: async () => {
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
+        
+        const { data: invoices } = await supabase
+          .from('invoices')
+          .select('commission_amount')
+          .gte('created_at', monthStart.toISOString())
+          .lte('created_at', monthEnd.toISOString());
+
+        const revenue = invoices?.reduce((sum, inv) => sum + (inv.commission_amount || 0), 0) || 0;
+
+        months.push({
+          month: format(monthStart, 'MMM'),
+          revenue
+        });
+      }
+      return months;
+    }
+  });
+
+  // Fetch recent activity logs
+  const { data: activityLogs = [] } = useQuery({
+    queryKey: ['platform-activity-logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select(`
+          *,
+          users:user_id(full_name, email),
+          tenants:tenant_id(company_name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      
+      return (data || []).map((log: any) => ({
+        id: log.id,
+        time: log.created_at,
+        tenant: log.tenants?.company_name || 'System',
+        user: log.users?.full_name || log.users?.email || 'Unknown',
+        action: log.action || log.details || 'Activity'
+      }));
+    }
+  });
+
+  const isLoading = tenantsLoading || statsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const totalTenants = tenants.length;
+  const activeTenants = tenants.filter((t: any) => t.status === 'active').length;
+  const monthlyRevenue = stats?.monthlyRevenue || 0;
+  const totalRecoveries = stats?.totalRecovered || 0;
+
+  const activityColumns: Column<any>[] = [
+    {
+      key: 'time',
+      header: 'Time',
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">
+          {formatDistanceToNow(new Date(row.time), { addSuffix: true })}
+        </span>
+      ),
+    },
+    { key: 'tenant', header: 'Tenant' },
+    { key: 'user', header: 'User' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row) => <span className="text-sm">{row.action}</span>,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -42,17 +163,17 @@ export default function PlatformDashboard() {
 
       {/* Metric Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Total Tenants" value={String(totalTenants)} change={12.5} icon={Building2} iconColor="text-primary" />
-        <MetricCard title="Active Tenants" value={String(activeTenants)} change={8.3} icon={Users} iconColor="text-success" />
-        <MetricCard title="Monthly Revenue" value={`₹${(monthlyRevenue / 100000).toFixed(2)} L`} change={11.2} icon={IndianRupee} iconColor="text-warning" />
-        <MetricCard title="Total Recoveries" value={`₹${(totalRecoveries / 10000000).toFixed(2)} Cr`} change={15.7} icon={TrendingUp} iconColor="text-accent" />
+        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" />
+        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" />
+        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" />
+        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" />
       </div>
 
       {/* Charts */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <ChartCard title="Tenant Growth">
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={mockTenantGrowth}>
+            <AreaChart data={tenantGrowth}>
               <defs>
                 <linearGradient id="tenantGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0.3} />
@@ -70,7 +191,7 @@ export default function PlatformDashboard() {
 
         <ChartCard title="Revenue by Month">
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={mockRevenueByMonth}>
+            <BarChart data={revenueByMonth}>
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(187, 72%, 48%)" />
@@ -90,7 +211,11 @@ export default function PlatformDashboard() {
       {/* Recent Activity */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Recent Activity</h2>
-        <DataTable columns={activityColumns} data={mockActivityLogs.slice(0, 20)} pageSize={10} />
+        {activityLogs.length > 0 ? (
+          <DataTable columns={activityColumns} data={activityLogs} pageSize={10} />
+        ) : (
+          <p className="text-sm text-muted-foreground">No recent activity</p>
+        )}
       </div>
     </div>
   );
