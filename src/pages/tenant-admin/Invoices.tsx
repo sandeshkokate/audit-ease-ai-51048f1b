@@ -48,9 +48,30 @@ export default function Invoices() {
   const handleGenerate = async () => {
     if (!generateMonth) { toast({ variant: 'destructive', title: 'Select a month' }); return; }
     setGenerating(true);
-    await new Promise(r => setTimeout(r, 2500));
-    toast({ title: 'Invoice generated!', description: `Invoice for ${generateMonth} created.` });
-    setGenerating(false);
+    try {
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_INVOICE || '';
+      if (!webhookUrl) throw new Error('Invoice webhook not configured');
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: user?.tenant_id,
+          user_id: user?.id,
+          month: generateMonth,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Invoice generation failed');
+
+      toast({ title: '✅ Invoice generated!', description: result.message || `Invoice for ${generateMonth} created.` });
+      setGenerateMonth('');
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Generation failed', description: error.message });
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const columns: Column<any>[] = [

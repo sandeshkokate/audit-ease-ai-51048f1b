@@ -79,10 +79,39 @@ export default function Recoveries() {
   }, [handleFile]);
 
   const handleProcessMatching = async () => {
+    if (creditNotes.length === 0) {
+      toast({ variant: 'destructive', title: 'No credit notes to process' });
+      return;
+    }
     setProcessing(true);
-    await new Promise(r => setTimeout(r, 2500));
-    toast({ title: 'Matching complete!', description: '3 auto-matched, 1 needs review, 1 unmatched' });
-    setProcessing(false);
+    try {
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_RECOVERY || '';
+      if (!webhookUrl) throw new Error('Recovery webhook not configured');
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: user?.tenant_id,
+          user_id: user?.id,
+          credit_notes: creditNotes,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Matching failed');
+
+      toast({
+        title: '✅ Matching complete!',
+        description: result.message || `${result.matched || 0} matched, ${result.review || 0} need review, ${result.unmatched || 0} unmatched`,
+      });
+      setFile(null);
+      setCreditNotes([]);
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Matching failed', description: error.message });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (isLoading) {
