@@ -1,13 +1,14 @@
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
-import { mockUsers } from '@/lib/mock-data';
 import { formatDistanceToNow } from 'date-fns';
-import { Pencil, UserX } from 'lucide-react';
+import { Pencil, UserX, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
@@ -20,12 +21,52 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const filtered = mockUsers.filter((u) => {
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['platform-users-page'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*, tenants:tenant_id(company_name)')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((u: any) => ({
+        id: u.id,
+        full_name: u.full_name || '-',
+        email: u.email,
+        role: u.role,
+        tenant_name: u.tenants?.company_name || '-',
+        status: u.is_active ? 'active' : 'inactive',
+        last_login: u.last_login || u.created_at,
+      }));
+    }
+  });
+
+  const filtered = users.filter((u: any) => {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
     return matchesRole && matchesStatus;
   });
+
+  const handleDeactivate = async (user: any) => {
+    try {
+      const { error } = await supabase.from('users').update({ is_active: false }).eq('id', user.id);
+      if (error) throw error;
+      toast({ title: `${user.full_name} deactivated` });
+      queryClient.invalidateQueries({ queryKey: ['platform-users-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const columns: Column<any>[] = [
     { key: 'full_name', header: <ColumnHeader title="Name" tooltip="Full name of the user" />, sortable: true },
@@ -58,7 +99,7 @@ export default function UsersPage() {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: `Edit ${row.full_name}` })}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => toast({ title: `${row.full_name} deactivated` })}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeactivate(row)}>
             <UserX className="h-4 w-4" />
           </Button>
         </div>

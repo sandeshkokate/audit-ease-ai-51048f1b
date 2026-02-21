@@ -293,6 +293,60 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_rate_cards: {
+        Row: {
+          additional_rate_per_kg: number | null
+          base_rate: number
+          cod_charge: number | null
+          courier_code: string
+          courier_name: string
+          courier_type: string | null
+          created_at: string | null
+          effective_from: string | null
+          fuel_surcharge_percent: number | null
+          id: string
+          is_active: boolean | null
+          rto_charge_percent: number | null
+          weight_slab_end: number
+          weight_slab_start: number
+          zone: string
+        }
+        Insert: {
+          additional_rate_per_kg?: number | null
+          base_rate: number
+          cod_charge?: number | null
+          courier_code: string
+          courier_name: string
+          courier_type?: string | null
+          created_at?: string | null
+          effective_from?: string | null
+          fuel_surcharge_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          rto_charge_percent?: number | null
+          weight_slab_end: number
+          weight_slab_start: number
+          zone: string
+        }
+        Update: {
+          additional_rate_per_kg?: number | null
+          base_rate?: number
+          cod_charge?: number | null
+          courier_code?: string
+          courier_name?: string
+          courier_type?: string | null
+          created_at?: string | null
+          effective_from?: string | null
+          fuel_surcharge_percent?: number | null
+          id?: string
+          is_active?: boolean | null
+          rto_charge_percent?: number | null
+          weight_slab_end?: number
+          weight_slab_start?: number
+          zone?: string
+        }
+        Relationships: []
+      }
       credit_notes: {
         Row: {
           amount: number
@@ -1116,6 +1170,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zone_master: {
+        Row: {
+          created_at: string | null
+          destination_pincode_end: string
+          destination_pincode_start: string
+          distance_km_approx: number | null
+          id: string
+          origin_pincode_end: string
+          origin_pincode_start: string
+          zone: string
+          zone_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          destination_pincode_end: string
+          destination_pincode_start: string
+          distance_km_approx?: number | null
+          id?: string
+          origin_pincode_end: string
+          origin_pincode_start: string
+          zone: string
+          zone_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          destination_pincode_end?: string
+          destination_pincode_start?: string
+          distance_km_approx?: number | null
+          id?: string
+          origin_pincode_end?: string
+          origin_pincode_start?: string
+          zone?: string
+          zone_type?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
