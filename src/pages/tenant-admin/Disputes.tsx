@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockDisputes } from '@/lib/tenant-mock-data'; // kept as fallback type reference
 import { formatCurrency } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import {

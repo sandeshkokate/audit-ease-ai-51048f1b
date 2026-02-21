@@ -1,23 +1,55 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
-import { mockActivityLogs } from '@/lib/mock-data';
 import { formatDistanceToNow } from 'date-fns';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ActivityLogs() {
   const [userFilter, setUserFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
 
-  const uniqueUsers = [...new Set(mockActivityLogs.map((l) => l.user))];
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ['platform-activity-logs-page'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select(`
+          *,
+          users:user_id(full_name, email),
+          tenants:tenant_id(company_name)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data || []).map((log: any) => ({
+        id: log.id,
+        time: log.created_at,
+        tenant: log.tenants?.company_name || 'System',
+        user: log.users?.full_name || log.users?.email || 'Unknown',
+        action: log.action || log.details || 'Activity',
+      }));
+    }
+  });
 
-  const filtered = mockActivityLogs.filter((l) => {
+  const uniqueUsers = [...new Set(logs.map((l: any) => l.user))];
+
+  const filtered = logs.filter((l: any) => {
     const matchesUser = userFilter === 'all' || l.user === userFilter;
     const matchesSearch = !searchQ || l.action.toLowerCase().includes(searchQ.toLowerCase()) || l.tenant.toLowerCase().includes(searchQ.toLowerCase());
     return matchesUser && matchesSearch;
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const columns: Column<any>[] = [
     {

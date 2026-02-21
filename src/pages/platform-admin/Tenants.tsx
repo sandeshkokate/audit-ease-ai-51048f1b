@@ -1,18 +1,18 @@
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
-import { mockTenants } from '@/lib/mock-data';
 import { formatCurrency } from '@/lib/utils';
-import { Pencil, CheckCircle2, Ban, Search } from 'lucide-react';
+import { Pencil, CheckCircle2, Ban, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-success/10 text-success border-success/20',
@@ -27,8 +27,29 @@ export default function Tenants() {
   const [editTenant, setEditTenant] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<any>({});
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const filtered = mockTenants.filter((t) => {
+  const { data: tenants = [], isLoading } = useQuery({
+    queryKey: ['platform-tenants-page'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((t: any) => ({
+        id: t.id,
+        name: t.company_name,
+        email: t.contact_email,
+        status: t.status || 'pending',
+        commission: t.commission_percentage || 20,
+        credit_balance: t.credit_balance || 0,
+        onboarding_date: t.onboarding_date ? new Date(t.onboarding_date).toLocaleDateString() : '-',
+      }));
+    }
+  });
+
+  const filtered = tenants.filter((t: any) => {
     const matchesStatus = filter === 'all' || t.status === filter;
     const matchesSearch = !searchQ || t.name.toLowerCase().includes(searchQ.toLowerCase()) || t.email.toLowerCase().includes(searchQ.toLowerCase());
     return matchesStatus && matchesSearch;
@@ -38,6 +59,56 @@ export default function Tenants() {
     setEditTenant(tenant);
     setEditForm({ ...tenant });
   };
+
+  const handleSave = async () => {
+    try {
+      const { error } = await supabase
+        .from('tenants')
+        .update({
+          company_name: editForm.name,
+          status: editForm.status,
+          commission_percentage: editForm.commission,
+          credit_balance: editForm.credit_balance,
+        })
+        .eq('id', editForm.id);
+      if (error) throw error;
+      toast({ title: 'Tenant updated successfully' });
+      setEditTenant(null);
+      queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  const handleApprove = async (tenant: any) => {
+    try {
+      const { error } = await supabase.from('tenants').update({ status: 'active' }).eq('id', tenant.id);
+      if (error) throw error;
+      toast({ title: `${tenant.name} approved` });
+      queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  const handleSuspend = async (tenant: any) => {
+    try {
+      const { error } = await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tenant.id);
+      if (error) throw error;
+      toast({ title: `${tenant.name} suspended` });
+      queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const columns: Column<any>[] = [
     { key: 'name', header: <ColumnHeader title="Company Name" tooltip="Registered company name of the tenant" />, sortable: true },
@@ -52,15 +123,13 @@ export default function Tenants() {
     },
     { key: 'commission', header: <ColumnHeader title="Commission %" tooltip="Percentage of recovered amount charged as platform fee" />, sortable: true, render: (row) => `${row.commission}%` },
     { key: 'credit_balance', header: <ColumnHeader title="Credit Balance" tooltip="Prepaid balance available for the tenant" />, sortable: true, render: (row) => formatCurrency(row.credit_balance) },
-    { key: 'orders_processed', header: <ColumnHeader title="Orders" tooltip="Total number of shipments processed through the platform" />, sortable: true, render: (row) => row.orders_processed.toLocaleString() },
-    { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (row) => formatCurrency(row.total_recovered) },
     { key: 'onboarding_date', header: <ColumnHeader title="Onboarding" tooltip="Date when the tenant was onboarded to the platform" /> },
     {
       key: 'actions', header: 'Actions',
       render: (row) => (
         <div className="flex items-center gap-1">
           {row.status === 'pending' && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => toast({ title: `${row.name} approved` })}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(row)}>
               <CheckCircle2 className="h-4 w-4" />
             </Button>
           )}
@@ -68,7 +137,7 @@ export default function Tenants() {
             <Pencil className="h-4 w-4" />
           </Button>
           {row.status === 'active' && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => toast({ title: `${row.name} suspended` })}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleSuspend(row)}>
               <Ban className="h-4 w-4" />
             </Button>
           )}
@@ -141,7 +210,7 @@ export default function Tenants() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditTenant(null)}>Cancel</Button>
-            <Button variant="hero" onClick={() => { setEditTenant(null); toast({ title: 'Tenant updated successfully' }); }}>Save</Button>
+            <Button variant="hero" onClick={handleSave}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
