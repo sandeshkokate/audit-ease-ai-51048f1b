@@ -41,15 +41,32 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('users')
         .select('role')
         .eq('id', userId)
         .single();
 
+      // Auto-create profile if missing (for pre-existing auth users)
       if (profileError || !profile) {
-        navigate('/login');
-        return;
+        const userEmail = authData.user?.email || '';
+        const meta = authData.user?.user_metadata || {};
+        const { data: created, error: createErr } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            email: userEmail,
+            role: meta.role || 'tenant_admin',
+            full_name: meta.full_name || userEmail.split('@')[0],
+          })
+          .select('role')
+          .single();
+        if (createErr || !created) {
+          toast({ variant: 'destructive', title: 'Account setup failed', description: 'Could not create user profile.' });
+          await supabase.auth.signOut();
+          return;
+        }
+        profile = created;
       }
 
       const role = profile.role as UserRole;
