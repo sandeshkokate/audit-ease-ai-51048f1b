@@ -41,16 +41,30 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
+      const userEmail = authData.user?.email || '';
+      const emailDomain = userEmail.split('@')[1] || '';
+
+      // Try to find matching tenant by email domain
+      const findTenantId = async (): Promise<string | null> => {
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('id')
+          .ilike('contact_email', `%${emailDomain}`)
+          .limit(1)
+          .maybeSingle();
+        return tenant?.id || null;
+      };
+
       let { data: profile, error: profileError } = await supabase
         .from('users')
-        .select('role')
+        .select('role, tenant_id')
         .eq('id', userId)
         .single();
 
-      // Auto-create profile if missing (for pre-existing auth users)
       if (profileError || !profile) {
-        const userEmail = authData.user?.email || '';
+        // Auto-create profile if missing (for pre-existing auth users)
         const meta = authData.user?.user_metadata || {};
+        const tenantId = await findTenantId();
         const { data: created, error: createErr } = await supabase
           .from('users')
           .insert({
@@ -58,8 +72,9 @@ export default function Login() {
             email: userEmail,
             role: meta.role || 'tenant_admin',
             full_name: meta.full_name || userEmail.split('@')[0],
+            tenant_id: tenantId,
           })
-          .select('role')
+          .select('role, tenant_id')
           .single();
         if (createErr || !created) {
           toast({ variant: 'destructive', title: 'Account setup failed', description: 'Could not create user profile.' });
@@ -67,6 +82,15 @@ export default function Login() {
           return;
         }
         profile = created;
+      } else if (!profile.tenant_id) {
+        // Fix existing profile with missing tenant_id
+        const tenantId = await findTenantId();
+        if (tenantId) {
+          await supabase
+            .from('users')
+            .update({ tenant_id: tenantId })
+            .eq('id', userId);
+        }
       }
 
       const role = profile.role as UserRole;
