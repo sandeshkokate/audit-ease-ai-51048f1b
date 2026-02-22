@@ -3,11 +3,17 @@ export type UserRole = 'platform_admin' | 'tenant_admin' | 'accountant' | 'viewe
 export interface User {
   id: string;
   email: string;
-  full_name: string;
+  full_name: string | null;
   role: UserRole;
   tenant_id: string | null;
-  avatar_url?: string;
-  created_at: string;
+  phone: string | null;
+  is_active: boolean | null;
+  last_login: string | null;
+  notification_preferences: any | null;
+  created_at: string | null;
+  created_by: string | null;
+  updated_at: string | null;
+  updated_by: string | null;
 }
 
 export interface Tenant {
