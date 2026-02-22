@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency } from '@/lib/utils';
-import { Pencil, CheckCircle2, Ban, Search, Loader2 } from 'lucide-react';
+import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,11 +21,29 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-muted text-muted-foreground border-border',
 };
 
+const EMPTY_ADD_FORM = {
+  company_name: '',
+  contact_email: '',
+  contact_person: '',
+  contact_phone: '',
+  gstin: '',
+  subscription_plan: 'professional',
+  address: '',
+  city: '',
+  state: '',
+  pincode: '',
+  commission: 12,
+  status: 'active',
+};
+
 export default function Tenants() {
   const [filter, setFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
   const [editTenant, setEditTenant] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ ...EMPTY_ADD_FORM });
+  const [adding, setAdding] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -66,6 +84,7 @@ export default function Tenants() {
         .from('tenants')
         .update({
           company_name: editForm.name,
+          contact_email: editForm.email,
           status: editForm.status,
           commission_percentage: editForm.commission,
           credit_balance: editForm.credit_balance,
@@ -77,6 +96,40 @@ export default function Tenants() {
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  const handleAdd = async () => {
+    if (!addForm.company_name.trim() || !addForm.contact_email.trim()) {
+      toast({ variant: 'destructive', title: 'Required fields missing', description: 'Company Name and Contact Email are required.' });
+      return;
+    }
+    setAdding(true);
+    try {
+      const { error } = await supabase.from('tenants').insert({
+        company_name: addForm.company_name.trim(),
+        contact_email: addForm.contact_email.trim(),
+        contact_person: addForm.contact_person.trim() || null,
+        contact_phone: addForm.contact_phone.trim() || null,
+        gstin: addForm.gstin.trim() || null,
+        subscription_plan: addForm.subscription_plan,
+        address: addForm.address.trim() || null,
+        city: addForm.city.trim() || null,
+        state: addForm.state.trim() || null,
+        pincode: addForm.pincode.trim() || null,
+        commission_percentage: addForm.commission,
+        status: addForm.status,
+        onboarding_date: new Date().toISOString(),
+      });
+      if (error) throw error;
+      toast({ title: 'Tenant added successfully' });
+      setAddOpen(false);
+      setAddForm({ ...EMPTY_ADD_FORM });
+      queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed to add tenant', description: err.message });
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -148,9 +201,14 @@ export default function Tenants() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Tenants</h1>
-        <p className="text-sm text-muted-foreground">Manage all registered companies</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Tenants</h1>
+          <p className="text-sm text-muted-foreground">Manage all registered companies</p>
+        </div>
+        <Button variant="hero" onClick={() => setAddOpen(true)}>
+          <Plus className="h-4 w-4" /> Add Tenant
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -172,6 +230,86 @@ export default function Tenants() {
 
       <DataTable columns={columns} data={filtered} pageSize={10} />
 
+      {/* Add Tenant Modal */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Tenant</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Company Name *</Label>
+              <Input value={addForm.company_name} onChange={(e) => setAddForm({ ...addForm, company_name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Email *</Label>
+              <Input type="email" value={addForm.contact_email} onChange={(e) => setAddForm({ ...addForm, contact_email: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Person</Label>
+              <Input value={addForm.contact_person} onChange={(e) => setAddForm({ ...addForm, contact_person: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={addForm.contact_phone} onChange={(e) => setAddForm({ ...addForm, contact_phone: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>GSTIN</Label>
+              <Input placeholder="27AABCF1234M1Z5" value={addForm.gstin} onChange={(e) => setAddForm({ ...addForm, gstin: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Subscription Plan</Label>
+              <Select value={addForm.subscription_plan} onValueChange={(v) => setAddForm({ ...addForm, subscription_plan: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="professional">Professional</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input value={addForm.address} onChange={(e) => setAddForm({ ...addForm, address: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label>City</Label>
+                <Input value={addForm.city} onChange={(e) => setAddForm({ ...addForm, city: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>State</Label>
+                <Input value={addForm.state} onChange={(e) => setAddForm({ ...addForm, state: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Pincode</Label>
+                <Input value={addForm.pincode} onChange={(e) => setAddForm({ ...addForm, pincode: e.target.value })} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Commission: {addForm.commission}%</Label>
+              <Slider value={[addForm.commission]} onValueChange={([v]) => setAddForm({ ...addForm, commission: v })} min={5} max={30} step={1} />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={addForm.status} onValueChange={(v) => setAddForm({ ...addForm, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button variant="hero" onClick={handleAdd} disabled={adding}>
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add Tenant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Modal */}
       <Dialog open={!!editTenant} onOpenChange={() => setEditTenant(null)}>
         <DialogContent className="sm:max-w-md">
@@ -182,6 +320,10 @@ export default function Tenants() {
             <div className="space-y-2">
               <Label>Company Name</Label>
               <Input value={editForm.name || ''} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Contact Email</Label>
+              <Input type="email" value={editForm.email || ''} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
