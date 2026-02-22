@@ -147,8 +147,8 @@ export default function Login() {
 
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link to="/signup" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                Sign Up
+              <Link to="/contact" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                Contact Us
               </Link>
             </p>
           </form>
