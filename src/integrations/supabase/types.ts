@@ -1258,6 +1258,42 @@ export type Database = {
     Functions: {
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       get_my_claim: { Args: { claim: string }; Returns: string }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          created_at: string
+          created_by: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          last_login: string
+          notification_preferences: Json
+          phone: string
+          role: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string
+        }[]
+      }
+      get_user_profile_for_login: {
+        Args: { lookup_user_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          last_login: string
+          notification_preferences: Json
+          phone: string
+          role: string
+          tenant_id: string
+        }[]
+      }
+      update_last_login: {
+        Args: { lookup_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

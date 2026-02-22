@@ -46,6 +46,7 @@ export default function Login() {
 
     setLoading(true);
     try {
+      // Step 1: Authenticate with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -55,15 +56,20 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role, tenant_id, is_active')
-        .eq('id', userId)
+      // Step 2: Fetch profile using SECURITY DEFINER function (bypasses RLS)
+      const { data: profile, error: profileError } = await supabase
+        .rpc('get_user_profile_for_login', { lookup_user_id: userId })
         .maybeSingle();
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        await supabase.auth.signOut();
+        throw new Error('Unable to load your profile. Please contact support.');
+      }
 
       if (!profile) {
         await supabase.auth.signOut();
-        throw new Error('Account not found — please sign up or accept an invitation first.');
+        throw new Error('Account not found — please contact your administrator.');
       }
 
       if (profile.is_active === false) {
@@ -71,13 +77,15 @@ export default function Login() {
         throw new Error('Your account has been deactivated. Contact your administrator.');
       }
 
+      // Step 3: Navigate to role-specific dashboard
       const role = profile.role as UserRole;
       setFailedAttempts(0);
       setLockoutUntil(null);
 
       navigate(ROLE_REDIRECTS[role] || '/');
 
-      await supabase.from('users').update({ last_login: new Date().toISOString() }).eq('id', userId);
+      // Step 4: Update last login (fire-and-forget, non-blocking)
+      Promise.resolve(supabase.rpc('update_last_login', { lookup_user_id: userId })).catch(() => {});
     } catch (err: any) {
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
