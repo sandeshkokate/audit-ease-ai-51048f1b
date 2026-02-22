@@ -29,7 +29,7 @@ export default function ColumnHeader({ title, tooltip }: ColumnHeaderProps) {
         <TooltipTrigger asChild>
           <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="z-[100]" side="top" sideOffset={5}>
           <p>{tooltip}</p>
         </TooltipContent>
       </Tooltip>
