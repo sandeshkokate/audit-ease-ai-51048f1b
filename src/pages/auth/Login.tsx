@@ -23,11 +23,25 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Rate limiting
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const secondsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      toast({
+        variant: 'destructive',
+        title: 'Too many attempts',
+        description: `Please wait ${secondsLeft} seconds before trying again.`,
+      });
+      return;
+    }
+
     if (!email.trim() || !password) return;
 
     setLoading(true);
@@ -58,10 +72,19 @@ export default function Login() {
       }
 
       const role = profile.role as UserRole;
+      setFailedAttempts(0);
+      setLockoutUntil(null);
+
       navigate(ROLE_REDIRECTS[role] || '/');
 
       await supabase.from('users').update({ last_login: new Date().toISOString() }).eq('id', userId);
     } catch (err: any) {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      if (newAttempts >= 5) {
+        setLockoutUntil(Date.now() + 60000);
+        setFailedAttempts(0);
+      }
       toast({
         variant: 'destructive',
         title: 'Login Failed',
