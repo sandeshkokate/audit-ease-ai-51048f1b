@@ -84,6 +84,36 @@ export default function AcceptInvite() {
     setSubmitting(true);
 
     try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', invitation.email)
+        .maybeSingle();
+
+      if (existingUser) {
+        // Link existing user to invitation's tenant and role
+        await supabase
+          .from('users')
+          .update({
+            tenant_id: invitation.tenant_id,
+            role: invitation.role,
+            full_name: formData.fullName || undefined,
+            is_active: true,
+          })
+          .eq('id', existingUser.id);
+
+        await supabase
+          .from('invitations')
+          .update({ invite_status: 'accepted', accepted_at: new Date().toISOString() })
+          .eq('id', invitation.id);
+
+        toast({ title: '✅ You have been added to the team!', description: 'You can now log in.' });
+        navigate('/login');
+        return;
+      }
+
+      // New user: sign up
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: invitation.email,
         password: formData.password,
@@ -104,17 +134,18 @@ export default function AcceptInvite() {
         .update({ invite_status: 'accepted', accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      // Update user record with tenant linkage
+      // Upsert user profile (handles race condition with DB trigger)
       if (authData.user) {
         await supabase
           .from('users')
-          .update({
+          .upsert({
+            id: authData.user.id,
+            email: invitation.email,
             tenant_id: invitation.tenant_id,
             role: invitation.role,
             full_name: formData.fullName,
-            is_active: true
-          })
-          .eq('id', authData.user.id);
+            is_active: true,
+          }, { onConflict: 'id' });
       }
 
       toast({ title: '✅ Account created!', description: 'You can now log in.' });
