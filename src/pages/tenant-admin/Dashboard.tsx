@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
-import { Package, AlertTriangle, Mail, IndianRupee, Upload } from 'lucide-react';
+import { Package, AlertTriangle, Mail, IndianRupee, Upload, CheckSquare, Square, RefreshCw, Settings } from 'lucide-react';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,17 +33,17 @@ export default function TenantDashboard() {
   useDocumentTitle('Dashboard');
 
   // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useQuery({
     queryKey: ['dashboard-stats', user?.tenant_id, dateRange],
     queryFn: async () => {
       const tenantId = user?.tenant_id;
-      if (!tenantId) throw new Error('No tenant found');
+      if (!tenantId) throw new Error('NO_TENANT');
 
       const days = parseInt(dateRange);
       const startDate = subDays(new Date(), days);
       const prevStartDate = subDays(startDate, days);
 
-      const [{ data: currentPeriod }, { data: prevPeriod }] = await Promise.all([
+      const [{ data: currentPeriod, error: e1 }, { data: prevPeriod, error: e2 }] = await Promise.all([
         supabase
           .from('audit_logs')
           .select('id, discrepancy_amount, recovery_amount, dispute_status')
@@ -56,6 +56,8 @@ export default function TenantDashboard() {
           .gte('created_at', prevStartDate.toISOString())
           .lt('created_at', startDate.toISOString()),
       ]);
+      if (e1) throw e1;
+      if (e2) throw e2;
 
       const currentOrders = currentPeriod?.length || 0;
       const currentDiscrepancies = currentPeriod?.filter(l => (l.discrepancy_amount ?? 0) > 0) || [];
@@ -86,6 +88,20 @@ export default function TenantDashboard() {
     },
     enabled: !!user?.tenant_id,
     staleTime: 1000 * 60 * 5,
+  });
+
+  // Check if rate card exists for onboarding checklist
+  const { data: hasRateCard } = useQuery({
+    queryKey: ['dashboard-has-ratecard', user?.tenant_id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('rate_cards')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', user!.tenant_id!);
+      if (error) throw error;
+      return (count || 0) > 0;
+    },
+    enabled: !!user?.tenant_id,
   });
 
   // Fetch monthly trend (last 6 months)
@@ -174,17 +190,78 @@ export default function TenantDashboard() {
     return <DashboardSkeleton />;
   }
 
-  if (!isLoading && stats?.totalOrders === 0) {
+  // No tenant linked
+  if (!user?.tenant_id) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">No Data Yet</h2>
+        <AlertTriangle className="h-12 w-12 text-warning mb-4" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">Account Not Linked</h2>
         <p className="text-sm text-muted-foreground max-w-md mb-6">
-          Upload your first CSV file to start auditing shipments
+          Your account is not linked to a company yet. Please contact your administrator.
         </p>
-        <Button variant="default" onClick={() => navigate('/tenant-admin/upload')}>
-          Upload CSV
+        <Button variant="outline" onClick={() => navigate('/login')}>Back to Login</Button>
+      </div>
+    );
+  }
+
+  // Error state
+  if (statsError && (statsError as any).message !== 'NO_TENANT') {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">Failed to Load Dashboard</h2>
+        <p className="text-sm text-muted-foreground max-w-md mb-6">
+          Failed to load dashboard data. Please try refreshing.
+        </p>
+        <Button variant="default" onClick={() => refetchStats()} className="gap-2">
+          <RefreshCw className="h-4 w-4" /> Retry
         </Button>
+      </div>
+    );
+  }
+
+  // Empty state with onboarding checklist
+  if (!isLoading && stats?.totalOrders === 0) {
+    const checklist = [
+      { label: 'Account Created', done: true },
+      { label: 'Rate Card Uploaded', done: !!hasRateCard },
+      { label: 'First CSV Uploaded', done: false },
+    ];
+
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        {/* Onboarding checklist */}
+        <div className="w-full max-w-sm mb-8 rounded-lg border border-border bg-card p-5 text-left">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Getting Started</h3>
+          <div className="space-y-3">
+            {checklist.map((item) => (
+              <div key={item.label} className="flex items-center gap-2.5">
+                {item.done ? (
+                  <CheckSquare className="h-5 w-5 text-success flex-shrink-0" />
+                ) : (
+                  <Square className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
+                )}
+                <span className={`text-sm ${item.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">Welcome to AuditEase AI!</h2>
+        <p className="text-sm text-muted-foreground max-w-md mb-6">
+          Get started by uploading your first courier billing CSV. We'll analyze it against your rate cards and find billing errors.
+        </p>
+        <div className="flex items-center gap-3">
+          <Button variant="default" onClick={() => navigate('/tenant-admin/upload')}>
+            <Upload className="h-4 w-4 mr-2" /> Upload CSV
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/tenant-admin/settings')}>
+            <Settings className="h-4 w-4 mr-2" /> Add Rate Card
+          </Button>
+        </div>
       </div>
     );
   }
