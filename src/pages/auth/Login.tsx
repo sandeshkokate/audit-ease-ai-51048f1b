@@ -39,20 +39,21 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
-      // Use RPC function to bypass RLS — this is the critical fix
       const { data: profile, error: profileError } = await supabase
-        .rpc('get_user_profile_for_login', { lookup_user_id: userId })
+        .from('users')
+        .select('role, tenant_id, is_active')
+        .eq('id', userId)
         .maybeSingle();
 
       if (profileError) {
-        console.error('Profile fetch error:', profileError);
+        console.error('Profile query error:', profileError);
         await supabase.auth.signOut();
-        throw new Error('Unable to load your profile. Please try again or contact support.');
+        throw new Error('Unable to load your profile. Please try again.');
       }
 
       if (!profile) {
         await supabase.auth.signOut();
-        throw new Error('Account not found — please contact your administrator.');
+        throw new Error('Account not found. Please contact your administrator.');
       }
 
       if (profile.is_active === false) {
@@ -63,8 +64,7 @@ export default function Login() {
       const role = profile.role as UserRole;
       navigate(ROLE_REDIRECTS[role] || '/');
 
-      // Fire-and-forget: update last login via RPC
-      Promise.resolve(supabase.rpc('update_last_login', { lookup_user_id: userId })).catch(() => {});
+      supabase.from('users').update({ last_login: new Date().toISOString() }).eq('id', userId).then(() => {});
     } catch (err: any) {
       toast({
         variant: 'destructive',
