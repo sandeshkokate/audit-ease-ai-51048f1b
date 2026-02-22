@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Users, UserPlus, MoreHorizontal, Mail, UserX, Loader2, Clock } from 'lucide-react';
+import { Users, UserPlus, Mail, UserX, UserCheck, Loader2, Clock, Pencil, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,18 +25,22 @@ export default function Team() {
   const [inviteRole, setInviteRole] = useState('viewer');
   const [inviting, setInviting] = useState(false);
 
+  // Change role dialog state
+  const [roleModal, setRoleModal] = useState(false);
+  const [roleTarget, setRoleTarget] = useState<{ id: string; name: string; currentRole: string } | null>(null);
+  const [newRole, setNewRole] = useState('');
+  const [savingRole, setSavingRole] = useState(false);
+
   // Fetch team members
   const { data: teamMembers = [], isLoading: membersLoading } = useQuery({
     queryKey: ['team-members', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return [];
-
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('tenant_id', user.tenant_id)
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       return data || [];
     },
@@ -49,14 +52,12 @@ export default function Team() {
     queryKey: ['pending-invitations', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return [];
-
       const { data, error } = await supabase
         .from('invitations')
         .select('*')
         .eq('tenant_id', user.tenant_id)
         .eq('invite_status', 'pending')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       return data || [];
     },
@@ -69,26 +70,20 @@ export default function Team() {
       toast({ variant: 'destructive', title: 'Please enter an email' });
       return;
     }
-
     setInviting(true);
     try {
       const normalizedEmail = inviteEmail.trim().toLowerCase();
-
-      // Check if user already exists in this tenant
       const { data: existingUser } = await supabase
         .from('users')
         .select('id, email')
         .eq('tenant_id', user?.tenant_id)
         .ilike('email', normalizedEmail)
         .maybeSingle();
-
       if (existingUser) {
         toast({ variant: 'destructive', title: 'User already exists', description: 'This email is already a member of your team.' });
         setInviting(false);
         return;
       }
-
-      // Check if there's already a pending invitation
       const { data: existingInvite } = await supabase
         .from('invitations')
         .select('id')
@@ -96,20 +91,16 @@ export default function Team() {
         .eq('invite_status', 'pending')
         .ilike('email', normalizedEmail)
         .maybeSingle();
-
       if (existingInvite) {
         toast({ variant: 'destructive', title: 'Invitation already sent', description: 'A pending invitation already exists for this email.' });
         setInviting(false);
         return;
       }
-
       const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
-
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
-
       const { error } = await supabase.from('invitations').insert({
         tenant_id: user?.tenant_id,
         email: inviteEmail,
@@ -119,17 +110,13 @@ export default function Team() {
         expires_at: expiresAt.toISOString(),
         invite_status: 'pending'
       });
-
       if (error) throw error;
-
       const inviteLink = `${window.location.origin}/invite/${token}`;
       await navigator.clipboard.writeText(inviteLink);
-
       toast({
         title: '✅ Invitation created!',
         description: 'Invite link copied to clipboard. Share it with your team member.'
       });
-
       setInviteModal(false);
       setInviteEmail('');
       setInviteRole('viewer');
@@ -142,15 +129,17 @@ export default function Team() {
   };
 
   // Toggle user active status
-  const handleToggleActive = async (userId: string, currentStatus: boolean | null) => {
+  const handleToggleActive = async (memberId: string, memberName: string, currentStatus: boolean | null) => {
+    if (currentStatus) {
+      const confirmed = window.confirm(`Are you sure you want to deactivate ${memberName || 'this user'}?`);
+      if (!confirmed) return;
+    }
     try {
       const { error } = await supabase
         .from('users')
         .update({ is_active: !currentStatus })
-        .eq('id', userId);
-
+        .eq('id', memberId);
       if (error) throw error;
-
       toast({ title: currentStatus ? 'User deactivated' : 'User activated' });
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
     } catch (err: any) {
@@ -158,26 +147,64 @@ export default function Team() {
     }
   };
 
+  // Open change role dialog
+  const openRoleDialog = (member: any) => {
+    setRoleTarget({ id: member.id, name: member.full_name || member.email, currentRole: member.role });
+    setNewRole(member.role);
+    setRoleModal(true);
+  };
+
+  // Save role change
+  const handleSaveRole = async () => {
+    if (!roleTarget || newRole === roleTarget.currentRole) {
+      setRoleModal(false);
+      return;
+    }
+    setSavingRole(true);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ role: newRole })
+        .eq('id', roleTarget.id);
+      if (error) throw error;
+      toast({ title: 'Role updated', description: `${roleTarget.name} is now ${roleLabels[newRole] || newRole}.` });
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      setRoleModal(false);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    } finally {
+      setSavingRole(false);
+    }
+  };
+
   // Cancel invitation
-  const handleCancelInvitation = async (invitationId: string) => {
+  const handleCancelInvitation = async (invitationId: string, email: string) => {
+    const confirmed = window.confirm(`Cancel invitation for ${email}?`);
+    if (!confirmed) return;
     try {
       const { error } = await supabase
         .from('invitations')
         .update({ invite_status: 'cancelled' })
         .eq('id', invitationId);
-
       if (error) throw error;
-
       toast({ title: 'Invitation cancelled' });
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
     } catch (err: any) {
+      console.error('Failed to cancel invitation:', err);
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
 
+  // Resend / copy invite link
+  const handleResendLink = async (token: string) => {
+    const inviteLink = `${window.location.origin}/invite/${token}`;
+    await navigator.clipboard.writeText(inviteLink);
+    toast({ title: 'Invite link copied to clipboard' });
+  };
+
   const roleLabels: Record<string, string> = {
     platform_admin: 'Platform Admin',
-    tenant_admin: 'Admin',
+    tenant_admin: 'Administrator',
     accountant: 'Accountant',
     viewer: 'Viewer'
   };
@@ -235,19 +262,32 @@ export default function Team() {
                     {member.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                   {member.id !== user?.id && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
+                    <>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openRoleDialog(member)} title="Change Role">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      {member.is_active ? (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => handleToggleActive(member.id, member.full_name, member.is_active)}
+                          title="Deactivate"
+                        >
+                          <UserX className="h-3.5 w-3.5" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-popover">
-                        <DropdownMenuItem onClick={() => handleToggleActive(member.id, member.is_active)}>
-                          <UserX className="h-4 w-4 mr-2" />
-                          {member.is_active ? 'Deactivate' : 'Activate'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 text-green-600 hover:text-green-700"
+                          onClick={() => handleToggleActive(member.id, member.full_name, member.is_active)}
+                          title="Activate"
+                        >
+                          <UserCheck className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -282,7 +322,11 @@ export default function Team() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">{roleLabels[inv.role] || inv.role}</Badge>
-                    <Button variant="ghost" size="sm" onClick={() => handleCancelInvitation(inv.id)}>
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => handleResendLink(inv.token)}>
+                      <Link2 className="h-3.5 w-3.5" />
+                      Copy Link
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleCancelInvitation(inv.id, inv.email)}>
                       Cancel
                     </Button>
                   </div>
@@ -327,6 +371,41 @@ export default function Team() {
             <Button variant="outline" onClick={() => setInviteModal(false)}>Cancel</Button>
             <Button onClick={handleInvite} disabled={inviting}>
               {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create & Copy Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Role Modal */}
+      <Dialog open={roleModal} onOpenChange={setRoleModal}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Change Role</DialogTitle>
+          </DialogHeader>
+          {roleTarget && (
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                Change role for <span className="font-medium text-foreground">{roleTarget.name}</span>
+              </p>
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <Select value={newRole} onValueChange={setNewRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tenant_admin">Administrator</SelectItem>
+                    <SelectItem value="accountant">Accountant</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleModal(false)}>Cancel</Button>
+            <Button onClick={handleSaveRole} disabled={savingRole}>
+              {savingRole ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
