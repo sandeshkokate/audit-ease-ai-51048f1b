@@ -23,11 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const { data, error } = await supabase.rpc('get_my_profile').maybeSingle();
 
       if (error || !data) {
         console.error('Failed to fetch user profile:', error?.message);
@@ -35,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setUser(data as User);
+      setUser(data as unknown as User);
     } catch (err) {
       console.error('Error fetching user profile:', err);
       setUser(null);
