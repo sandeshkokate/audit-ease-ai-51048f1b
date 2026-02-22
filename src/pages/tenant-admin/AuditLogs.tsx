@@ -114,7 +114,7 @@ export default function AuditLogs() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Status</SelectItem><SelectItem value="detected">Detected</SelectItem><SelectItem value="disputed">Disputed</SelectItem><SelectItem value="resolved">Resolved</SelectItem><SelectItem value="rejected">Rejected</SelectItem></SelectContent></Select>
-        <Select value={courierFilter} onValueChange={setCourierFilter}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Couriers</SelectItem>{['Delhivery','BlueDart','DTDC','Ecom Express','Shadowfax'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+        <Select value={courierFilter} onValueChange={setCourierFilter}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Couriers</SelectItem>{[...new Set(auditLogs.map((l: any) => l.courier_name).filter(Boolean))].sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger className="w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Types</SelectItem>{['weight','zone','rto','cod','other'].map(t => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}</SelectContent></Select>
       </div>
 
