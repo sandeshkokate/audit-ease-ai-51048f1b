@@ -30,13 +30,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !data) {
+        console.error('Failed to fetch user profile:', error?.message);
         setUser(null);
         return;
       }
 
       setUser(data as User);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -63,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setLoading(false);
       }
+    }).catch(() => {
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
