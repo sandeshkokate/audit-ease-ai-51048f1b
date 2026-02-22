@@ -72,6 +72,37 @@ export default function Team() {
 
     setInviting(true);
     try {
+      const normalizedEmail = inviteEmail.trim().toLowerCase();
+
+      // Check if user already exists in this tenant
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('tenant_id', user?.tenant_id)
+        .ilike('email', normalizedEmail)
+        .maybeSingle();
+
+      if (existingUser) {
+        toast({ variant: 'destructive', title: 'User already exists', description: 'This email is already a member of your team.' });
+        setInviting(false);
+        return;
+      }
+
+      // Check if there's already a pending invitation
+      const { data: existingInvite } = await supabase
+        .from('invitations')
+        .select('id')
+        .eq('tenant_id', user?.tenant_id)
+        .eq('invite_status', 'pending')
+        .ilike('email', normalizedEmail)
+        .maybeSingle();
+
+      if (existingInvite) {
+        toast({ variant: 'destructive', title: 'Invitation already sent', description: 'A pending invitation already exists for this email.' });
+        setInviting(false);
+        return;
+      }
+
       const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
