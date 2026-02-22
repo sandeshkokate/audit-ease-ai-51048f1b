@@ -10,11 +10,19 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Save, Loader2, Building2, Plus } from 'lucide-react';
+
+const COURIER_OPTIONS = ['Delhivery', 'BlueDart', 'DTDC', 'Ecom Express', 'XpressBees', 'Shadowfax', 'Ekart', 'Other'];
+
+const RATE_STRUCTURE_PLACEHOLDER = `{
+  "A": { "0-0.5": 30, "0.5-1": 40, "1-2": 55 },
+  "B": { "0-0.5": 35, "0.5-1": 50, "1-2": 65 }
+}`;
 
 export default function TenantSettings() {
   useDocumentTitle('Settings');
@@ -33,6 +41,19 @@ export default function TenantSettings() {
     email_disputes: true, email_recoveries: true, email_invoices: true,
     email_weekly_report: false, email_new_upload: true,
   });
+
+  // Rate card modal state
+  const [rateCardModal, setRateCardModal] = useState(false);
+  const [rateCardForm, setRateCardForm] = useState({
+    courier_name: '',
+    effective_from: '',
+    effective_to: '',
+    divisor: 5000,
+    min_chargeable_weight: 0.5,
+    rto_percentage: 50,
+    rate_structure_json: '',
+  });
+  const [addingRate, setAddingRate] = useState(false);
 
   // Fetch tenant profile
   const { data: tenantData, isLoading: loadingTenant } = useQuery({
@@ -116,6 +137,43 @@ export default function TenantSettings() {
     }
   };
 
+  const handleAddRateCard = async () => {
+    if (!rateCardForm.courier_name || !rateCardForm.effective_from) {
+      toast({ variant: 'destructive', title: 'Courier name and effective date are required' });
+      return;
+    }
+    setAddingRate(true);
+    try {
+      let rateStructure = {};
+      if (rateCardForm.rate_structure_json.trim()) {
+        rateStructure = JSON.parse(rateCardForm.rate_structure_json);
+      }
+      const { error } = await supabase.from('rate_cards').insert({
+        tenant_id: tenantId,
+        courier_name: rateCardForm.courier_name,
+        effective_from: rateCardForm.effective_from,
+        effective_to: rateCardForm.effective_to || null,
+        divisor: rateCardForm.divisor,
+        min_chargeable_weight: rateCardForm.min_chargeable_weight,
+        rto_percentage: rateCardForm.rto_percentage,
+        rate_structure: rateStructure,
+        is_active: true,
+        created_by: user?.id,
+      });
+      if (error) throw error;
+      toast({ title: 'Rate card added successfully' });
+      setRateCardModal(false);
+      setRateCardForm({ courier_name: '', effective_from: '', effective_to: '', divisor: 5000, min_chargeable_weight: 0.5, rto_percentage: 50, rate_structure_json: '' });
+      queryClient.invalidateQueries({ queryKey: ['tenant-rate-cards', tenantId] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    } finally {
+      setAddingRate(false);
+    }
+  };
+
+  const updateRate = (key: string, value: any) => setRateCardForm(s => ({ ...s, [key]: value }));
+
   const rateColumns: Column<any>[] = [
     { key: 'courier_name', header: 'Courier', sortable: true },
     { key: 'effective_from', header: 'Effective From', render: (r) => r.effective_from ? new Date(r.effective_from).toLocaleDateString() : '-' },
@@ -197,7 +255,7 @@ export default function TenantSettings() {
         <TabsContent value="ratecards" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Manage your courier rate cards for accurate discrepancy detection.</p>
-            <Button variant="hero" size="sm" className="gap-2" onClick={() => toast({ title: 'Add rate card form coming soon' })}><Plus className="h-4 w-4" /> Add Rate</Button>
+            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}><Plus className="h-4 w-4" /> Add Rate Card</Button>
           </div>
           {loadingRates ? (
             <div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -231,6 +289,66 @@ export default function TenantSettings() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Add Rate Card Modal */}
+      <Dialog open={rateCardModal} onOpenChange={setRateCardModal}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Rate Card</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label>Courier Name *</Label>
+              <Select value={rateCardForm.courier_name} onValueChange={(v) => updateRate('courier_name', v)}>
+                <SelectTrigger><SelectValue placeholder="Select courier" /></SelectTrigger>
+                <SelectContent>
+                  {COURIER_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Effective From *</Label>
+                <Input type="date" value={rateCardForm.effective_from} onChange={e => updateRate('effective_from', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Effective To</Label>
+                <Input type="date" value={rateCardForm.effective_to} onChange={e => updateRate('effective_to', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label>Volumetric Divisor</Label>
+                <Input type="number" value={rateCardForm.divisor} onChange={e => updateRate('divisor', Number(e.target.value))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Min Weight (kg)</Label>
+                <Input type="number" step="0.1" value={rateCardForm.min_chargeable_weight} onChange={e => updateRate('min_chargeable_weight', Number(e.target.value))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>RTO %</Label>
+                <Input type="number" value={rateCardForm.rto_percentage} onChange={e => updateRate('rto_percentage', Number(e.target.value))} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Zone-wise rates (JSON format — zone → weight_slab → rate)</Label>
+              <Textarea
+                rows={6}
+                className="font-mono text-xs"
+                placeholder={RATE_STRUCTURE_PLACEHOLDER}
+                value={rateCardForm.rate_structure_json}
+                onChange={e => updateRate('rate_structure_json', e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRateCardModal(false)}>Cancel</Button>
+            <Button onClick={handleAddRateCard} disabled={addingRate}>
+              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Rate Card'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
