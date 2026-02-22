@@ -11,8 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency, downloadCSV } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
   detected: 'bg-warning/10 text-warning border-warning/20',
@@ -88,7 +88,23 @@ export default function AuditLogs() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-foreground">Audit Logs</h1><p className="text-sm text-muted-foreground">All audited shipments and discrepancies</p></div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(filtered.map(l => ({ AWB: l.awb, Courier: l.courier_name, Type: l.has_weight_discrepancy ? 'weight' : l.has_zone_discrepancy ? 'zone' : 'other', Amount: l.discrepancy_amount, Status: l.dispute_status })), 'audit_logs')}>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(filtered.map(l => ({
+          AWB: l.awb,
+          Courier: l.courier_name,
+          Order_ID: l.order_id,
+          Discrepancy_Type: l.has_weight_discrepancy ? 'Weight' : l.has_zone_discrepancy ? 'Zone' : l.has_rto_overcharge ? 'RTO' : 'Other',
+          Charged_Weight: l.charged_weight,
+          Expected_Weight: l.max_expected_weight,
+          Charged_Zone: l.charged_zone,
+          Expected_Zone: l.expected_zone,
+          Billed_Amount: l.billed_amount,
+          Expected_Amount: l.expected_amount,
+          Discrepancy_Amount: l.discrepancy_amount,
+          Dispute_Status: l.dispute_status,
+          Recovery_Amount: l.recovery_amount || 0,
+          Shipment_Status: l.shipment_status,
+          Created_At: l.created_at ? new Date(l.created_at).toLocaleDateString() : '',
+        })), 'audit_logs')}>
           <Download className="h-4 w-4" /> Export CSV
         </Button>
       </div>
@@ -122,57 +138,111 @@ export default function AuditLogs() {
 
       {/* Detail Modal */}
       <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>AWB: {selectedLog?.awb}</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Shipment Details</DialogTitle></DialogHeader>
           {selectedLog && (
-            <div className="grid gap-6 sm:grid-cols-2 py-2">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-muted-foreground text-xs">Courier</p><p className="font-medium">{selectedLog.courier_name}</p></div>
-                  <div><p className="text-muted-foreground text-xs">Order ID</p><p className="font-medium">{selectedLog.order_id}</p></div>
-                  <div><p className="text-muted-foreground text-xs">Zone (Charged/Expected)</p><p className="font-medium">{selectedLog.charged_zone} → {selectedLog.expected_zone}</p></div>
-                  <div><p className="text-muted-foreground text-xs">Type</p><Badge variant="outline" className="capitalize">{selectedLog.has_weight_discrepancy ? 'weight' : selectedLog.has_zone_discrepancy ? 'zone' : selectedLog.has_rto_overcharge ? 'rto' : 'other'}</Badge></div>
+            <div className="space-y-4 py-2">
+              {/* Shipment Summary */}
+              <Card className="shadow-card">
+                <CardContent className="p-4 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Shipment Summary</p>
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                    <span className="text-lg font-bold text-foreground">{selectedLog.awb || '-'}</span>
+                    <span className="text-sm text-muted-foreground">{selectedLog.courier_name}</span>
+                    <span className="text-sm text-muted-foreground">Order: {selectedLog.order_id}</span>
+                    <Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{selectedLog.dispute_status}</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+                    <span>Shipment: <span className="text-foreground font-medium">{selectedLog.shipment_status ?? '-'}</span></span>
+                    <span>Created: <span className="text-foreground font-medium">{selectedLog.created_at ? format(new Date(selectedLog.created_at), 'dd MMM yyyy') : '-'}</span></span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Discrepancy Analysis */}
+              <Card className="shadow-card">
+                <CardContent className="p-4 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Discrepancy Analysis</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground">Billed (Courier charged)</p>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span className="font-medium">{selectedLog.charged_weight ?? '-'} kg</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Zone</span><span className="font-medium">{selectedLog.charged_zone ?? '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-medium">{formatCurrency(selectedLog.billed_amount ?? 0)}</span></div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground">Expected (Your rate card)</p>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Weight</span><span className="font-medium">{selectedLog.max_expected_weight ?? '-'} kg</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Zone</span><span className="font-medium">{selectedLog.expected_zone ?? '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-medium">{formatCurrency(selectedLog.expected_amount ?? 0)}</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  {(selectedLog.discrepancy_amount ?? 0) > 0 && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-center">
+                      <span className="text-sm text-destructive">Overcharge: </span>
+                      <span className="text-xl font-bold text-destructive">{formatCurrency(selectedLog.discrepancy_amount)}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Weight Details */}
+              <Card className="shadow-card">
+                <CardContent className="p-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Weight Details</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                    <div><p className="text-muted-foreground text-xs">Dead Weight</p><p className="font-medium">{selectedLog.dead_weight ?? '-'} kg</p></div>
+                    <div><p className="text-muted-foreground text-xs">Volumetric</p><p className="font-medium">{selectedLog.volumetric_weight ?? '-'} kg</p></div>
+                    <div><p className="text-muted-foreground text-xs">Max Expected</p><p className="font-medium">{selectedLog.max_expected_weight ?? '-'} kg</p></div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Charged</p>
+                      <p className={`font-medium ${selectedLog.charged_weight && selectedLog.max_expected_weight && selectedLog.charged_weight > selectedLog.max_expected_weight ? 'text-destructive' : ''}`}>
+                        {selectedLog.charged_weight ?? '-'} kg
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Discrepancy Reasons */}
+              {selectedLog.discrepancy_reasons && Array.isArray(selectedLog.discrepancy_reasons) && selectedLog.discrepancy_reasons.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Discrepancy Reasons</p>
+                  {selectedLog.discrepancy_reasons.map((issue: any, i: number) => {
+                    const Icon = issue.type === 'weight' ? Weight : issue.type === 'zone' ? MapPin : RotateCcw;
+                    return (
+                      <Card key={i} className="border-destructive/10 bg-destructive/5">
+                        <CardContent className="p-3 flex items-start gap-3">
+                          <Icon className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium capitalize">{issue.type} Discrepancy</p>
+                            <p className="text-xs text-muted-foreground">{issue.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-                <Card className="bg-muted/30"><CardContent className="p-4 space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Weight Calculation</p>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div><span className="text-muted-foreground">Dead Weight:</span> <span className="font-medium">{selectedLog.dead_weight ?? '-'} kg</span></div>
-                    <div><span className="text-muted-foreground">Volumetric:</span> <span className="font-medium">{selectedLog.volumetric_weight ?? '-'} kg</span></div>
-                    <div><span className="text-muted-foreground">Expected:</span> <span className="font-medium">{selectedLog.max_expected_weight ?? '-'} kg</span></div>
-                    <div><span className="text-muted-foreground">Charged:</span> <span className="font-medium text-destructive">{selectedLog.charged_weight ?? '-'} kg</span></div>
-                  </div>
-                </CardContent></Card>
-                <Card className="bg-muted/30"><CardContent className="p-4 space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Amounts</p>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div><span className="text-muted-foreground">Billed:</span> <span className="font-medium">{formatCurrency(selectedLog.billed_amount ?? 0)}</span></div>
-                    <div><span className="text-muted-foreground">Expected:</span> <span className="font-medium">{formatCurrency(selectedLog.expected_amount ?? 0)}</span></div>
-                    <div className="col-span-2"><span className="text-muted-foreground">Discrepancy:</span> <span className="font-bold text-destructive">{formatCurrency(selectedLog.discrepancy_amount ?? 0)}</span></div>
-                  </div>
-                </CardContent></Card>
-                {selectedLog.discrepancy_reasons && Array.isArray(selectedLog.discrepancy_reasons) && selectedLog.discrepancy_reasons.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase">Discrepancy Reasons</p>
-                    {selectedLog.discrepancy_reasons.map((issue: any, i: number) => (
-                      <Card key={i} className="bg-destructive/5 border-destructive/10"><CardContent className="p-3">
-                        <p className="text-sm font-medium capitalize">{issue.type} Issue</p>
-                        <p className="text-xs text-muted-foreground">{issue.description}</p>
-                      </CardContent></Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Details</p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{selectedLog.dispute_status}</Badge></div>
-                  <div><span className="text-muted-foreground">Shipment:</span> <span className="font-medium">{selectedLog.shipment_status ?? '-'}</span></div>
-                  <div><span className="text-muted-foreground">Created:</span> <span className="font-medium">{selectedLog.created_at ? new Date(selectedLog.created_at).toLocaleString() : '-'}</span></div>
-                  {selectedLog.dispute_raised_date && <div><span className="text-muted-foreground">Disputed:</span> <span className="font-medium">{new Date(selectedLog.dispute_raised_date).toLocaleDateString()}</span></div>}
-                  {selectedLog.recovery_date && <div><span className="text-muted-foreground">Recovered:</span> <span className="font-medium">{new Date(selectedLog.recovery_date).toLocaleDateString()}</span></div>}
-                  {selectedLog.recovery_amount && <div><span className="text-muted-foreground">Recovery Amt:</span> <span className="font-medium text-success">{formatCurrency(selectedLog.recovery_amount)}</span></div>}
-                </div>
-              </div>
+              )}
+
+              {/* Recovery Status */}
+              {selectedLog.dispute_status !== 'no_issue' && (
+                <Card className="shadow-card">
+                  <CardContent className="p-4 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recovery Status</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{selectedLog.dispute_status}</Badge></div>
+                      <div><p className="text-muted-foreground text-xs">Dispute Raised</p><p className="font-medium">{selectedLog.dispute_raised_date ? format(new Date(selectedLog.dispute_raised_date), 'dd MMM yyyy') : '-'}</p></div>
+                      <div><p className="text-muted-foreground text-xs">Recovery Date</p><p className="font-medium">{selectedLog.recovery_date ? format(new Date(selectedLog.recovery_date), 'dd MMM yyyy') : '-'}</p></div>
+                      <div><p className="text-muted-foreground text-xs">Recovery Amount</p><p className="font-medium text-success">{selectedLog.recovery_amount ? formatCurrency(selectedLog.recovery_amount) : '-'}</p></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </DialogContent>
