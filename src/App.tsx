@@ -75,6 +75,7 @@ const App = () => (
                   <PlatformAdminLayout />
                 </ProtectedRoute>
               }>
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<PlatformDashboard />} />
                 <Route path="tenants" element={<Tenants />} />
                 <Route path="users" element={<UsersPage />} />
@@ -90,6 +91,7 @@ const App = () => (
                   <TenantAdminLayout />
                 </ProtectedRoute>
               }>
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<TenantDashboard />} />
                 <Route path="upload" element={<UploadCSV />} />
                 <Route path="audit-logs" element={<AuditLogs />} />
@@ -107,6 +109,7 @@ const App = () => (
                   <AccountantLayout />
                 </ProtectedRoute>
               }>
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<AccountantDashboard />} />
                 <Route path="invoices" element={<AccountantInvoices />} />
                 <Route path="reports" element={<AccountantReports />} />
@@ -118,6 +121,7 @@ const App = () => (
                   <ViewerLayout />
                 </ProtectedRoute>
               }>
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<ViewerDashboard />} />
                 <Route path="reports" element={<ViewerReports />} />
               </Route>
