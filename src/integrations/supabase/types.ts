@@ -1256,6 +1256,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auth_user_role: { Args: never; Returns: string }
+      auth_user_tenant_id: { Args: never; Returns: string }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       get_my_claim: { Args: { claim: string }; Returns: string }
       get_my_profile: {
