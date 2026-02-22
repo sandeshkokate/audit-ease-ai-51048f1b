@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import HelpWidget from "@/components/shared/HelpWidget";
@@ -48,6 +48,20 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 import NotFound from "./pages/NotFound";
 
+const ROLE_DASHBOARDS: Record<string, string> = {
+  platform_admin: '/platform-admin/dashboard',
+  tenant_admin: '/tenant-admin/dashboard',
+  accountant: '/accountant/dashboard',
+  viewer: '/viewer/dashboard',
+};
+
+function HomeRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <Landing />;
+  if (user?.role && ROLE_DASHBOARDS[user.role]) return <Navigate to={ROLE_DASHBOARDS[user.role]} replace />;
+  return <Landing />;
+}
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -59,7 +73,7 @@ const App = () => (
         <AuthProvider>
           <ErrorBoundary>
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<HomeRoute />} />
               <Route path="/contact" element={<Suspense fallback={null}><Contact /></Suspense>} />
               <Route path="/about" element={<Suspense fallback={null}><About /></Suspense>} />
               <Route path="/privacy" element={<Suspense fallback={null}><Privacy /></Suspense>} />
