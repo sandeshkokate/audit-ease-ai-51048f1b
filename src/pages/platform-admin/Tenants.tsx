@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency } from '@/lib/utils';
-import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus } from 'lucide-react';
+import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -95,6 +95,7 @@ export default function Tenants() {
       setEditTenant(null);
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
+      console.error('Action failed:', err);
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
@@ -140,17 +141,33 @@ export default function Tenants() {
       toast({ title: `${tenant.name} approved` });
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
+      console.error('Action failed:', err);
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
 
   const handleSuspend = async (tenant: any) => {
+    if (!window.confirm(`Are you sure you want to suspend ${tenant.name}?`)) return;
     try {
       const { error } = await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tenant.id);
       if (error) throw error;
       toast({ title: `${tenant.name} suspended` });
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
+      console.error('Action failed:', err);
+      toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  const handleReactivate = async (tenant: any) => {
+    if (!window.confirm(`Are you sure you want to reactivate ${tenant.name}?`)) return;
+    try {
+      const { error } = await supabase.from('tenants').update({ status: 'active' }).eq('id', tenant.id);
+      if (error) throw error;
+      toast({ title: `${tenant.name} reactivated` });
+      queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
+    } catch (err: any) {
+      console.error('Action failed:', err);
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
@@ -181,17 +198,22 @@ export default function Tenants() {
       key: 'actions', header: 'Actions',
       render: (row) => (
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(row)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
           {row.status === 'pending' && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(row)}>
               <CheckCircle2 className="h-4 w-4" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(row)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
           {row.status === 'active' && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleSuspend(row)}>
               <Ban className="h-4 w-4" />
+            </Button>
+          )}
+          {row.status === 'suspended' && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => handleReactivate(row)}>
+              <RefreshCw className="h-4 w-4" />
             </Button>
           )}
         </div>
