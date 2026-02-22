@@ -36,16 +36,36 @@ export default function Contact() {
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CONTACT || '';
 
       if (!webhookUrl) {
-        const { error } = await supabase.from('leads').insert({
-          name: formData.name,
-          email: formData.email,
-          company: formData.company,
-          phone: formData.phone,
-          monthly_shipments: formData.monthlyShipments,
-          message: formData.message,
-          source: 'contact_form'
-        });
-        if (error) throw error;
+        const { data: existingLead } = await supabase
+          .from('leads')
+          .select('id')
+          .ilike('email', formData.email.trim())
+          .maybeSingle();
+
+        if (existingLead) {
+          const { error } = await supabase
+            .from('leads')
+            .update({
+              name: formData.name,
+              company: formData.company,
+              phone: formData.phone,
+              monthly_shipments: formData.monthlyShipments,
+              message: formData.message,
+            })
+            .eq('id', existingLead.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('leads').insert({
+            name: formData.name,
+            email: formData.email,
+            company: formData.company,
+            phone: formData.phone,
+            monthly_shipments: formData.monthlyShipments,
+            message: formData.message,
+            source: 'contact_form'
+          });
+          if (error) throw error;
+        }
       } else {
         const response = await fetch(webhookUrl, {
           method: 'POST',
