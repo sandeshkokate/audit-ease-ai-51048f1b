@@ -122,7 +122,7 @@ export default function Signup() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -139,6 +139,49 @@ export default function Signup() {
         },
       });
       if (error) throw error;
+
+      const userId = authData.user?.id;
+      if (userId) {
+        // Create tenant record
+        const { data: tenant, error: tenantError } = await supabase
+          .from('tenants')
+          .insert({
+            company_name: companyName.trim(),
+            contact_email: email.trim(),
+            contact_person: fullName.trim(),
+            contact_phone: phone.trim() || null,
+            gstin: gstin.trim().toUpperCase() || null,
+            address: address.trim() || null,
+            city: city.trim() || null,
+            state: state || null,
+            pincode: pincode.trim() || null,
+            subscription_plan: 'starter',
+            status: 'pending',
+            onboarding_date: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+
+        if (tenantError) throw tenantError;
+
+        // Upsert user profile (handles race condition with DB trigger)
+        const { error: userError } = await supabase
+          .from('users')
+          .upsert({
+            id: userId,
+            email: email.trim(),
+            full_name: fullName.trim(),
+            role: 'tenant_admin',
+            tenant_id: tenant.id,
+            phone: phone.trim() || null,
+            is_active: true,
+          }, { onConflict: 'id' });
+
+        if (userError) throw userError;
+
+        await supabase.auth.signOut();
+      }
+
       setStep(2);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Signup Failed', description: err?.message || 'Something went wrong' });
