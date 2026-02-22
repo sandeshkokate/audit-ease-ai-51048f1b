@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { format, subMonths } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +19,8 @@ export default function Invoices() {
   useDocumentTitle('Invoices');
   const { user } = useAuth();
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
-  const [generateMonth, setGenerateMonth] = useState('');
+  const [generateMonth, setGenerateMonth] = useState(() => format(subMonths(new Date(), 1), 'MMMM yyyy'));
+  const monthOptions = useMemo(() => Array.from({ length: 12 }, (_, i) => format(subMonths(new Date(), i), 'MMMM yyyy')), []);
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
 
@@ -107,7 +109,7 @@ export default function Invoices() {
           <Select value={generateMonth} onValueChange={setGenerateMonth}>
             <SelectTrigger className="w-48"><SelectValue placeholder="Select month" /></SelectTrigger>
             <SelectContent>
-              {['January 2026', 'February 2026', 'March 2026', 'December 2025', 'November 2025'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              {monthOptions.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
             </SelectContent>
           </Select>
           <Button variant="hero" className="gap-2" onClick={handleGenerate} disabled={generating}>
