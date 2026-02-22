@@ -9,8 +9,21 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const REQUIRED_COLUMNS = ['awb_number', 'courier', 'weight', 'zone', 'amount', 'order_id'];
-const SAMPLE_CSV = `awb_number,courier,weight,zone,amount,order_id,dimensions_l,dimensions_w,dimensions_h\nAWB100001,Delhivery,2.5,B,125.00,ORD-5001,20,15,10\nAWB100002,BlueDart,1.8,A,95.50,ORD-5002,15,12,8`;
+const REQUIRED_COLUMNS = [
+  'awb_number', 'courier', 'order_id', 'shipment_status',
+  'charged_weight', 'dead_weight', 'length', 'width', 'height',
+  'charged_zone', 'origin_pincode', 'destination_pincode',
+  'billed_amount', 'is_rto', 'payment_mode'
+];
+
+const OPTIONAL_COLUMNS = ['cod_amount', 'delivery_date', 'pickup_date', 'product_name', 'sku'];
+
+const SAMPLE_CSV = `awb_number,courier,order_id,shipment_status,charged_weight,dead_weight,length,width,height,charged_zone,origin_pincode,destination_pincode,billed_amount,is_rto,payment_mode
+AWB100001,Delhivery,ORD-5001,delivered,2.5,1.8,20,15,10,B,400001,110001,125.00,no,prepaid
+AWB100002,BlueDart,ORD-5002,delivered,1.8,1.2,15,12,8,A,400001,400071,95.50,no,cod
+AWB100003,DTDC,ORD-5003,rto,3.0,2.0,25,20,15,D,400001,560001,210.00,yes,prepaid
+AWB100004,Ecom Express,ORD-5004,delivered,0.5,0.3,10,8,5,C,400001,700001,68.00,no,prepaid
+AWB100005,XpressBees,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,no,cod`;
 
 export default function UploadCSV() {
   useDocumentTitle('Upload CSV');
@@ -134,6 +147,10 @@ export default function UploadCSV() {
     col,
     found: headers.includes(col),
   }));
+  const optionalChecklist = OPTIONAL_COLUMNS.map(col => ({
+    col,
+    found: headers.includes(col),
+  }));
   const allValid = validationChecklist.every(v => v.found);
 
   return (
@@ -183,17 +200,32 @@ export default function UploadCSV() {
           {/* Validation Checklist */}
           <Card className="shadow-card">
             <CardHeader className="pb-3"><CardTitle className="text-base">Column Validation</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {validationChecklist.map(v => (
-                  <div key={v.col} className="flex items-center gap-2 text-sm">
-                    {v.found ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
-                    <span className={v.found ? 'text-foreground' : 'text-destructive'}>{v.col}</span>
-                  </div>
-                ))}
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">Ensure your CSV contains these required columns. Column names are case-insensitive.</p>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">Required columns:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {validationChecklist.map(v => (
+                    <div key={v.col} className="flex items-center gap-2 text-sm">
+                      {v.found ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                      <span className={v.found ? 'text-foreground' : 'text-destructive'}>{v.col}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Optional columns (enhance audit accuracy):</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {optionalChecklist.map(v => (
+                    <div key={v.col} className="flex items-center gap-2 text-sm">
+                      {v.found ? <CheckCircle2 className="h-4 w-4 text-success" /> : <span className="h-4 w-4 rounded-full border border-muted-foreground/30 inline-block" />}
+                      <span className="text-muted-foreground">{v.col}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               {!allValid && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-warning">
+                <div className="flex items-center gap-2 text-sm text-warning">
                   <AlertTriangle className="h-4 w-4" /> Some required columns are missing
                 </div>
               )}
