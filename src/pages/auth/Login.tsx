@@ -41,65 +41,31 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
-      const userEmail = authData.user?.email || '';
-      const emailDomain = userEmail.split('@')[1] || '';
-
-      // Try to find matching tenant by email domain
-      const findTenantId = async (): Promise<string | null> => {
-        const { data: tenant } = await supabase
-          .from('tenants')
-          .select('id')
-          .ilike('contact_email', `%${emailDomain}`)
-          .limit(1)
-          .maybeSingle();
-        return tenant?.id || null;
-      };
-
-      let { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('users')
-        .select('role, tenant_id')
+        .select('role, tenant_id, is_active')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
-        // Auto-create profile if missing (for pre-existing auth users)
-        const meta = authData.user?.user_metadata || {};
-        const tenantId = await findTenantId();
-        const { data: created, error: createErr } = await supabase
-          .from('users')
-          .insert({
-            id: userId,
-            email: userEmail,
-            role: meta.role || 'tenant_admin',
-            full_name: meta.full_name || userEmail.split('@')[0],
-            tenant_id: tenantId,
-          })
-          .select('role, tenant_id')
-          .single();
-        if (createErr || !created) {
-          toast({ variant: 'destructive', title: 'Account setup failed', description: 'Could not create user profile.' });
-          await supabase.auth.signOut();
-          return;
-        }
-        profile = created;
-      } else if (!profile.tenant_id) {
-        // Fix existing profile with missing tenant_id
-        const tenantId = await findTenantId();
-        if (tenantId) {
-          await supabase
-            .from('users')
-            .update({ tenant_id: tenantId })
-            .eq('id', userId);
-        }
+      if (!profile) {
+        await supabase.auth.signOut();
+        throw new Error('Account not found — please sign up or accept an invitation first.');
+      }
+
+      if (profile.is_active === false) {
+        await supabase.auth.signOut();
+        throw new Error('Your account has been deactivated. Contact your administrator.');
       }
 
       const role = profile.role as UserRole;
       navigate(ROLE_REDIRECTS[role] || '/');
-    } catch {
+
+      await supabase.from('users').update({ last_login: new Date().toISOString() }).eq('id', userId);
+    } catch (err: any) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Invalid email or password',
+        description: err?.message || 'Invalid email or password',
       });
     } finally {
       setLoading(false);
