@@ -3,11 +3,11 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import {
   BarChart3, Upload, ScrollText, Mail, IndianRupee,
   FileText, FileBarChart, Users, Settings, LogOut,
-  Bell, Menu, Shield, ChevronLeft,
+  Menu, Shield, ChevronLeft,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import HeaderActions from '@/components/shared/HeaderActions';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import Breadcrumbs from '@/components/shared/Breadcrumbs';
@@ -130,17 +130,7 @@ export default function TenantAdminLayout() {
               <p className="text-xs text-muted-foreground">{tenantInfo?.companyName || 'Loading...'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-            </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                {user?.full_name?.charAt(0) || 'T'}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <HeaderActions />
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <Breadcrumbs />
