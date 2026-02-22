@@ -50,7 +50,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   if (loading) return <LoadingSkeleton />;
   if (!session) return <Navigate to="/login" replace />;
 
-  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+  // Wait for user profile to load after session is available
+  if (!user) return <LoadingSkeleton />;
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     const dashboardUrl = ROLE_DASHBOARDS[user.role] || '/';
     return <Forbidden dashboardUrl={dashboardUrl} />;
   }
