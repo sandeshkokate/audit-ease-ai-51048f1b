@@ -288,9 +288,7 @@ export default function Landing() {
 
               {/* Sub */}
               <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-                Industry data shows 10–15% of courier invoices contain billing errors.
-                Our platform helps you detect discrepancies, generate dispute emails,
-                and recover your money.
+                What if I told you ₹12 out of every ₹100 you spend on shipping is an error — and we can prove it in 3 minutes with your data?
               </p>
 
               {/* CTAs */}
