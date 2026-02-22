@@ -4,7 +4,6 @@ import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,32 +20,16 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Rate limiting
-    if (lockoutUntil && Date.now() < lockoutUntil) {
-      const secondsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
-      toast({
-        variant: 'destructive',
-        title: 'Too many attempts',
-        description: `Please wait ${secondsLeft} seconds before trying again.`,
-      });
-      return;
-    }
-
     if (!email.trim() || !password) return;
 
     setLoading(true);
     try {
-      // Step 1: Authenticate with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -56,7 +39,7 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned');
 
-      // Step 2: Fetch profile using SECURITY DEFINER function (bypasses RLS)
+      // Use RPC function to bypass RLS — this is the critical fix
       const { data: profile, error: profileError } = await supabase
         .rpc('get_user_profile_for_login', { lookup_user_id: userId })
         .maybeSingle();
@@ -64,7 +47,7 @@ export default function Login() {
       if (profileError) {
         console.error('Profile fetch error:', profileError);
         await supabase.auth.signOut();
-        throw new Error('Unable to load your profile. Please contact support.');
+        throw new Error('Unable to load your profile. Please try again or contact support.');
       }
 
       if (!profile) {
@@ -77,22 +60,12 @@ export default function Login() {
         throw new Error('Your account has been deactivated. Contact your administrator.');
       }
 
-      // Step 3: Navigate to role-specific dashboard
       const role = profile.role as UserRole;
-      setFailedAttempts(0);
-      setLockoutUntil(null);
-
       navigate(ROLE_REDIRECTS[role] || '/');
 
-      // Step 4: Update last login (fire-and-forget, non-blocking)
+      // Fire-and-forget: update last login via RPC
       Promise.resolve(supabase.rpc('update_last_login', { lookup_user_id: userId })).catch(() => {});
     } catch (err: any) {
-      const newAttempts = failedAttempts + 1;
-      setFailedAttempts(newAttempts);
-      if (newAttempts >= 5) {
-        setLockoutUntil(Date.now() + 60000);
-        setFailedAttempts(0);
-      }
       toast({
         variant: 'destructive',
         title: 'Login Failed',
@@ -153,17 +126,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                />
-                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                  Remember me
-                </Label>
-              </div>
+            <div className="flex items-center justify-end">
               <Link
                 to="/forgot-password"
                 className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
