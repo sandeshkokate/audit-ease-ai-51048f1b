@@ -12,7 +12,7 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Download, Plus, Loader2 } from 'lucide-react';
+import { FileText, Download, Plus, Loader2, AlertTriangle } from 'lucide-react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function Invoices() {
@@ -24,7 +24,7 @@ export default function Invoices() {
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
 
-  const { data: invoices = [], isLoading } = useQuery({
+  const { data: invoices = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['invoices', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return [];
@@ -115,6 +115,21 @@ export default function Invoices() {
     return (
       <div className="flex justify-center p-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertTriangle className="h-5 w-5" />
+          <div>
+            <p className="font-semibold">Failed to load data</p>
+            <p className="text-sm text-muted-foreground">There was an error loading this page.</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>Try Again</Button>
       </div>
     );
   }
