@@ -109,7 +109,7 @@ export default function AcceptInvite() {
           .eq('id', invitation.id);
 
         toast({ title: '✅ You have been added to the team!', description: 'You can now log in.' });
-        navigate('/login');
+        navigate(`/login?email=${encodeURIComponent(invitation.email)}`);
         return;
       }
 
@@ -128,13 +128,25 @@ export default function AcceptInvite() {
 
       if (authError) throw authError;
 
+      // If email confirmation is required, session will be null
+      if (!authData.session) {
+        toast({
+          title: '✅ Account created!',
+          description: 'Please check your email to confirm your account before logging in.',
+        });
+        await supabase.from('invitations').update({ invite_status: 'accepted', accepted_at: new Date().toISOString() }).eq('id', invitation.id);
+        navigate(`/login?email=${encodeURIComponent(invitation.email)}`);
+        return;
+      }
+
       // Update invitation status
       await supabase
         .from('invitations')
         .update({ invite_status: 'accepted', accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      // Upsert user profile (handles race condition with DB trigger)
+      // Delay to avoid trigger race condition
+      await new Promise(r => setTimeout(r, 1200));
       if (authData.user) {
         await supabase
           .from('users')
@@ -150,7 +162,7 @@ export default function AcceptInvite() {
 
       toast({ title: '✅ Account created!', description: 'You can now log in.' });
       await supabase.auth.signOut();
-      navigate('/login');
+      navigate(`/login?email=${encodeURIComponent(invitation.email)}`);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     } finally {
@@ -162,6 +174,15 @@ export default function AcceptInvite() {
     tenant_admin: 'Administrator',
     accountant: 'Accountant',
     viewer: 'Viewer'
+  };
+
+  const getPasswordStrength = (pw: string) => {
+    if (pw.length < 8) return { label: 'Too short', color: 'text-destructive' };
+    const hasNum = /\d/.test(pw);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pw);
+    if (hasNum && hasSpecial) return { label: 'Strong ✓', color: 'text-success' };
+    if (hasNum || hasSpecial) return { label: 'Fair', color: 'text-warning' };
+    return { label: 'Weak', color: 'text-destructive' };
   };
 
   if (loading) {
@@ -232,6 +253,11 @@ export default function AcceptInvite() {
                 required
                 minLength={8}
               />
+              {formData.password && (
+                <p className={`text-xs mt-1 ${getPasswordStrength(formData.password).color}`}>
+                  Strength: {getPasswordStrength(formData.password).label}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
