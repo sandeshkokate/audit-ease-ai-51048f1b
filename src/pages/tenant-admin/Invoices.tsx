@@ -39,6 +39,78 @@ export default function Invoices() {
     enabled: !!user?.tenant_id
   });
 
+  const handleDownloadPDF = (invoice: any) => {
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      toast({ variant: 'destructive', title: 'Pop-up blocked', description: 'Please allow pop-ups for this site to download invoices.' });
+      return;
+    }
+
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Invoice ${invoice.invoice_number}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; color: #111; padding: 40px; max-width: 780px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .logo { font-size: 20px; font-weight: bold; color: #1a1a2e; }
+    .logo span { color: #6366f1; }
+    .invoice-title { text-align: right; }
+    .invoice-title h1 { font-size: 28px; color: #6366f1; font-weight: 700; }
+    .invoice-title p { color: #666; font-size: 14px; margin-top: 4px; }
+    .divider { border-top: 2px solid #e5e7eb; margin: 24px 0; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .meta-item label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+    .meta-item p { font-size: 14px; font-weight: 600; color: #111; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    th { background: #f3f4f6; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; }
+    td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+    .amount-col { text-align: right; }
+    .total-row td { font-weight: 700; font-size: 16px; border-top: 2px solid #111; border-bottom: none; }
+    .footer { margin-top: 40px; text-align: center; color: #888; font-size: 12px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-paid { background: #d1fae5; color: #065f46; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Audit<span>Ease</span> AI</div>
+    <div class="invoice-title">
+      <h1>INVOICE</h1>
+      <p>${invoice.invoice_number}</p>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="meta-grid">
+    <div class="meta-item"><label>Billing Period</label><p>${invoice.invoice_period_start} to ${invoice.invoice_period_end}</p></div>
+    <div class="meta-item"><label>Status</label><p><span class="badge ${invoice.status === 'paid' ? 'badge-paid' : 'badge-pending'}">${(invoice.status || 'pending').toUpperCase()}</span></p></div>
+    <div class="meta-item"><label>Invoice Date</label><p>${invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('en-IN') : '-'}</p></div>
+    <div class="meta-item"><label>Due Date</label><p>${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-IN') : 'On receipt'}</p></div>
+  </div>
+  <table>
+    <thead><tr><th>Description</th><th class="amount-col">Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Total Recovered from Couriers</td><td class="amount-col">₹${Number(invoice.total_recovered || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+      <tr><td>Platform Commission (${invoice.commission_percentage}%)</td><td class="amount-col">₹${Number(invoice.commission_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+      <tr><td>GST @ ${invoice.gst_percentage || 18}% on commission</td><td class="amount-col">₹${Number(invoice.gst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+      <tr class="total-row"><td>Total Amount Payable</td><td class="amount-col">₹${Number(invoice.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+    </tbody>
+  </table>
+  <div class="footer">
+    <p>AuditEase AI — Courier Billing Audit Platform</p>
+    <p>This is a computer-generated invoice.</p>
+  </div>
+</body>
+</html>
+    `);
+    printWindow.document.close();
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-12">
@@ -91,7 +163,7 @@ export default function Invoices() {
     { key: 'actions', header: '', render: (r) => (
       <div className="flex gap-1">
         <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(r)}>View</Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast({ title: 'PDF downloaded' })}><Download className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownloadPDF(r)}><Download className="h-4 w-4" /></Button>
       </div>
     )},
   ];
@@ -140,7 +212,7 @@ export default function Invoices() {
                 <div className="border-t border-border pt-2 flex justify-between"><span className="font-semibold">Net Payable</span><span className="font-bold text-primary">{formatCurrency(selectedInvoice.total_amount)}</span></div>
               </CardContent></Card>
               <div className="flex justify-end">
-                <Button variant="outline" className="gap-2" onClick={() => toast({ title: 'PDF downloaded' })}><Download className="h-4 w-4" /> Download PDF</Button>
+                <Button variant="outline" className="gap-2" onClick={() => handleDownloadPDF(selectedInvoice)}><Download className="h-4 w-4" /> Download PDF</Button>
               </div>
             </div>
           )}
