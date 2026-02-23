@@ -2,7 +2,7 @@ import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
+import { subMonths, format } from 'date-fns';
 import { formatDistanceToNow } from 'date-fns';
 import MetricCard from '@/components/dashboard/MetricCard';
 import ChartCard from '@/components/dashboard/ChartCard';
@@ -45,52 +45,51 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Fetch tenant growth (last 6 months)
+  // Fetch tenant growth (last 6 months) — single query
   const { data: tenantGrowth = [] } = useQuery({
     queryKey: ['platform-tenant-growth'],
     queryFn: async () => {
-      const months = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = startOfMonth(subMonths(new Date(), i));
-        const monthEnd = endOfMonth(subMonths(new Date(), i));
-        
-        const { count } = await supabase
-          .from('tenants')
-          .select('*', { count: 'exact', head: true })
-          .lte('created_at', monthEnd.toISOString());
+      const { data } = await supabase
+        .from('tenants')
+        .select('created_at')
+        .gte('created_at', subMonths(new Date(), 6).toISOString())
+        .order('created_at', { ascending: true });
 
-        months.push({
-          month: format(monthStart, 'MMM'),
-          count: count || 0
-        });
-      }
-      return months;
+      const monthCounts: Record<string, number> = {};
+      (data || []).forEach(t => {
+        const month = format(new Date(t.created_at!), 'MMM');
+        monthCounts[month] = (monthCounts[month] || 0) + 1;
+      });
+
+      return Array.from({ length: 6 }, (_, i) => {
+        const d = subMonths(new Date(), 5 - i);
+        const month = format(d, 'MMM');
+        return { month, count: monthCounts[month] || 0 };
+      });
     }
   });
 
-  // Fetch revenue by month (last 6 months)
+  // Fetch revenue by month (last 6 months) — single query
   const { data: revenueByMonth = [] } = useQuery({
     queryKey: ['platform-revenue-by-month'],
     queryFn: async () => {
-      const months = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = startOfMonth(subMonths(new Date(), i));
-        const monthEnd = endOfMonth(subMonths(new Date(), i));
-        
-        const { data: invoices } = await supabase
-          .from('invoices')
-          .select('commission_amount')
-          .gte('created_at', monthStart.toISOString())
-          .lte('created_at', monthEnd.toISOString());
+      const { data } = await supabase
+        .from('invoices')
+        .select('commission_amount, created_at')
+        .gte('created_at', subMonths(new Date(), 6).toISOString())
+        .order('created_at', { ascending: true });
 
-        const revenue = invoices?.reduce((sum, inv) => sum + (inv.commission_amount || 0), 0) || 0;
+      const monthRevenue: Record<string, number> = {};
+      (data || []).forEach(inv => {
+        const month = format(new Date(inv.created_at!), 'MMM');
+        monthRevenue[month] = (monthRevenue[month] || 0) + (inv.commission_amount || 0);
+      });
 
-        months.push({
-          month: format(monthStart, 'MMM'),
-          revenue
-        });
-      }
-      return months;
+      return Array.from({ length: 6 }, (_, i) => {
+        const d = subMonths(new Date(), 5 - i);
+        const month = format(d, 'MMM');
+        return { month, revenue: monthRevenue[month] || 0 };
+      });
     }
   });
 
