@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatDistanceToNow } from 'date-fns';
-import { Pencil, UserX, UserCheck, Loader2 } from 'lucide-react';
+import { Pencil, UserX, UserCheck, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,7 +28,7 @@ export default function UsersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['platform-users-page'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -100,6 +100,21 @@ export default function UsersPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertTriangle className="h-5 w-5" />
+          <div>
+            <p className="font-semibold">Failed to load data</p>
+            <p className="text-sm text-muted-foreground">There was an error loading this page.</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>Try Again</Button>
       </div>
     );
   }

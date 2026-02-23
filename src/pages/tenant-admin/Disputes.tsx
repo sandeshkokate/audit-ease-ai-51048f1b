@@ -62,7 +62,7 @@ export default function Disputes() {
   const [actionLoading, setActionLoading] = useState(false);
 
   // Fetch disputes (audit logs with discrepancies)
-  const { data: disputesData, isLoading } = useQuery({
+  const { data: disputesData, isLoading, isError, refetch: refetchDisputes } = useQuery({
     queryKey: ['disputes', user?.tenant_id, page],
     queryFn: async () => {
       if (!user?.tenant_id) return { items: [], totalCount: 0 };
@@ -111,6 +111,21 @@ export default function Disputes() {
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ['disputes'] });
   };
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertTriangle className="h-5 w-5" />
+          <div>
+            <p className="font-semibold">Failed to load data</p>
+            <p className="text-sm text-muted-foreground">There was an error loading this page.</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetchDisputes()}>Try Again</Button>
+      </div>
+    );
+  }
 
   const summary = {
     drafts: disputes.filter(d => !d.status || d.status === 'draft' || d.status === 'detected').length,
