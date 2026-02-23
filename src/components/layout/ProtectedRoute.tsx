@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,12 +24,19 @@ function LoadingSkeleton() {
       <div className="flex flex-col items-center gap-4">
         <Shield className="h-10 w-10 text-primary animate-pulse" />
         <div className="h-2 w-32 rounded-full bg-muted animate-pulse" />
+        <p className="text-sm text-muted-foreground">Loading your account...</p>
       </div>
     </div>
   );
 }
 
-function ProfileErrorScreen({ onRetry, onSignOut }: { onRetry: () => void; onSignOut: () => void }) {
+function ProfileErrorScreen() {
+  const handleRetry = () => window.location.reload();
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="text-center space-y-4 max-w-sm">
@@ -38,11 +45,13 @@ function ProfileErrorScreen({ onRetry, onSignOut }: { onRetry: () => void; onSig
         </div>
         <h2 className="text-lg font-semibold text-foreground">Unable to Load Profile</h2>
         <p className="text-sm text-muted-foreground">
-          We could not load your account details. This is usually a temporary issue.
+          We could not load your account details. This may be a temporary issue.
         </p>
         <div className="flex gap-3 justify-center">
-          <Button variant="outline" onClick={onSignOut}>Sign Out</Button>
-          <Button variant="hero" onClick={onRetry}>Try Again</Button>
+          <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+          <Button variant="hero" onClick={handleRetry}>
+            <RefreshCw className="h-4 w-4 mr-1" /> Try Again
+          </Button>
         </div>
       </div>
     </div>
@@ -66,26 +75,18 @@ function Forbidden({ dashboardUrl }: { dashboardUrl: string }) {
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, loading, session, profileError, signOut } = useAuth();
+  const { user, loading, session, profileError } = useAuth();
 
+  // Still loading — show spinner
   if (loading) return <LoadingSkeleton />;
+
+  // No session — go to login
   if (!session) return <Navigate to="/login" replace />;
 
-  if (session && profileError) {
-    return (
-      <ProfileErrorScreen
-        onRetry={() => window.location.reload()}
-        onSignOut={async () => {
-          await supabase.auth.signOut();
-          window.location.href = '/login';
-        }}
-      />
-    );
-  }
+  // Session exists but profile failed to load — show error with retry
+  if (profileError || !user) return <ProfileErrorScreen />;
 
-  // Wait for user profile to load after session is available
-  if (!user) return <LoadingSkeleton />;
-
+  // Profile loaded but wrong role for this route
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     const dashboardUrl = ROLE_DASHBOARDS[user.role] || '/';
     return <Forbidden dashboardUrl={dashboardUrl} />;
