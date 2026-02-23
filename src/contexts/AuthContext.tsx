@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, UserRole } from '@/types';
@@ -21,13 +21,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
+  const fetchingRef = useRef(false);
   const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    // Prevent concurrent fetches that exhaust connection pool
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
     try {
       setProfileError(false);
 
-      // Use SECURITY DEFINER RPC — bypasses ALL RLS, works for every role
       const { data: rows, error } = await supabase
         .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
@@ -56,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileError(true);
       setUser(null);
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -65,13 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Single source of truth: onAuthStateChange handles both initial and subsequent sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         if (!mounted) return;
 
         setSession(newSession);
 
         if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
+          // CRITICAL: Do NOT await inside onAuthStateChange — it blocks token refresh
+          // and can deadlock after 2-3 logins, causing infinite spinner
+          setTimeout(() => {
+            if (mounted) fetchUserProfile(newSession.user.id);
+          }, 0);
         } else {
           setUser(null);
           setProfileError(false);
