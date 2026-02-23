@@ -104,27 +104,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchUserProfile]);
 
-  // Session expiry check (24h max)
+  // Session expiry check (24h max) — session_start is set in Login.tsx at login time
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession?.expires_at) {
-        const loginTime = localStorage.getItem('session_start');
-        if (!loginTime) {
-          localStorage.setItem('session_start', Date.now().toString());
-        } else {
-          const age = Date.now() - parseInt(loginTime, 10);
-          if (age > 24 * 60 * 60 * 1000) {
-            localStorage.removeItem('session_start');
-            await supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            toast({
-              title: 'Session Expired',
-              description: 'Please log in again for security.',
-            });
-          }
-        }
+      const loginTime = localStorage.getItem('session_start');
+      if (!loginTime) return; // No active session timestamp — skip
+      const age = Date.now() - parseInt(loginTime, 10);
+      if (age > 24 * 60 * 60 * 1000) {
+        localStorage.removeItem('session_start');
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        toast({
+          title: 'Session Expired',
+          description: 'Please log in again for security.',
+        });
       }
     };
 

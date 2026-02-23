@@ -87,6 +87,9 @@ export default function Login() {
       // Update last login (fire and forget — do not await)
       supabase.rpc('update_last_login', { lookup_user_id: userId }).then(() => {});
 
+      // Set session start time accurately at login time (not on mount)
+      localStorage.setItem('session_start', Date.now().toString());
+
       const role = profile.role as UserRole;
       navigate(ROLE_REDIRECTS[role] || '/');
 
