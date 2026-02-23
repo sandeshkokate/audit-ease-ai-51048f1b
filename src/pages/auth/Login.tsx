@@ -36,11 +36,28 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (authError) throw authError;
+      // Retry up to 2 times for transient Supabase Auth 500 errors
+      let authData: any = null;
+      let lastAuthError: any = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const result = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (!result.error) {
+          authData = result.data;
+          lastAuthError = null;
+          break;
+        }
+        // Only retry on transient server errors (500), not auth failures (400)
+        if (result.error.status && result.error.status >= 500 && attempt < 2) {
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+          lastAuthError = result.error;
+          continue;
+        }
+        throw result.error;
+      }
+      if (lastAuthError) throw lastAuthError;
 
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned from auth');
