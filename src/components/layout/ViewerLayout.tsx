@@ -26,13 +26,13 @@ export default function ViewerLayout() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary shadow-button shrink-0">
           <Shield className="h-4 w-4 text-primary-foreground" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">Audit<span className="text-primary">Ease</span></span>}
+        {!collapsed && <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap tracking-tight">Audit<span className="text-sidebar-primary">Ease</span></span>}
       </div>
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.url} to={item.url} end={item.url.endsWith('dashboard')}
-            className={cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-primary/5 hover:text-foreground', collapsed && 'justify-center px-2')}
-            activeClassName="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary font-semibold"
+            className={cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-muted transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground', collapsed && 'justify-center px-2')}
+            activeClassName="bg-sidebar-accent text-sidebar-primary hover:bg-sidebar-accent hover:text-sidebar-primary"
             onClick={() => setMobileOpen(false)}
           >
             <item.icon className="h-5 w-5 shrink-0" />
@@ -41,7 +41,7 @@ export default function ViewerLayout() {
         ))}
       </nav>
       <div className="border-t border-sidebar-border p-3">
-        <button onClick={handleLogout} className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive', collapsed && 'justify-center px-2')}>
+        <button onClick={handleLogout} className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-muted transition-all hover:bg-destructive/15 hover:text-destructive', collapsed && 'justify-center px-2')}>
           <LogOut className="h-5 w-5 shrink-0" />{!collapsed && <span>Logout</span>}
         </button>
       </div>
@@ -50,15 +50,15 @@ export default function ViewerLayout() {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <aside className={cn('hidden md:flex flex-col sidebar-light border-r border-sidebar-border transition-all duration-300 shrink-0', collapsed ? 'w-16' : 'w-60')}>{sidebarContent}</aside>
+      <aside className={cn('hidden md:flex flex-col sidebar-rich border-r border-sidebar-border transition-all duration-300 shrink-0', collapsed ? 'w-16' : 'w-60')}>{sidebarContent}</aside>
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-64 flex-col sidebar-light bg-card shadow-elevated">{sidebarContent}</aside>
+          <div className="absolute inset-0 bg-foreground/25 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative flex h-full w-64 flex-col sidebar-rich shadow-elevated">{sidebarContent}</aside>
         </div>
       )}
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 gap-4">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/50 glass px-4 gap-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}><Menu className="h-5 w-5" /></Button>
             <Button variant="ghost" size="icon" className="hidden md:flex" onClick={() => setCollapsed(!collapsed)}><ChevronLeft className={cn('h-5 w-5 transition-transform', collapsed && 'rotate-180')} /></Button>
