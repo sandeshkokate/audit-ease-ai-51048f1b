@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +8,29 @@ import { formatDistanceToNow } from 'date-fns';
 import MetricCard from '@/components/dashboard/MetricCard';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
+import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
+
+const ACTION_LEGEND: Record<string, { label: string; color: string; description: string }> = {
+  'user.login': { label: 'Login', color: 'bg-primary/10 text-primary border-primary/20', description: 'User signed in' },
+  'user.logout': { label: 'Logout', color: 'bg-muted text-muted-foreground border-border', description: 'User signed out' },
+  'csv.upload': { label: 'CSV Upload', color: 'bg-success/10 text-success border-success/20', description: 'Shipment data uploaded' },
+  'dispute.created': { label: 'Dispute Created', color: 'bg-warning/10 text-warning border-warning/20', description: 'New dispute raised' },
+  'dispute.updated': { label: 'Dispute Updated', color: 'bg-accent/10 text-accent border-accent/20', description: 'Dispute status changed' },
+  'tenant.created': { label: 'Tenant Created', color: 'bg-secondary/10 text-secondary border-secondary/20', description: 'New tenant onboarded' },
+  'settings.updated': { label: 'Settings', color: 'bg-primary/10 text-primary border-primary/20', description: 'Configuration changed' },
+  'user.created': { label: 'User Created', color: 'bg-success/10 text-success border-success/20', description: 'New user added' },
+  'invoice.generated': { label: 'Invoice', color: 'bg-warning/10 text-warning border-warning/20', description: 'Invoice generated' },
+  'recovery.recorded': { label: 'Recovery', color: 'bg-success/10 text-success border-success/20', description: 'Recovery amount recorded' },
+};
+
+function getActionInfo(action: string) {
+  const key = action?.toLowerCase().replace(/\s+/g, '.') || '';
+  for (const [pattern, info] of Object.entries(ACTION_LEGEND)) {
+    if (key.includes(pattern.split('.')[0])) return info;
+  }
+  return { label: action || 'Activity', color: 'bg-muted text-muted-foreground border-border', description: '' };
+}
 
 export default function PlatformDashboard() {
   // Fetch all tenants
@@ -45,7 +68,7 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Fetch tenant growth (last 6 months) — single query
+  // Fetch tenant growth (last 6 months)
   const { data: tenantGrowth = [] } = useQuery({
     queryKey: ['platform-tenant-growth'],
     queryFn: async () => {
@@ -69,7 +92,7 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Fetch revenue by month (last 6 months) — single query
+  // Fetch revenue by month (last 6 months)
   const { data: revenueByMonth = [] } = useQuery({
     queryKey: ['platform-revenue-by-month'],
     queryFn: async () => {
@@ -105,7 +128,7 @@ export default function PlatformDashboard() {
           tenants:tenant_id(company_name)
         `)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(50);
       
       if (error) throw error;
       
@@ -118,6 +141,20 @@ export default function PlatformDashboard() {
       }));
     }
   });
+
+  // Compute unique actions for legend
+  const uniqueActions = useMemo(() => {
+    const seen = new Set<string>();
+    const legends: { label: string; color: string; description: string }[] = [];
+    activityLogs.forEach(log => {
+      const info = getActionInfo(log.action);
+      if (!seen.has(info.label)) {
+        seen.add(info.label);
+        legends.push(info);
+      }
+    });
+    return legends;
+  }, [activityLogs]);
 
   const isLoading = tenantsLoading || statsLoading;
 
@@ -149,12 +186,19 @@ export default function PlatformDashboard() {
     {
       key: 'action',
       header: 'Action',
-      render: (row) => <span className="text-sm">{row.action}</span>,
+      render: (row) => {
+        const info = getActionInfo(row.action);
+        return (
+          <Badge variant="outline" className={info.color}>
+            {info.label}
+          </Badge>
+        );
+      },
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Platform overview and key metrics</p>
@@ -209,7 +253,24 @@ export default function PlatformDashboard() {
 
       {/* Recent Activity */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-3">Recent Activity</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-2">Recent Activity</h2>
+        
+        {/* Action Legends */}
+        {uniqueActions.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {uniqueActions.map((legend) => (
+              <div key={legend.label} className="flex items-center gap-1.5" title={legend.description}>
+                <Badge variant="outline" className={`${legend.color} text-xs`}>
+                  {legend.label}
+                </Badge>
+                {legend.description && (
+                  <span className="text-xs text-muted-foreground hidden sm:inline">— {legend.description}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {activityLogs.length > 0 ? (
           <DataTable columns={activityColumns} data={activityLogs} pageSize={10} />
         ) : (
