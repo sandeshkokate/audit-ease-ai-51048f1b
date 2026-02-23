@@ -68,7 +68,7 @@ export default function TenantAdminLayout() {
         </div>
         {!collapsed && (
           <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap">
-            Audit<span className="text-sidebar-primary">Ease</span>
+            Audit<span className="text-primary">Ease</span>
           </span>
         )}
       </div>
@@ -79,10 +79,10 @@ export default function TenantAdminLayout() {
             to={item.url}
             end={item.url.endsWith('dashboard')}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-muted transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-primary/5 hover:text-foreground',
               collapsed && 'justify-center px-2'
             )}
-            activeClassName="bg-sidebar-accent text-sidebar-primary hover:bg-sidebar-accent hover:text-sidebar-primary"
+            activeClassName="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary font-semibold"
             onClick={() => setMobileOpen(false)}
           >
             <item.icon className="h-5 w-5 shrink-0" />
@@ -94,7 +94,7 @@ export default function TenantAdminLayout() {
         <button
           onClick={handleLogout}
           className={cn(
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-muted transition-all hover:bg-destructive/15 hover:text-destructive',
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive',
             collapsed && 'justify-center px-2'
           )}
         >
@@ -107,17 +107,17 @@ export default function TenantAdminLayout() {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      <aside className={cn('hidden md:flex flex-col sidebar-dark border-r border-sidebar-border transition-all duration-300 shrink-0', collapsed ? 'w-16' : 'w-60')}>
+      <aside className={cn('hidden md:flex flex-col sidebar-light border-r border-sidebar-border transition-all duration-300 shrink-0', collapsed ? 'w-16' : 'w-60')}>
         {sidebarContent}
       </aside>
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-64 flex-col sidebar-dark shadow-2xl">{sidebarContent}</aside>
+          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="relative flex h-full w-64 flex-col sidebar-light bg-card shadow-elevated">{sidebarContent}</aside>
         </div>
       )}
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/50 glass px-4 gap-4">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/50 bg-card/80 backdrop-blur-sm px-4 gap-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)}>
               <Menu className="h-5 w-5" />
