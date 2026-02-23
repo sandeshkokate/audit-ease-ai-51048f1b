@@ -16,6 +16,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 // Signup removed — redirects to /contact
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import AcceptInvite from "./pages/auth/AcceptInvite";
 // Platform Admin
 import PlatformDashboard from "./pages/platform-admin/Dashboard";
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invite/:token" element={<AcceptInvite />} />
 
               {/* Platform Admin Routes */}
