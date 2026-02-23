@@ -42,6 +42,8 @@ export default function Disputes() {
   const [editSubject, setEditSubject] = useState('');
   const [editBody, setEditBody] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 50;
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -60,24 +62,25 @@ export default function Disputes() {
   const [actionLoading, setActionLoading] = useState(false);
 
   // Fetch disputes (audit logs with discrepancies)
-  const { data: disputes = [], isLoading } = useQuery({
-    queryKey: ['disputes', user?.tenant_id],
+  const { data: disputesData, isLoading } = useQuery({
+    queryKey: ['disputes', user?.tenant_id, page],
     queryFn: async () => {
-      if (!user?.tenant_id) return [];
+      if (!user?.tenant_id) return { items: [], totalCount: 0 };
 
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('audit_logs')
         .select(`
           *,
           dispute_emails(*)
-        `)
+        `, { count: 'exact' })
         .eq('tenant_id', user.tenant_id)
         .gt('discrepancy_amount', 0)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       if (error) throw error;
 
-      return (data || []).map(log => ({
+      const items = (data || []).map(log => ({
         id: log.id,
         awb_number: log.awb,
         order_id: log.order_id,
@@ -96,16 +99,21 @@ export default function Disputes() {
         dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
         tenant_id: log.tenant_id,
       }));
+
+      return { items, totalCount: count ?? 0 };
     },
     enabled: !!user?.tenant_id
   });
+
+  const disputes = disputesData?.items ?? [];
+  const totalCount = disputesData?.totalCount ?? 0;
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ['disputes'] });
   };
 
   const summary = {
-    drafts: disputes.filter(d => d.status === 'draft' || d.status === 'detected' || d.status === 'no_issue').length,
+    drafts: disputes.filter(d => !d.status || d.status === 'draft' || d.status === 'detected').length,
     copied: disputes.filter(d => d.status === 'email_copied').length,
     awaiting: disputes.filter(d => d.status === 'raised' || d.status === 'disputed').length,
     recovered: disputes.filter(d => d.status === 'recovered').length,
@@ -159,10 +167,20 @@ export default function Disputes() {
   };
 
   const handleGenerateAll = async () => {
+    const disputesWithoutEmails = disputes.filter(d => !d.email_body);
+    if (disputesWithoutEmails.length === 0) {
+      toast({ title: 'All disputes already have emails generated.' });
+      return;
+    }
+
     setGenerating(true);
     try {
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES || '';
-      if (!webhookUrl) throw new Error('Webhook not configured');
+      if (!webhookUrl) {
+        toast({ variant: 'destructive', title: 'Not configured', description: 'Please set VITE_N8N_WEBHOOK_DISPUTES in your environment variables.' });
+        setGenerating(false);
+        return;
+      }
 
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -466,7 +484,24 @@ export default function Disputes() {
               <div className="space-y-2">
                 <Label>To</Label>
                 <Input value={editTo} onChange={(e) => setEditTo(e.target.value)} />
-              </div>
+      </div>
+
+      {/* Pagination */}
+      {totalCount > PAGE_SIZE && (
+        <div className="flex items-center justify-between pt-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= totalCount}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
               <div className="space-y-2">
                 <Label>Subject</Label>
                 <Input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} />
