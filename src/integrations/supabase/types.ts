@@ -638,7 +638,7 @@ export type Database = {
           accepted_at?: string | null
           created_at?: string | null
           email: string
-          expires_at: string
+          expires_at?: string
           id?: string
           invite_status?: string | null
           invited_by: string
@@ -1166,7 +1166,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
-          is_active: boolean | null
+          is_active: boolean
           last_login: string | null
           notification_preferences: Json | null
           phone: string | null
@@ -1181,7 +1181,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
-          is_active?: boolean | null
+          is_active?: boolean
           last_login?: string | null
           notification_preferences?: Json | null
           phone?: string | null
@@ -1196,7 +1196,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           last_login?: string | null
           notification_preferences?: Json | null
           phone?: string | null
@@ -1259,6 +1259,7 @@ export type Database = {
       auth_user_role: { Args: never; Returns: string }
       auth_user_tenant_id: { Args: never; Returns: string }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      expire_old_invitations: { Args: never; Returns: number }
       get_my_claim: { Args: { claim: string }; Returns: string }
       get_my_profile: {
         Args: never
