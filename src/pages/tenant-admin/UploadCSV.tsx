@@ -31,6 +31,7 @@ export default function UploadCSV() {
   const [preview, setPreview] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
 
@@ -64,6 +65,7 @@ export default function UploadCSV() {
   const handleProcess = async () => {
     if (!file) return;
     setProcessing(true);
+    setProcessingStep('Uploading file...');
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -79,21 +81,25 @@ export default function UploadCSV() {
       
       const batchId = crypto.randomUUID();
       
+      // Parse CSV to get actual row count
+      const text = await file.text();
+      const lines = text.trim().split('\n');
+      const actualRowCount = lines.length - 1; // minus header row
+      
       // Create batch record
       await supabase.from('upload_batches').insert({
         id: batchId,
         tenant_id: userData.tenant_id,
         filename: file.name,
         file_size: file.size,
-        total_rows: preview.length,
+        total_rows: actualRowCount,
         status: 'processing',
         created_by: user.id,
         started_at: new Date().toISOString()
       });
       
-      // Parse CSV
-      const text = await file.text();
-      const lines = text.trim().split('\n');
+      setProcessingStep('Analysing shipments...');
+      
       const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
@@ -102,28 +108,48 @@ export default function UploadCSV() {
         return row;
       });
       
-      // Call n8n
+      // Call n8n with timeout
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CSV;
       if (!webhookUrl) throw new Error('Webhook not configured');
       
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: userData.tenant_id,
-          user_id: user.id,
-          batch_id: batchId,
-          rows
-        })
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
       
-      const result = await response.json();
-      if (!result.success) throw new Error(result.error);
-      
-      toast({
-        title: '✅ Upload complete!',
-        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`
-      });
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: userData.tenant_id,
+            user_id: user.id,
+            batch_id: batchId,
+            rows
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        setProcessingStep('Calculating discrepancies...');
+        
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        
+        toast({
+          title: '✅ Upload complete!',
+          description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`
+        });
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          toast({
+            title: '⏳ Processing in progress',
+            description: 'This is taking longer than expected. Your file has been queued — check Audit Logs in a few minutes.',
+          });
+          setFile(null); setPreview([]); setHeaders([]);
+          return;
+        }
+        throw error;
+      }
       
       setFile(null);
       setPreview([]);
@@ -132,6 +158,7 @@ export default function UploadCSV() {
       toast({ variant: 'destructive', title: 'Failed', description: error.message });
     } finally {
       setProcessing(false);
+      setProcessingStep('');
     }
   };
 
@@ -253,9 +280,22 @@ export default function UploadCSV() {
             </CardContent>
           </Card>
 
+          {preview.length === 10 && file && (() => {
+            const estimatedRows = Math.round(file.size / 150);
+            if (estimatedRows > 5000) {
+              return (
+                <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-warning flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>Large file detected (~{estimatedRows.toLocaleString()} rows). Processing may take 2–3 minutes. Do not close the page.</span>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           <div className="flex justify-end">
             <Button variant="hero" size="lg" className="gap-2" onClick={handleProcess} disabled={processing || !allValid}>
-              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><Upload className="h-4 w-4" /> Process Upload</>}
+              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> {processingStep || 'Processing...'}</> : <><Upload className="h-4 w-4" /> Process & Detect Discrepancies</>}
             </Button>
           </div>
         </div>
