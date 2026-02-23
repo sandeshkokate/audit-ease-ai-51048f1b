@@ -30,7 +30,7 @@ export default function ActivityLogs() {
         id: log.id,
         time: log.created_at,
         tenant: log.tenants?.company_name || 'System',
-        user: log.users?.full_name || log.users?.email || 'Unknown',
+        user: log.user_id ? (log.users?.full_name || log.users?.email || 'Unknown') : 'System',
         action: log.action || log.details || 'Activity',
       }));
     }
