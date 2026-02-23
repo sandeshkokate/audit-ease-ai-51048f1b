@@ -283,7 +283,22 @@ export default function TenantSettings() {
             </CardContent>
           </Card>
           <div className="flex justify-end">
-            <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
+            <Button variant="hero" onClick={async () => {
+              if (!user?.id) return;
+              setSaving(true);
+              try {
+                const { error } = await supabase
+                  .from('users')
+                  .update({ notification_preferences: notifications, updated_at: new Date().toISOString() })
+                  .eq('id', user.id);
+                if (error) throw error;
+                toast({ title: 'Notification preferences saved' });
+              } catch (err: any) {
+                toast({ variant: 'destructive', title: 'Failed to save', description: err.message });
+              } finally {
+                setSaving(false);
+              }
+            }} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Preferences
             </Button>
           </div>

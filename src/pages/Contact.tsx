@@ -33,55 +33,48 @@ export default function Contact() {
 
     setLoading(true);
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CONTACT || '';
+      // Always save to Supabase (primary persistence)
+      const leadPayload = {
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        phone: formData.phone,
+        monthly_shipments: formData.monthlyShipments,
+        message: formData.message,
+        source: 'contact_form'
+      };
 
-      if (!webhookUrl) {
-        const { data: existingLead } = await supabase
+      const { data: existingLead } = await supabase
+        .from('leads')
+        .select('id')
+        .ilike('email', formData.email.trim())
+        .maybeSingle();
+
+      if (existingLead) {
+        const { error } = await supabase
           .from('leads')
-          .select('id')
-          .ilike('email', formData.email.trim())
-          .maybeSingle();
-
-        if (existingLead) {
-          const { error } = await supabase
-            .from('leads')
-            .update({
-              name: formData.name,
-              company: formData.company,
-              phone: formData.phone,
-              monthly_shipments: formData.monthlyShipments,
-              message: formData.message,
-            })
-            .eq('id', existingLead.id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from('leads').insert({
+          .update({
             name: formData.name,
-            email: formData.email,
             company: formData.company,
             phone: formData.phone,
             monthly_shipments: formData.monthlyShipments,
             message: formData.message,
-            source: 'contact_form'
-          });
-          if (error) throw error;
-        }
+          })
+          .eq('id', existingLead.id);
+        if (error) throw error;
       } else {
-        const response = await fetch(webhookUrl, {
+        const { error } = await supabase.from('leads').insert(leadPayload);
+        if (error) throw error;
+      }
+
+      // Also send to n8n webhook (fire and forget)
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CONTACT || '';
+      if (webhookUrl) {
+        fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            company: formData.company,
-            phone: formData.phone,
-            monthly_shipments: formData.monthlyShipments,
-            message: formData.message,
-            source: 'contact_form'
-          })
-        });
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error);
+          body: JSON.stringify(leadPayload)
+        }).catch(() => {}); // Don't block UI if webhook fails
       }
 
       toast({ title: '✅ Thank you!', description: 'We will contact you within 24 hours.' });
