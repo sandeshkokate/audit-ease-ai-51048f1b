@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ AWB100005,XpressBees,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,
 
 export default function UploadCSV() {
   useDocumentTitle('Upload CSV');
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -68,16 +70,8 @@ export default function UploadCSV() {
     setProcessingStep('Uploading file...');
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-      
-      const { data: userData } = await supabase
-        .from('users')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
-      
-      if (!userData?.tenant_id) throw new Error('No tenant found');
+      if (!user?.tenant_id) throw new Error('No tenant found');
+      if (!user?.id) throw new Error('Not authenticated');
       
       const batchId = crypto.randomUUID();
       
@@ -89,7 +83,7 @@ export default function UploadCSV() {
       // Create batch record
       await supabase.from('upload_batches').insert({
         id: batchId,
-        tenant_id: userData.tenant_id,
+        tenant_id: user.tenant_id,
         filename: file.name,
         file_size: file.size,
         total_rows: actualRowCount,
@@ -120,7 +114,7 @@ export default function UploadCSV() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            tenant_id: userData.tenant_id,
+            tenant_id: user.tenant_id,
             user_id: user.id,
             batch_id: batchId,
             rows
