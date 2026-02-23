@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, UserRole } from '@/types';
@@ -10,6 +10,7 @@ interface AuthContextType {
   role: UserRole | null;
   tenantId: string | null;
   loading: boolean;
+  profileError: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -19,59 +20,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
   const { toast } = useToast();
+  const fetchingRef = useRef(false);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    // Prevent duplicate concurrent fetches
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
     try {
+      setProfileError(false);
+
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
+        .rpc('get_user_profile_for_login', { lookup_user_id: userId })
+        .maybeSingle();
 
       if (error || !data) {
         console.error('Failed to fetch user profile:', error?.message);
         setUser(null);
+        setProfileError(true);
         return;
       }
 
-      setUser(data as User);
+      setUser(data as unknown as User);
     } catch (err) {
       console.error('Error fetching user profile:', err);
       setUser(null);
+      setProfileError(true);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Safety timeout: if loading is still true after 8s, force it off
+    const safetyTimer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('Auth loading safety timeout reached');
+          setProfileError(true);
+          return false;
+        }
+        return prev;
+      });
+    }, 8000);
+
+    // Single listener handles both initial session and future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         setSession(newSession);
         if (newSession?.user) {
-          // Use setTimeout to avoid Supabase deadlock
+          // Use setTimeout to avoid Supabase auth deadlock
           setTimeout(() => fetchUserProfile(newSession.user.id), 0);
         } else {
           setUser(null);
+          setProfileError(false);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    // THEN check existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      if (existingSession?.user) {
-        fetchUserProfile(existingSession.user.id);
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => {
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, [fetchUserProfile]);
 
   // Session expiry check (24h max)
@@ -79,8 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkSession = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (currentSession?.expires_at) {
-        // Supabase JWT has expires_at (unix seconds). If token lifespan is default 1h,
-        // we enforce a 24h hard limit using a localStorage timestamp.
         const loginTime = localStorage.getItem('session_start');
         if (!loginTime) {
           localStorage.setItem('session_start', Date.now().toString());
@@ -119,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: user?.role ?? null,
         tenantId: user?.tenant_id ?? null,
         loading,
+        profileError,
         signOut,
       }}
     >
