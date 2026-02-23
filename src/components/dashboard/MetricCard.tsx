@@ -10,11 +10,24 @@ interface MetricCardProps {
   iconColor?: string;
 }
 
+const iconBgMap: Record<string, string> = {
+  'text-primary': 'bg-primary/10',
+  'text-success': 'bg-success/10',
+  'text-warning': 'bg-warning/10',
+  'text-accent': 'bg-accent/10',
+  'text-secondary': 'bg-secondary/10',
+  'text-destructive': 'bg-destructive/10',
+};
+
 export default function MetricCard({ title, value, change, icon: Icon, iconColor = 'text-primary' }: MetricCardProps) {
   const isPositive = change !== undefined && change >= 0;
 
   return (
-    <Card className="shadow-card hover:shadow-card-hover transition-all duration-300">
+    <Card className="shadow-card hover:shadow-card-hover transition-all duration-300 border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden relative group">
+      {/* Subtle top accent bar */}
+      <div className={cn(
+        'absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity gradient-primary'
+      )} />
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -24,11 +37,11 @@ export default function MetricCard({ title, value, change, icon: Icon, iconColor
               <div className={cn('flex items-center gap-1 text-xs font-medium', isPositive ? 'text-success' : 'text-destructive')}>
                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 <span>{isPositive ? '+' : ''}{change.toFixed(1)}%</span>
-                <span className="text-muted-foreground">vs last month</span>
+                <span className="text-muted-foreground">vs last period</span>
               </div>
             )}
           </div>
-          <div className={cn('rounded-xl p-3 bg-primary/10', iconColor === 'text-success' && 'bg-success/10', iconColor === 'text-warning' && 'bg-warning/10', iconColor === 'text-accent' && 'bg-accent/10')}>
+          <div className={cn('rounded-xl p-3 transition-transform group-hover:scale-105', iconBgMap[iconColor] || 'bg-primary/10')}>
             <Icon className={cn('h-5 w-5', iconColor)} />
           </div>
         </div>
