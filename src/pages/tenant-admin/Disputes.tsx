@@ -61,15 +61,9 @@ export default function Disputes() {
 
   // Fetch disputes (audit logs with discrepancies)
   const { data: disputes = [], isLoading } = useQuery({
-    queryKey: ['disputes', user?.id],
+    queryKey: ['disputes', user?.tenant_id],
     queryFn: async () => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('tenant_id')
-        .eq('id', user!.id)
-        .maybeSingle();
-
-      if (!userData?.tenant_id) return [];
+      if (!user?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from('audit_logs')
@@ -77,7 +71,7 @@ export default function Disputes() {
           *,
           dispute_emails(*)
         `)
-        .eq('tenant_id', userData.tenant_id)
+        .eq('tenant_id', user.tenant_id)
         .gt('discrepancy_amount', 0)
         .order('created_at', { ascending: false });
 
@@ -103,7 +97,7 @@ export default function Disputes() {
         tenant_id: log.tenant_id,
       }));
     },
-    enabled: !!user?.id
+    enabled: !!user?.tenant_id
   });
 
   const refetch = () => {
@@ -167,12 +161,6 @@ export default function Disputes() {
   const handleGenerateAll = async () => {
     setGenerating(true);
     try {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('tenant_id')
-        .eq('id', user!.id)
-        .maybeSingle();
-
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES || '';
       if (!webhookUrl) throw new Error('Webhook not configured');
 
@@ -180,7 +168,7 @@ export default function Disputes() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant_id: userData?.tenant_id,
+          tenant_id: user?.tenant_id,
           user_id: user?.id
         })
       });
