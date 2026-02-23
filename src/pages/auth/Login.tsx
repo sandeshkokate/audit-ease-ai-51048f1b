@@ -36,7 +36,6 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // Retry up to 2 times for transient Supabase Auth 500 errors
       let authData: any = null;
       let lastAuthError: any = null;
       for (let attempt = 0; attempt < 3; attempt++) {
@@ -49,7 +48,6 @@ export default function Login() {
           lastAuthError = null;
           break;
         }
-        // Only retry on transient server errors (500), not auth failures (400)
         if (result.error.status && result.error.status >= 500 && attempt < 2) {
           await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
           lastAuthError = result.error;
@@ -62,7 +60,6 @@ export default function Login() {
       const userId = authData.user?.id;
       if (!userId) throw new Error('No user returned from auth');
 
-      // Use SECURITY DEFINER RPC — bypasses ALL RLS, works for every role
       const { data: rows, error: profileError } = await supabase
         .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
@@ -84,10 +81,8 @@ export default function Login() {
         throw new Error('Your account has been deactivated. Contact your administrator.');
       }
 
-      // Update last login (fire and forget — do not await)
       supabase.rpc('update_last_login', { lookup_user_id: userId }).then(() => {});
 
-      // Set session start time accurately at login time (not on mount)
       localStorage.setItem('session_start', Date.now().toString());
 
       const role = profile.role as UserRole;
@@ -105,11 +100,19 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 px-4 py-12">
-      <Card className="w-full max-w-md shadow-card-hover border-border/50">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-12 overflow-hidden">
+      {/* Rich background */}
+      <div className="pointer-events-none absolute inset-0 gradient-mesh" />
+      <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-30" />
+      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/8 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-secondary/8 blur-[120px]" />
+
+      <Card className="relative w-full max-w-md shadow-elevated border-border/50 bg-card/90 backdrop-blur-sm">
         <CardHeader className="items-center space-y-4 pb-2">
-          <Link to="/" className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
+              <Shield className="h-5 w-5 text-primary-foreground" />
+            </div>
             <span className="text-2xl font-bold text-foreground">
               AuditEase <span className="text-gradient">AI</span>
             </span>

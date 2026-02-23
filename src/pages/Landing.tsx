@@ -198,13 +198,13 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
 
       {/* ── NAV ─────────────────────────────────────────────── */}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-card/95 shadow-card backdrop-blur-xl border-b border-border' : 'bg-transparent'}`}>
+      <nav className={`sticky top-0 z-50 transition-all duration-500 ${scrolled ? 'glass shadow-elevated border-b border-border/50' : 'bg-transparent'}`}>
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary shadow-button">
-              <Shield className="h-4 w-4 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
+              <Shield className="h-4.5 w-4.5 text-primary-foreground" />
             </div>
             <span className="text-lg font-bold tracking-tight text-foreground">
               AuditEase <span className="text-gradient">AI</span>
@@ -219,7 +219,7 @@ export default function Landing() {
             { href: '#calculator', label: 'Calculator' },
             { href: '#pricing', label: 'Pricing' }].
             map((l) =>
-            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            <a key={l.href} href={l.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">
                 {l.label}
               </a>
             )}
@@ -227,8 +227,8 @@ export default function Landing() {
 
           {/* Desktop CTAs */}
           <div className="hidden items-center gap-3 md:flex">
-            <Link to="/login"><Button variant="ghost" size="sm">Sign In</Button></Link>
-            <Link to="/contact"><Button variant="hero" size="sm">Request Demo <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
+            <Link to="/login"><Button variant="ghost" size="sm" className="font-medium">Sign In</Button></Link>
+            <Link to="/contact"><Button variant="hero" size="sm" className="shadow-button">Request Demo <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
           </div>
 
           {/* Mobile hamburger */}
@@ -239,7 +239,7 @@ export default function Landing() {
 
         {/* Mobile menu */}
         {mobileMenuOpen &&
-        <div className="border-t border-border bg-card px-4 py-4 md:hidden animate-fade-in">
+        <div className="border-t border-border/50 glass px-4 py-4 md:hidden animate-fade-in">
             <div className="flex flex-col gap-3">
               {[
             { href: '#how-it-works', label: 'How It Works' },
@@ -251,7 +251,7 @@ export default function Landing() {
                   {l.label}
                 </a>
             )}
-              <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
+              <div className="mt-2 flex flex-col gap-2 border-t border-border/50 pt-3">
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="ghost" className="w-full">Sign In</Button></Link>
                 <Link to="/contact" onClick={() => setMobileMenuOpen(false)}><Button variant="hero" className="w-full">Request Demo</Button></Link>
               </div>
@@ -261,12 +261,14 @@ export default function Landing() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden py-24 md:py-36 gradient-hero">
-        {/* Soft background blobs */}
+      <section className="relative overflow-hidden py-24 md:py-36">
+        {/* Rich background with mesh gradient + dot pattern */}
+        <div className="pointer-events-none absolute inset-0 gradient-mesh" />
+        <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-40" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-primary/6 blur-[100px]" />
-          <div className="absolute top-1/2 -right-32 h-[400px] w-[400px] rounded-full bg-secondary/6 blur-[100px]" />
-          <div className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-accent/5 blur-[80px]" />
+          <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-primary/8 blur-[120px] animate-pulse-glow" />
+          <div className="absolute top-1/3 -right-40 h-[500px] w-[500px] rounded-full bg-secondary/8 blur-[120px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute bottom-0 left-1/4 h-[400px] w-[400px] rounded-full bg-accent/6 blur-[100px]" />
         </div>
 
         <div className="container relative mx-auto px-4">
@@ -275,31 +277,30 @@ export default function Landing() {
             {/* Left — copy */}
             <div className="text-center lg:text-left">
               {/* Launch badge */}
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up" style={{ opacity: 0 }}>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
                 <Sparkles className="h-3.5 w-3.5" />
                 Introducing AuditEase AI for Indian E-commerce
               </div>
 
               {/* Headline */}
-              <h1 className="mb-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
+              <h1 className="mb-6 text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
                 Stop Overpaying on{' '}
                 <span className="text-gradient">Courier Billing</span>
               </h1>
 
               {/* Sub */}
               <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>What if we told you ₹12 out of every ₹100 you spend on shipping is an error — and we can prove it in 5 minutes with your data?
-
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
                 <Link to="/contact">
-                  <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button">
+                  <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(221_83%_53%/0.4)] transition-shadow">
                     Request a Demo <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <a href="#how-it-works">
-                  <Button variant="hero-outline" size="lg" className="px-8 py-6 text-base font-semibold">
+                  <Button variant="hero-outline" size="lg" className="px-8 py-6 text-base font-semibold hover:bg-primary/5 transition-colors">
                     See How It Works
                   </Button>
                 </a>
@@ -310,22 +311,22 @@ export default function Landing() {
             {/* Right — mock dashboard */}
             <div className="relative mx-auto w-full max-w-lg animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
               {/* Browser chrome */}
-              <div className="rounded-2xl border border-border bg-card shadow-card-hover overflow-hidden">
+              <div className="rounded-2xl border border-border/60 bg-card shadow-elevated overflow-hidden">
                 {/* Chrome bar */}
-                <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-3">
+                <div className="flex items-center gap-2 border-b border-border/50 bg-muted/40 px-4 py-3">
                   <div className="flex gap-1.5">
-                    <div className="h-3 w-3 rounded-full bg-destructive/50" />
-                    <div className="h-3 w-3 rounded-full bg-warning/50" />
-                    <div className="h-3 w-3 rounded-full bg-success/50" />
+                    <div className="h-3 w-3 rounded-full bg-destructive/60" />
+                    <div className="h-3 w-3 rounded-full bg-warning/60" />
+                    <div className="h-3 w-3 rounded-full bg-success/60" />
                   </div>
-                  <div className="mx-auto flex h-6 items-center gap-1.5 rounded-md bg-background px-3 text-xs text-muted-foreground">
+                  <div className="mx-auto flex h-6 items-center gap-1.5 rounded-md bg-background/80 px-3 text-xs text-muted-foreground">
                     <div className="h-2 w-2 rounded-full bg-success" />
                     app.auditease.ai/dashboard
                   </div>
                 </div>
 
                 {/* Dashboard body */}
-                <div className="p-5">
+                <div className="p-5 bg-gradient-to-b from-background/50 to-background">
                   {/* Stat cards */}
                   <div className="mb-4 grid grid-cols-2 gap-3">
                     {[
@@ -334,7 +335,7 @@ export default function Landing() {
                     { label: 'Disputes Raised', value: '1,523', icon: Mail, color: 'text-secondary', bg: 'bg-secondary/10' },
                     { label: 'Recoverable', value: '₹4.2L*', icon: IndianRupee, color: 'text-success', bg: 'bg-success/10' }].
                     map((s) =>
-                    <div key={s.label} className="rounded-xl border border-border bg-background p-3">
+                    <div key={s.label} className="rounded-xl border border-border/50 bg-card/80 p-3 shadow-card hover:shadow-card-hover transition-shadow">
                         <div className={`mb-2 inline-flex h-7 w-7 items-center justify-center rounded-lg ${s.bg}`}>
                           <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                         </div>
@@ -345,15 +346,14 @@ export default function Landing() {
                   </div>
 
                   {/* Mini bar chart */}
-                  <div className="rounded-xl border border-border bg-background p-3">
+                  <div className="rounded-xl border border-border/50 bg-card/80 p-3 shadow-card">
                     <div className="mb-2 text-xs font-medium text-muted-foreground">Discrepancies by month (sample data)</div>
                     <div className="flex h-16 items-end gap-1">
                       {[30, 55, 40, 70, 50, 85, 65, 78, 55, 90, 72, 88].map((h, i) =>
                       <div
                         key={i}
-                        className="flex-1 rounded-sm bg-primary/30 transition-all hover:bg-primary/60"
+                        className="flex-1 rounded-sm bg-gradient-to-t from-primary/40 to-primary/20 transition-all hover:from-primary/70 hover:to-primary/40"
                         style={{ height: `${h}%` }} />
-
                       )}
                     </div>
                   </div>
@@ -363,7 +363,7 @@ export default function Landing() {
 
               {/* Floating notification chips */}
               <div className="absolute -left-4 top-12 animate-float" style={{ animationDelay: '500ms' }}>
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-card-hover text-xs font-medium">
+                <div className="flex items-center gap-2 rounded-xl border border-border/50 glass-card px-3 py-2 shadow-elevated text-xs font-medium">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warning/15">
                     <AlertTriangle className="h-3 w-3 text-warning" />
                   </div>
@@ -375,7 +375,7 @@ export default function Landing() {
               </div>
 
               <div className="absolute -right-4 bottom-20 animate-float" style={{ animationDelay: '1500ms' }}>
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 shadow-card-hover text-xs font-medium">
+                <div className="flex items-center gap-2 rounded-xl border border-border/50 glass-card px-3 py-2 shadow-elevated text-xs font-medium">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/15">
                     <CheckCircle className="h-3 w-3 text-success" />
                   </div>
@@ -391,7 +391,8 @@ export default function Landing() {
       </section>
 
       {/* ── PROBLEM STATEMENT ───────────────────────────────── */}
-      <section className="bg-muted/30 py-20 md:py-28">
+      <section className="relative bg-muted/30 py-20 md:py-28 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-20" />
         <div className="container mx-auto px-4">
           <div className="mb-14 text-center">
             <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">The Hidden Cost of Courier Billing Errors</h2>
@@ -572,7 +573,8 @@ export default function Landing() {
       </section>
 
       {/* ── FEATURES ────────────────────────────────────────── */}
-      <section id="features" className="bg-muted/30 py-20 md:py-28">
+      <section id="features" className="relative bg-muted/30 py-20 md:py-28 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-20" />
         <div className="container mx-auto px-4">
           <div className="mb-14 text-center">
             <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">Everything You Need to Recover Lost Revenue</h2>
@@ -695,7 +697,8 @@ export default function Landing() {
       </section>
 
       {/* ── PRICING ─────────────────────────────────────────── */}
-      <section id="pricing" className="bg-muted/30 py-20 md:py-28">
+      <section id="pricing" className="relative bg-muted/30 py-20 md:py-28 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-20" />
         <div className="container mx-auto px-4">
           <div className="mb-14 text-center">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm font-medium text-primary">
@@ -772,7 +775,8 @@ export default function Landing() {
       </section>
 
       {/* ── FINAL CTA ───────────────────────────────────────── */}
-      <section className="gradient-hero border-t border-border py-20 md:py-28">
+      <section className="relative gradient-hero border-t border-border/50 py-20 md:py-28 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 gradient-mesh" />
         <div className="container mx-auto px-4 text-center">
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-5xl">
             Ready to Stop Overpaying on Shipping?
@@ -792,7 +796,7 @@ export default function Landing() {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────── */}
-      <footer id="contact" className="border-t border-border bg-card py-14">
+      <footer id="contact" className="border-t border-border/50 bg-card py-14">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             {/* Brand */}
