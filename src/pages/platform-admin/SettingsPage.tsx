@@ -7,15 +7,52 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const FIELDS = [
-  { key: 'default_commission', label: 'Default Commission (%)', desc: 'Applied to new tenants', default: 12 },
-  { key: 'weight_tolerance', label: 'Weight Tolerance (kg)', desc: 'Allowed weight variance before flagging', default: 0.5 },
-  { key: 'dimension_tolerance', label: 'Dimension Tolerance (cm)', desc: 'Allowed dimension variance', default: 1.0 },
-  { key: 'min_dispute_amount', label: 'Min Dispute Amount (₹)', desc: 'Minimum amount to raise a dispute', default: 10 },
-  { key: 'default_divisor', label: 'Default Divisor', desc: 'Volumetric weight divisor', default: 5000 },
-  { key: 'rto_charge_percent', label: 'RTO Charge (%)', desc: 'RTO charge percentage of forward shipment', default: 50 },
+  {
+    key: 'default_commission',
+    label: 'Default Commission (%)',
+    desc: 'Applied to new tenants',
+    definition: 'The percentage of recovered amount that the platform charges as its service fee. This is applied automatically when a new tenant is onboarded.',
+    default: 12,
+  },
+  {
+    key: 'weight_tolerance',
+    label: 'Weight Tolerance (kg)',
+    desc: 'Allowed weight variance before flagging',
+    definition: 'Maximum allowed difference (in kg) between the courier-reported weight and the actual/expected weight. Shipments exceeding this tolerance are flagged as weight discrepancies.',
+    default: 0.5,
+  },
+  {
+    key: 'dimension_tolerance',
+    label: 'Dimension Tolerance (cm)',
+    desc: 'Allowed dimension variance',
+    definition: 'Maximum allowed difference (in cm) for length, breadth, or height between courier-measured and declared dimensions. Exceeding this flags a volumetric weight discrepancy.',
+    default: 1.0,
+  },
+  {
+    key: 'min_dispute_amount',
+    label: 'Min Dispute Amount (₹)',
+    desc: 'Minimum amount to raise a dispute',
+    definition: 'The minimum overcharge amount (in ₹) required before a dispute email can be raised with the courier. Discrepancies below this threshold are logged but not disputed.',
+    default: 10,
+  },
+  {
+    key: 'default_divisor',
+    label: 'Default Divisor',
+    desc: 'Volumetric weight divisor',
+    definition: 'The divisor used to calculate volumetric weight: (L × B × H) ÷ Divisor. Industry standard is 5000 for most couriers. Some couriers use 4000 or 4500.',
+    default: 5000,
+  },
+  {
+    key: 'rto_charge_percent',
+    label: 'RTO Charge (%)',
+    desc: 'RTO charge percentage of forward shipment',
+    definition: 'The percentage of the forward shipment charge that couriers bill for Return-to-Origin (RTO) orders. Used to validate if the courier is overcharging on RTO shipments.',
+    default: 50,
+  },
 ] as const;
 
 type SettingsMap = Record<string, number>;
@@ -104,7 +141,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <p className="text-sm text-muted-foreground">Platform-wide configuration</p>
@@ -116,20 +153,32 @@ export default function SettingsPage() {
           <CardDescription>Configure default values for audit calculations</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {FIELDS.map((f) => (
-              <div key={f.key} className="space-y-2">
-                <Label htmlFor={f.key}>{f.label}</Label>
-                <Input
-                  id={f.key}
-                  type="number"
-                  value={settings[f.key]}
-                  onChange={(e) => update(f.key, e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
+          <TooltipProvider>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {FIELDS.map((f) => (
+                <div key={f.key} className="space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor={f.key} className="text-sm font-medium">{f.label}</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs text-xs z-[100]">
+                        {f.definition}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    id={f.key}
+                    type="number"
+                    value={settings[f.key]}
+                    onChange={(e) => update(f.key, e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">{f.definition}</p>
+                </div>
+              ))}
+            </div>
+          </TooltipProvider>
           <div className="mt-6 flex justify-end">
             <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

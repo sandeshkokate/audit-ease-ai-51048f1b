@@ -4,13 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ChartCard from '@/components/dashboard/ChartCard';
 import MetricCard from '@/components/dashboard/MetricCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
-import { Download, FileBarChart, TrendingUp, IndianRupee, Building2, Loader2, Target } from 'lucide-react';
+import { Download, FileBarChart, TrendingUp, IndianRupee, Building2, Loader2, Target, ArrowLeft } from 'lucide-react';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import { downloadCSV, formatCurrency } from '@/lib/utils';
@@ -45,6 +46,7 @@ function getDateRange(key: string): { from: Date; to: Date } {
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('last_30');
+  const [pieDrillDown, setPieDrillDown] = useState<string | null>(null);
   const range = useMemo(() => getDateRange(dateRange), [dateRange]);
 
   // Fetch tenants
@@ -60,13 +62,13 @@ export default function Reports() {
     }
   });
 
-  // Fetch audit logs filtered by date range
+  // Fetch audit logs filtered by date range — include all needed fields
   const { data: auditData = [], isLoading: statsLoading } = useQuery({
     queryKey: ['reports-audit-stats', dateRange],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('id, discrepancy_amount, recovery_amount, courier_name, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, tenant_id, created_at')
+        .select('id, discrepancy_amount, recovery_amount, billed_amount, expected_amount, courier_name, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, tenant_id, created_at, order_id, awb, charged_weight, charged_zone, expected_zone')
         .gte('created_at', range.from.toISOString())
         .lte('created_at', range.to.toISOString());
       if (error) throw error;
@@ -74,7 +76,7 @@ export default function Reports() {
     }
   });
 
-  // Financial summary from invoices (always last 6 months)
+  // Financial summary from invoices (always last 6 months, chronological)
   const { data: financialSummary = [] } = useQuery({
     queryKey: ['reports-financial'],
     queryFn: async () => {
@@ -96,6 +98,7 @@ export default function Reports() {
 
         months.push({
           month: format(monthStart, 'MMM yyyy'),
+          sortKey: format(monthStart, 'yyyy-MM'),
           invoice_count: count,
           recovered,
           commission,
@@ -108,22 +111,32 @@ export default function Reports() {
     }
   });
 
-  // Orders over time
-  const { data: ordersOverTime = [] } = useQuery({
-    queryKey: ['reports-orders-over-time'],
+  // Discrepancy vs Recovery trend (last 6 months) — replaces "Orders Over Time"
+  const { data: discVsRecoveryTrend = [] } = useQuery({
+    queryKey: ['reports-disc-vs-recovery'],
     queryFn: async () => {
       const months = [];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 5; i >= 0; i--) {
         const monthStart = startOfMonth(subMonths(new Date(), i));
         const monthEnd = endOfMonth(subMonths(new Date(), i));
 
-        const { count } = await supabase
+        const { data } = await supabase
           .from('audit_logs')
-          .select('*', { count: 'exact', head: true })
+          .select('discrepancy_amount, recovery_amount')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
 
-        months.push({ month: format(monthStart, 'MMM'), orders: count || 0 });
+        const totalDisc = data?.reduce((s, d) => s + (d.discrepancy_amount || 0), 0) || 0;
+        const totalRec = data?.reduce((s, d) => s + (d.recovery_amount || 0), 0) || 0;
+        const shipments = data?.length || 0;
+
+        months.push({
+          month: format(monthStart, 'MMM'),
+          overcharge: totalDisc,
+          recovered: totalRec,
+          gap: Math.max(0, totalDisc - totalRec),
+          shipments,
+        });
       }
       return months;
     }
@@ -138,15 +151,18 @@ export default function Reports() {
     const detectionRate = totalOrders > 0 ? parseFloat(((discrepancies.length / totalOrders) * 100).toFixed(1)) : 0;
 
     // Courier analysis
-    const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number; weight: number; zone: number; rto: number }> = {};
+    const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number; totalRecovered: number; totalBilled: number; totalExpected: number; weight: number; zone: number; rto: number }> = {};
     auditData.forEach(d => {
       const c = d.courier_name || 'Unknown';
-      if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0, weight: 0, zone: 0, rto: 0 };
+      if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0, totalRecovered: 0, totalBilled: 0, totalExpected: 0, weight: 0, zone: 0, rto: 0 };
       courierMap[c].shipments++;
+      courierMap[c].totalBilled += d.billed_amount || 0;
+      courierMap[c].totalExpected += d.expected_amount || 0;
       if ((d.discrepancy_amount || 0) > 0) {
         courierMap[c].discrepancies++;
         courierMap[c].totalOvercharge += d.discrepancy_amount || 0;
       }
+      courierMap[c].totalRecovered += d.recovery_amount || 0;
       if (d.has_weight_discrepancy) courierMap[c].weight++;
       if (d.has_zone_discrepancy) courierMap[c].zone++;
       if (d.has_rto_overcharge) courierMap[c].rto++;
@@ -154,9 +170,13 @@ export default function Reports() {
     const courierAnalysis = Object.entries(courierMap).map(([courier, v]) => ({
       courier,
       shipments: v.shipments,
+      total_billed: v.totalBilled,
+      total_expected: v.totalExpected,
       discrepancy_rate: v.shipments > 0 ? parseFloat(((v.discrepancies / v.shipments) * 100).toFixed(1)) : 0,
       avg_overcharge: v.discrepancies > 0 ? Math.round(v.totalOvercharge / v.discrepancies) : 0,
       total_overcharge: v.totalOvercharge,
+      total_recovered: v.totalRecovered,
+      recovery_rate: v.totalOvercharge > 0 ? parseFloat(((v.totalRecovered / v.totalOvercharge) * 100).toFixed(1)) : 0,
       weight_errors: v.weight,
       zone_errors: v.zone,
       rto_errors: v.rto,
@@ -178,11 +198,13 @@ export default function Reports() {
     ].filter(d => d.value > 0);
 
     // Per-tenant stats
-    const tenantMap: Record<string, { orders: number; discrepancies: number; overcharge: number; recovered: number }> = {};
+    const tenantMap: Record<string, { orders: number; discrepancies: number; overcharge: number; recovered: number; billed: number; expected: number }> = {};
     auditData.forEach(d => {
       if (!d.tenant_id) return;
-      if (!tenantMap[d.tenant_id]) tenantMap[d.tenant_id] = { orders: 0, discrepancies: 0, overcharge: 0, recovered: 0 };
+      if (!tenantMap[d.tenant_id]) tenantMap[d.tenant_id] = { orders: 0, discrepancies: 0, overcharge: 0, recovered: 0, billed: 0, expected: 0 };
       tenantMap[d.tenant_id].orders++;
+      tenantMap[d.tenant_id].billed += d.billed_amount || 0;
+      tenantMap[d.tenant_id].expected += d.expected_amount || 0;
       if ((d.discrepancy_amount || 0) > 0) {
         tenantMap[d.tenant_id].discrepancies++;
         tenantMap[d.tenant_id].overcharge += d.discrepancy_amount || 0;
@@ -190,20 +212,32 @@ export default function Reports() {
       tenantMap[d.tenant_id].recovered += d.recovery_amount || 0;
     });
 
-    return { totalOrders, discrepancyCount: discrepancies.length, totalOvercharge, totalRecovered, detectionRate, courierAnalysis, discrepancyTypes, tenantMap };
+    // Drill-down data for pie chart
+    const drillDownMap: Record<string, any[]> = {
+      Weight: auditData.filter(d => d.has_weight_discrepancy),
+      Zone: auditData.filter(d => d.has_zone_discrepancy),
+      RTO: auditData.filter(d => d.has_rto_overcharge),
+      Damage: auditData.filter(d => d.has_damage_misclassification),
+    };
+
+    return { totalOrders, discrepancyCount: discrepancies.length, totalOvercharge, totalRecovered, detectionRate, courierAnalysis, discrepancyTypes, tenantMap, drillDownMap };
   }, [auditData]);
 
   // Enrich tenants with audit stats
   const enrichedTenants = useMemo(() => {
     return tenantsRaw.map(t => {
-      const s = stats.tenantMap[t.id] || { orders: 0, discrepancies: 0, overcharge: 0, recovered: 0 };
+      const s = stats.tenantMap[t.id] || { orders: 0, discrepancies: 0, overcharge: 0, recovered: 0, billed: 0, expected: 0 };
       const commission = t.commission_percentage || 20;
+      const discrepancyRate = s.orders > 0 ? parseFloat(((s.discrepancies / s.orders) * 100).toFixed(1)) : 0;
       return {
         name: t.company_name,
         status: t.status || 'pending',
         commission,
         total_orders: s.orders,
+        total_billed: s.billed,
+        total_expected: s.expected,
         discrepancies_found: s.discrepancies,
+        discrepancy_rate: discrepancyRate,
         total_overcharge: s.overcharge,
         amount_recovered: s.recovered,
         recovery_rate: s.overcharge > 0 ? parseFloat(((s.recovered / s.overcharge) * 100).toFixed(1)) : 0,
@@ -223,28 +257,47 @@ export default function Reports() {
     );
   }
 
+  // Drill-down columns for pie chart
+  const drillDownColumns: Column<any>[] = [
+    { key: 'order_id', header: 'Order ID', sortable: true },
+    { key: 'awb', header: 'AWB', render: (r) => r.awb || '-' },
+    { key: 'courier_name', header: 'Courier', sortable: true, render: (r) => r.courier_name || '-' },
+    { key: 'charged_weight', header: 'Charged Wt', sortable: true, render: (r) => r.charged_weight ? `${r.charged_weight} kg` : '-' },
+    { key: 'billed_amount', header: 'Billed (₹)', sortable: true, render: (r) => formatCurrency(r.billed_amount || 0) },
+    { key: 'expected_amount', header: 'Expected (₹)', sortable: true, render: (r) => formatCurrency(r.expected_amount || 0) },
+    { key: 'discrepancy_amount', header: 'Overcharge (₹)', sortable: true, render: (r) => formatCurrency(r.discrepancy_amount || 0) },
+    { key: 'recovery_amount', header: 'Recovered (₹)', sortable: true, render: (r) => formatCurrency(r.recovery_amount || 0) },
+  ];
+
   const tenantColumns: Column<any>[] = [
     { key: 'name', header: <ColumnHeader title="Tenant" tooltip="Company name" />, sortable: true },
     { key: 'status', header: <ColumnHeader title="Status" tooltip="Tenant status" />, sortable: true, render: (r) => (
       <Badge variant="outline" className={STATUS_COLORS[r.status] || ''}>{r.status.charAt(0).toUpperCase() + r.status.slice(1)}</Badge>
     )},
-    { key: 'total_orders', header: <ColumnHeader title="Total Orders" tooltip="Orders processed in selected period" />, sortable: true, render: (r) => r.total_orders.toLocaleString() },
-    { key: 'discrepancies_found', header: <ColumnHeader title="Discrepancies" tooltip="Billing errors detected" />, sortable: true, render: (r) => r.discrepancies_found.toLocaleString() },
-    { key: 'total_overcharge', header: <ColumnHeader title="Total Overcharge (₹)" tooltip="Sum of all overcharge amounts" />, sortable: true, render: (r) => formatCurrency(r.total_overcharge) },
-    { key: 'amount_recovered', header: <ColumnHeader title="Recovered (₹)" tooltip="Amount recovered from couriers" />, sortable: true, render: (r) => formatCurrency(r.amount_recovered) },
-    { key: 'recovery_rate', header: <ColumnHeader title="Recovery %" tooltip="Recovery as % of overcharge" />, sortable: true, render: (r) => `${r.recovery_rate}%` },
-    { key: 'commission_earned', header: <ColumnHeader title="Commission (₹)" tooltip="Platform fee earned on recoveries" />, sortable: true, render: (r) => formatCurrency(r.commission_earned) },
+    { key: 'total_orders', header: <ColumnHeader title="Total Orders" tooltip="Total shipments audited in selected period" />, sortable: true, render: (r) => r.total_orders.toLocaleString() },
+    { key: 'total_billed', header: <ColumnHeader title="Billed (₹)" tooltip="Sum of amounts billed by couriers" />, sortable: true, render: (r) => formatCurrency(r.total_billed) },
+    { key: 'total_expected', header: <ColumnHeader title="Expected (₹)" tooltip="Sum of expected amounts per rate card" />, sortable: true, render: (r) => formatCurrency(r.total_expected) },
+    { key: 'discrepancies_found', header: <ColumnHeader title="Discrepancies" tooltip="Count of shipments with billing errors" />, sortable: true, render: (r) => r.discrepancies_found.toLocaleString() },
+    { key: 'discrepancy_rate', header: <ColumnHeader title="Disc. Rate" tooltip="Discrepancies as % of total orders" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
+    { key: 'total_overcharge', header: <ColumnHeader title="Overcharge (₹)" tooltip="Total overcharge = Billed − Expected for discrepant shipments" />, sortable: true, render: (r) => formatCurrency(r.total_overcharge) },
+    { key: 'amount_recovered', header: <ColumnHeader title="Recovered (₹)" tooltip="Amount actually recovered from couriers" />, sortable: true, render: (r) => formatCurrency(r.amount_recovered) },
+    { key: 'recovery_rate', header: <ColumnHeader title="Recovery %" tooltip="Recovered ÷ Overcharge × 100" />, sortable: true, render: (r) => `${r.recovery_rate}%` },
+    { key: 'commission_earned', header: <ColumnHeader title="Commission (₹)" tooltip="Platform fee = Recovered × Commission% ÷ 100" />, sortable: true, render: (r) => formatCurrency(r.commission_earned) },
   ];
 
   const courierColumns: Column<any>[] = [
     { key: 'courier', header: <ColumnHeader title="Courier" tooltip="Courier partner name" />, sortable: true },
-    { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments" />, sortable: true, render: (r) => r.shipments.toLocaleString() },
-    { key: 'discrepancy_rate', header: <ColumnHeader title="Discrepancy Rate" tooltip="% shipments with errors" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
-    { key: 'total_overcharge', header: <ColumnHeader title="Total Overcharge (₹)" tooltip="Sum of overcharges" />, sortable: true, render: (r) => formatCurrency(r.total_overcharge) },
-    { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge (₹)" tooltip="Average per discrepant shipment" />, sortable: true, render: (r) => formatCurrency(r.avg_overcharge) },
-    { key: 'weight_errors', header: <ColumnHeader title="Weight Errors" tooltip="Weight discrepancy count" />, sortable: true },
-    { key: 'zone_errors', header: <ColumnHeader title="Zone Errors" tooltip="Zone discrepancy count" />, sortable: true },
-    { key: 'rto_errors', header: <ColumnHeader title="RTO Errors" tooltip="RTO overcharge count" />, sortable: true },
+    { key: 'shipments', header: <ColumnHeader title="Shipments" tooltip="Total shipments processed" />, sortable: true, render: (r) => r.shipments.toLocaleString() },
+    { key: 'total_billed', header: <ColumnHeader title="Billed (₹)" tooltip="Total amount billed by courier" />, sortable: true, render: (r) => formatCurrency(r.total_billed) },
+    { key: 'total_expected', header: <ColumnHeader title="Expected (₹)" tooltip="Total expected per rate card" />, sortable: true, render: (r) => formatCurrency(r.total_expected) },
+    { key: 'discrepancy_rate', header: <ColumnHeader title="Disc. Rate" tooltip="% of shipments with billing errors" />, sortable: true, render: (r) => `${r.discrepancy_rate}%` },
+    { key: 'total_overcharge', header: <ColumnHeader title="Overcharge (₹)" tooltip="Total overcharge amount" />, sortable: true, render: (r) => formatCurrency(r.total_overcharge) },
+    { key: 'avg_overcharge', header: <ColumnHeader title="Avg Overcharge (₹)" tooltip="Average overcharge per discrepant shipment" />, sortable: true, render: (r) => formatCurrency(r.avg_overcharge) },
+    { key: 'total_recovered', header: <ColumnHeader title="Recovered (₹)" tooltip="Amount recovered from this courier" />, sortable: true, render: (r) => formatCurrency(r.total_recovered) },
+    { key: 'recovery_rate', header: <ColumnHeader title="Recovery %" tooltip="Recovered ÷ Overcharge × 100" />, sortable: true, render: (r) => `${r.recovery_rate}%` },
+    { key: 'weight_errors', header: <ColumnHeader title="Weight" tooltip="Weight discrepancy count" />, sortable: true },
+    { key: 'zone_errors', header: <ColumnHeader title="Zone" tooltip="Zone discrepancy count" />, sortable: true },
+    { key: 'rto_errors', header: <ColumnHeader title="RTO" tooltip="RTO overcharge count" />, sortable: true },
   ];
 
   const financialColumns: Column<any>[] = [
@@ -257,8 +310,15 @@ export default function Reports() {
     { key: 'net_revenue', header: <ColumnHeader title="Net Revenue (₹)" tooltip="Commission minus GST" />, sortable: true, render: (r) => formatCurrency(r.net_revenue) },
   ];
 
+  // Handle pie chart click
+  const handlePieClick = (data: any) => {
+    if (data?.name) {
+      setPieDrillDown(data.name);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Reports</h1>
@@ -296,27 +356,53 @@ export default function Reports() {
           </div>
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-            <ChartCard title="Orders Over Time">
+            {/* Replaced "Orders Over Time" with Overcharge vs Recovery Trend */}
+            <ChartCard title="Overcharge vs Recovery Trend">
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={ordersOverTime}>
+                <BarChart data={discVsRecoveryTrend}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="month" tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                  <YAxis tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
-                  <Tooltip contentStyle={{ background: 'hsl(0, 0%, 100%)', border: '1px solid hsl(214, 32%, 91%)', borderRadius: '8px', fontSize: 13 }} />
-                  <Line type="monotone" dataKey="orders" stroke="hsl(221, 83%, 53%)" strokeWidth={2} dot={{ r: 3 }} />
-                </LineChart>
+                  <YAxis tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`} />
+                  <Tooltip contentStyle={{ background: 'hsl(0, 0%, 100%)', border: '1px solid hsl(214, 32%, 91%)', borderRadius: '8px', fontSize: 13 }} formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                  <Bar dataKey="overcharge" name="Overcharge" fill="hsl(0, 72%, 51%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="recovered" name="Recovered" fill="hsl(160, 84%, 39%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="gap" name="Unrecovered" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="Discrepancy Types">
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={stats.discrepancyTypes} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                    {stats.discrepancyTypes.map((_: any, i: number) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            {/* Pie chart with click drill-down */}
+            <ChartCard title="Discrepancy Types (click a slice for details)">
+              {pieDrillDown ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => setPieDrillDown(null)} className="gap-1">
+                      <ArrowLeft className="h-4 w-4" /> Back to chart
+                    </Button>
+                    <span className="text-sm font-semibold">{pieDrillDown} Discrepancies — {stats.drillDownMap[pieDrillDown]?.length || 0} records</span>
+                  </div>
+                  <DataTable columns={drillDownColumns} data={stats.drillDownMap[pieDrillDown] || []} pageSize={5} />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie
+                      data={stats.discrepancyTypes}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      onClick={handlePieClick}
+                      cursor="pointer"
+                    >
+                      {stats.discrepancyTypes.map((_: any, i: number) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </ChartCard>
           </div>
         </TabsContent>
@@ -362,15 +448,15 @@ export default function Reports() {
           <DataTable columns={financialColumns} data={financialSummary} pageSize={10} />
           <ChartCard title="Revenue Trend">
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={financialSummary}>
+              <BarChart data={financialSummary}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="month" tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
                 <YAxis tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`} />
                 <Tooltip formatter={(v: number) => formatCurrency(v)} />
                 <Legend />
-                <Line type="monotone" dataKey="commission" name="Commission" stroke="hsl(221, 83%, 53%)" strokeWidth={2} />
-                <Line type="monotone" dataKey="net_revenue" name="Net Revenue" stroke="hsl(187, 72%, 48%)" strokeWidth={2} />
-              </LineChart>
+                <Bar dataKey="commission" name="Commission" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="net_revenue" name="Net Revenue" fill="hsl(187, 72%, 48%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </ChartCard>
         </TabsContent>

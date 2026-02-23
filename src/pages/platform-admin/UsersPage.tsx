@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatDistanceToNow } from 'date-fns';
-import { Pencil, UserX, UserCheck, Loader2, AlertTriangle } from 'lucide-react';
+import { Pencil, UserX, UserCheck, Loader2, AlertTriangle, Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,8 +23,12 @@ const ROLE_COLORS: Record<string, string> = {
 export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQ, setSearchQ] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
+  const [adding, setAdding] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -42,6 +46,7 @@ export default function UsersPage() {
         email: u.email,
         role: u.role,
         is_active: u.is_active,
+        tenant_id: u.tenant_id,
         tenant_name: u.tenants?.company_name || '-',
         status: u.is_active ? 'active' : 'inactive',
         last_login: u.last_login || u.created_at,
@@ -49,10 +54,25 @@ export default function UsersPage() {
     }
   });
 
+  // Fetch tenants for add-user dropdown
+  const { data: tenants = [] } = useQuery({
+    queryKey: ['platform-tenants-for-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, company_name')
+        .eq('status', 'active')
+        .order('company_name');
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const filtered = users.filter((u: any) => {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
-    return matchesRole && matchesStatus;
+    const matchesSearch = !searchQ || u.full_name.toLowerCase().includes(searchQ.toLowerCase()) || u.email.toLowerCase().includes(searchQ.toLowerCase());
+    return matchesRole && matchesStatus && matchesSearch;
   });
 
   const openEdit = (user: any) => {
@@ -93,6 +113,42 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ['platform-users-page'] });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
+    }
+  };
+
+  const handleAddUser = async () => {
+    if (!addForm.email.trim()) {
+      toast({ variant: 'destructive', title: 'Email is required' });
+      return;
+    }
+    if (!addForm.tenant_id && addForm.role !== 'platform_admin') {
+      toast({ variant: 'destructive', title: 'Please select a tenant for non-platform roles' });
+      return;
+    }
+    setAdding(true);
+    try {
+      // Create auth user via Supabase admin (this will trigger the handle_new_user function)
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: addForm.email.trim(),
+        password: crypto.randomUUID().slice(0, 16) + 'A1!', // Temporary password
+        options: {
+          data: {
+            full_name: addForm.full_name.trim() || addForm.email.split('@')[0],
+            role: addForm.role,
+            tenant_id: addForm.role === 'platform_admin' ? null : addForm.tenant_id,
+          }
+        }
+      });
+      if (authError) throw authError;
+      
+      toast({ title: 'User created', description: 'A confirmation email has been sent. The user will need to reset their password on first login.' });
+      setAddOpen(false);
+      setAddForm({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
+      queryClient.invalidateQueries({ queryKey: ['platform-users-page'] });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Failed to create user', description: err.message });
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -165,13 +221,19 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Users</h1>
-        <p className="text-sm text-muted-foreground">Manage all users across tenants</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Users</h1>
+          <p className="text-sm text-muted-foreground">Manage all users across tenants</p>
+        </div>
+        <Button variant="hero" onClick={() => setAddOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" /> Add User
+        </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Filters + Search in one row */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <Select value={roleFilter} onValueChange={setRoleFilter}>
           <SelectTrigger className="w-44"><SelectValue placeholder="Filter by role" /></SelectTrigger>
           <SelectContent>
@@ -190,9 +252,66 @@ export default function UsersPage() {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search by name or email..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)} className="pl-9" />
+        </div>
       </div>
 
-      <DataTable columns={columns} data={filtered} searchable searchKeys={['full_name', 'email']} searchPlaceholder="Search users..." pageSize={10} />
+      <DataTable columns={columns} data={filtered} pageSize={10} />
+
+      {/* Add User Modal */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input value={addForm.full_name} onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })} placeholder="John Doe" />
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="user@company.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select value={addForm.role} onValueChange={(v) => setAddForm({ ...addForm, role: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="platform_admin">Platform Admin</SelectItem>
+                  <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
+                  <SelectItem value="accountant">Accountant</SelectItem>
+                  <SelectItem value="viewer">Viewer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {addForm.role !== 'platform_admin' && (
+              <div className="space-y-2">
+                <Label>Assign to Tenant *</Label>
+                <Select value={addForm.tenant_id} onValueChange={(v) => setAddForm({ ...addForm, tenant_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select a tenant" /></SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((t: any) => (
+                      <SelectItem key={t.id} value={t.id}>{t.company_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              A confirmation email will be sent. The user will need to set their password on first login.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button variant="hero" onClick={handleAddUser} disabled={adding}>
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit User Modal */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
