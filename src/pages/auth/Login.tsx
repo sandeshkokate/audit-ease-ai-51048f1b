@@ -101,19 +101,19 @@ export default function Login() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4 py-12 overflow-hidden">
-      {/* Rich background */}
+      {/* Rich layered background */}
       <div className="pointer-events-none absolute inset-0 gradient-mesh" />
-      <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-30" />
-      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/8 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-secondary/8 blur-[120px]" />
+      <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-25" />
+      <div className="pointer-events-none absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-secondary/10 blur-[140px]" />
 
-      <Card className="relative w-full max-w-md shadow-elevated border-border/50 bg-card/90 backdrop-blur-sm">
+      <Card className="relative w-full max-w-md shadow-elevated border-border/50 bg-card/95 backdrop-blur-sm">
         <CardHeader className="items-center space-y-4 pb-2">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground">
               AuditEase <span className="text-gradient">AI</span>
             </span>
           </Link>
@@ -166,7 +166,7 @@ export default function Login() {
               </Link>
             </div>
 
-            <Button type="submit" variant="hero" className="w-full" disabled={loading}>
+            <Button type="submit" variant="hero" className="w-full shadow-button" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
             </Button>
 

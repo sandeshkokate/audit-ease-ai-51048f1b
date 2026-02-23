@@ -295,7 +295,7 @@ export default function Landing() {
               {/* CTAs */}
               <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
                 <Link to="/contact">
-                  <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(221_83%_53%/0.4)] transition-shadow">
+                  <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(245_58%_51%/0.4)] transition-shadow">
                     Request a Demo <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
