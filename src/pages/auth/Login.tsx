@@ -43,23 +43,23 @@ export default function Login() {
       if (authError) throw authError;
 
       const userId = authData.user?.id;
-      if (!userId) throw new Error('No user returned');
+      if (!userId) throw new Error('No user returned from auth');
 
-      const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select('role, tenant_id, is_active')
-        .eq('id', userId)
-        .maybeSingle();
+      // Use SECURITY DEFINER RPC — bypasses ALL RLS, works for every role
+      const { data: rows, error: profileError } = await supabase
+        .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
       if (profileError) {
-        console.error('Profile query error:', profileError);
+        console.error('Profile RPC error:', profileError);
         await supabase.auth.signOut();
         throw new Error('Unable to load your profile. Please try again.');
       }
 
+      const profile = rows?.[0] ?? null;
+
       if (!profile) {
         await supabase.auth.signOut();
-        throw new Error('Account not found. Please contact your administrator.');
+        throw new Error('Account setup is incomplete. Please contact your administrator.');
       }
 
       if (profile.is_active === false) {
@@ -67,10 +67,12 @@ export default function Login() {
         throw new Error('Your account has been deactivated. Contact your administrator.');
       }
 
+      // Update last login (fire and forget — do not await)
+      supabase.rpc('update_last_login', { lookup_user_id: userId }).then(() => {});
+
       const role = profile.role as UserRole;
       navigate(ROLE_REDIRECTS[role] || '/');
 
-      supabase.from('users').update({ last_login: new Date().toISOString() }).eq('id', userId).then(() => {});
     } catch (err: any) {
       toast({
         variant: 'destructive',

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, UserRole } from '@/types';
@@ -22,58 +22,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
   const { toast } = useToast();
-  const fetchingRef = useRef(false);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
-    // Prevent duplicate concurrent fetches
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
-
     try {
       setProfileError(false);
 
-      const { data, error } = await supabase
-        .rpc('get_user_profile_for_login', { lookup_user_id: userId })
-        .maybeSingle();
+      // Use SECURITY DEFINER RPC — bypasses ALL RLS, works for every role
+      const { data: rows, error } = await supabase
+        .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
-      if (error || !data) {
-        console.error('Failed to fetch user profile:', error?.message);
-        setUser(null);
+      if (error) {
+        console.error('Profile fetch error:', error.message);
         setProfileError(true);
+        setUser(null);
+        setLoading(false);
         return;
       }
 
-      setUser(data as unknown as User);
+      const profile = rows?.[0] ?? null;
+
+      if (!profile) {
+        console.error('Profile not found for user:', userId);
+        setProfileError(true);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      setUser(profile as User);
+      setProfileError(false);
     } catch (err) {
-      console.error('Error fetching user profile:', err);
-      setUser(null);
+      console.error('Unexpected error fetching profile:', err);
       setProfileError(true);
+      setUser(null);
     } finally {
       setLoading(false);
-      fetchingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    // Safety timeout: if loading is still true after 8s, force it off
-    const safetyTimer = setTimeout(() => {
-      setLoading((prev) => {
-        if (prev) {
-          console.warn('Auth loading safety timeout reached');
-          setProfileError(true);
-          return false;
-        }
-        return prev;
-      });
-    }, 8000);
+    let mounted = true;
 
-    // Single listener handles both initial session and future changes
+    // Single source of truth: onAuthStateChange handles both initial and subsequent sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
+        if (!mounted) return;
+
         setSession(newSession);
+
         if (newSession?.user) {
-          // Use setTimeout to avoid Supabase auth deadlock
-          setTimeout(() => fetchUserProfile(newSession.user.id), 0);
+          await fetchUserProfile(newSession.user.id);
         } else {
           setUser(null);
           setProfileError(false);
@@ -82,7 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Safety timeout: if still loading after 10 seconds, unblock the UI
+    const safetyTimer = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+        setProfileError(true);
+      }
+    }, 10000);
+
     return () => {
+      mounted = false;
       clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
@@ -118,9 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [toast]);
 
   const signOut = async () => {
+    localStorage.removeItem('session_start');
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setProfileError(false);
   };
 
   return (
