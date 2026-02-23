@@ -43,16 +43,16 @@
 
     --radius: 0.75rem;
 
-    /* Sidebar — refined warm slate */
-    --sidebar-background: 225 25% 12%;
-    --sidebar-foreground: 220 20% 92%;
-    --sidebar-primary: 245 58% 62%;
+    /* Sidebar — clean light */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 224 32% 12%;
+    --sidebar-primary: 245 58% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 20% 18%;
-    --sidebar-accent-foreground: 220 20% 92%;
-    --sidebar-border: 225 18% 18%;
+    --sidebar-accent: 245 58% 51% / 0.08;
+    --sidebar-accent-foreground: 245 58% 51%;
+    --sidebar-border: 220 16% 92%;
     --sidebar-ring: 245 58% 51%;
-    --sidebar-muted: 220 14% 55%;
+    --sidebar-muted: 220 12% 46%;
 
     /* Rich gradients */
     --gradient-primary: linear-gradient(135deg, hsl(245 58% 51%), hsl(280 60% 50%), hsl(320 65% 48%));
@@ -61,7 +61,7 @@
     --gradient-mesh: radial-gradient(ellipse at 15% 50%, hsl(245 58% 51% / 0.1) 0%, transparent 50%),
                      radial-gradient(ellipse at 85% 20%, hsl(168 72% 40% / 0.08) 0%, transparent 50%),
                      radial-gradient(ellipse at 50% 80%, hsl(280 60% 50% / 0.06) 0%, transparent 50%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(225 25% 12%), hsl(225 28% 8%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 20% 97%));
     --gradient-cta: linear-gradient(135deg, hsl(245 58% 51%), hsl(245 70% 60%));
 
     /* Shadows */
@@ -96,13 +96,13 @@
     --border: 225 18% 18%;
     --input: 225 18% 18%;
     --ring: 245 58% 60%;
-    --sidebar-background: 225 28% 5%;
+    --sidebar-background: 225 20% 12%;
     --sidebar-foreground: 220 20% 90%;
-    --sidebar-primary: 245 58% 65%;
+    --sidebar-primary: 245 58% 70%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 20% 12%;
-    --sidebar-accent-foreground: 220 20% 90%;
-    --sidebar-border: 225 18% 12%;
+    --sidebar-accent: 245 58% 60% / 0.15;
+    --sidebar-accent-foreground: 245 58% 70%;
+    --sidebar-border: 225 18% 18%;
     --sidebar-ring: 245 58% 60%;
   }
 }
@@ -175,7 +175,7 @@
     background-clip: text;
   }
 
-  /* Sidebar — rich dark with warm undertone */
+  /* Sidebar — clean light gradient */
   .sidebar-rich {
     background: var(--gradient-sidebar);
   }

@@ -69,7 +69,7 @@ export default function ViewerLayout() {
           </div>
           <HeaderActions />
         </header>
-        <main className="flex-1 overflow-auto p-4 md:p-6"><Outlet /></main>
+        <main className="flex-1 overflow-auto p-3 md:p-4"><Outlet /></main>
       </div>
     </div>
   );
