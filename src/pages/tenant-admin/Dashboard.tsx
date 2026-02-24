@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Package, AlertTriangle, Mail, IndianRupee, Upload, CheckSquare, Square, RefreshCw, Settings } from 'lucide-react';
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -118,7 +118,7 @@ export default function TenantDashboard() {
         .eq('tenant_id', tenantId)
         .gte('created_at', sixMonthsAgo.toISOString());
 
-      const months: { month: string; recovered: number }[] = [];
+      const months: { month: string; recovered: number; disputed: number }[] = [];
       for (let i = 5; i >= 0; i--) {
         const mStart = startOfMonth(subMonths(new Date(), i));
         const mEnd = endOfMonth(subMonths(new Date(), i));
@@ -129,7 +129,8 @@ export default function TenantDashboard() {
         const recovered = inMonth
           .filter(l => l.dispute_status === 'recovered')
           .reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
-        months.push({ month: format(mStart, 'MMM'), recovered });
+        const disputed = inMonth.reduce((sum, l) => sum + (l.discrepancy_amount || 0), 0);
+        months.push({ month: format(mStart, 'MMM'), recovered, disputed });
       }
       return months;
     },
@@ -295,17 +296,17 @@ export default function TenantDashboard() {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Orders Processed" value={(stats?.totalOrders ?? 0).toLocaleString()} change={stats?.ordersChange ?? 0} icon={Package} />
-        <MetricCard title="Discrepancies Found" value={`${stats?.discrepancyCount ?? 0} (${formatCurrency(stats?.discrepancyAmount ?? 0)})`} change={0} icon={AlertTriangle} iconColor="text-warning" />
-        <MetricCard title="Disputes Active" value={String(stats?.activeDisputes ?? 0)} change={0} icon={Mail} iconColor="text-primary" />
-        <MetricCard title="Amount Recovered" value={`${formatCurrency(stats?.recoveredAmount ?? 0)} (${(stats?.recoveryRate ?? 0).toFixed(0)}%)`} change={stats?.recoveryChange ?? 0} icon={IndianRupee} iconColor="text-success" />
+        <MetricCard title="Orders Processed" value={(stats?.totalOrders ?? 0).toLocaleString()} change={stats?.ordersChange ?? 0} icon={Package} onClick={() => navigate('/tenant-admin/reports?tab=audit')} />
+        <MetricCard title="Discrepancies Found" value={`${stats?.discrepancyCount ?? 0} (${formatCurrency(stats?.discrepancyAmount ?? 0)})`} change={0} icon={AlertTriangle} iconColor="text-warning" onClick={() => navigate('/tenant-admin/reports?tab=discrepancy')} />
+        <MetricCard title="Disputes Active" value={String(stats?.activeDisputes ?? 0)} change={0} icon={Mail} iconColor="text-primary" onClick={() => navigate('/tenant-admin/disputes')} />
+        <MetricCard title="Amount Recovered" value={`${formatCurrency(stats?.recoveredAmount ?? 0)} (${(stats?.recoveryRate ?? 0).toFixed(0)}%)`} change={stats?.recoveryChange ?? 0} icon={IndianRupee} iconColor="text-success" onClick={() => navigate('/tenant-admin/reports?tab=financial')} />
       </div>
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <ChartCard title="Discrepancy Breakdown">
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie data={discrepancyTypes || []} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <Pie data={discrepancyTypes || []} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} onClick={(data) => navigate(`/tenant-admin/reports?tab=discrepancy&type=${data.name.toLowerCase()}`)} style={{ cursor: 'pointer' }}>
                 {(discrepancyTypes || []).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
               <Tooltip />
@@ -314,13 +315,15 @@ export default function TenantDashboard() {
         </ChartCard>
         <ChartCard title="Monthly Recovery Trend">
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={monthlyTrend || []}>
+            <BarChart data={monthlyTrend || []}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="month" tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} />
               <YAxis tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`} />
               <Tooltip formatter={(v: number) => formatCurrency(v)} />
-              <Line type="monotone" dataKey="recovered" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={{ r: 3 }} />
-            </LineChart>
+              <Legend />
+              <Bar dataKey="disputed" name="Disputed (₹)" fill="hsl(38, 92%, 50%)" radius={[4,4,0,0]} />
+              <Bar dataKey="recovered" name="Recovered (₹)" fill="hsl(160, 84%, 39%)" radius={[4,4,0,0]} />
+            </BarChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
