@@ -34,6 +34,8 @@ const ACTION_MAP: Record<string, ActionInfo> = {
 
   // ── Recovery & Financials ──────────────────────────────
   'Recovery recorded':        { label: 'Recovery Recorded',      description: 'A recovery/credit note amount was recorded',               color: 'bg-success/10 text-success border-success/20' },
+  'dispute_recovered':        { label: 'Dispute Recovered',      description: 'A dispute was marked as recovered with a credit note',     color: 'bg-success/10 text-success border-success/20' },
+  'Amount recovered':         { label: 'Amount Recovered',       description: 'A recovery amount was recorded against a dispute',         color: 'bg-success/10 text-success border-success/20' },
   'Invoice generated':        { label: 'Invoice Generated',      description: 'A commission invoice was generated',                       color: 'bg-warning/10 text-warning border-warning/20' },
 
   // ── User & Auth ────────────────────────────────────────
