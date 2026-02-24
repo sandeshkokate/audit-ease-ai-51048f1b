@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
@@ -10,29 +10,7 @@ import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
-
-// Consistent action map — same as ActivityLogs page
-const ACTION_MAP: Record<string, { label: string; color: string; description: string }> = {
-  'user.login': { label: 'User Login', color: 'bg-primary/10 text-primary border-primary/20', description: 'A user signed into the platform' },
-  'user.logout': { label: 'User Logout', color: 'bg-muted text-muted-foreground border-border', description: 'A user signed out' },
-  'csv.upload': { label: 'CSV Upload', color: 'bg-success/10 text-success border-success/20', description: 'Shipment data file uploaded' },
-  'dispute.created': { label: 'Dispute Raised', color: 'bg-warning/10 text-warning border-warning/20', description: 'New billing dispute raised' },
-  'dispute.updated': { label: 'Dispute Updated', color: 'bg-accent/10 text-accent border-accent/20', description: 'Dispute status changed' },
-  'tenant.created': { label: 'Tenant Onboarded', color: 'bg-secondary/10 text-secondary border-secondary/20', description: 'New tenant added' },
-  'settings.updated': { label: 'Settings Changed', color: 'bg-primary/10 text-primary border-primary/20', description: 'Configuration modified' },
-  'user.created': { label: 'User Created', color: 'bg-success/10 text-success border-success/20', description: 'New user account created' },
-  'invoice.generated': { label: 'Invoice Generated', color: 'bg-warning/10 text-warning border-warning/20', description: 'Commission invoice generated' },
-  'recovery.recorded': { label: 'Recovery Recorded', color: 'bg-success/10 text-success border-success/20', description: 'Recovery amount recorded' },
-};
-
-function getActionInfo(action: string) {
-  const normalized = action?.toLowerCase().replace(/\s+/g, '.') || '';
-  if (ACTION_MAP[normalized]) return ACTION_MAP[normalized];
-  for (const [pattern, info] of Object.entries(ACTION_MAP)) {
-    if (normalized.includes(pattern.split('.')[0])) return info;
-  }
-  return { label: action || 'Activity', color: 'bg-muted text-muted-foreground border-border', description: '' };
-}
+import { getActionInfo, formatDetails, formatEntityType } from '@/lib/activity-actions';
 
 export default function PlatformDashboard() {
   const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
@@ -76,13 +54,11 @@ export default function PlatformDashboard() {
       for (let i = 5; i >= 0; i--) {
         const monthStart = startOfMonth(subMonths(new Date(), i));
         const monthEnd = endOfMonth(subMonths(new Date(), i));
-
         const { data } = await supabase
           .from('tenants')
           .select('id')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
-
         months.push({
           month: format(monthStart, 'MMM yyyy'),
           sortKey: format(monthStart, 'yyyy-MM'),
@@ -101,13 +77,11 @@ export default function PlatformDashboard() {
       for (let i = 5; i >= 0; i--) {
         const monthStart = startOfMonth(subMonths(new Date(), i));
         const monthEnd = endOfMonth(subMonths(new Date(), i));
-
         const { data } = await supabase
           .from('invoices')
           .select('commission_amount')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
-
         const revenue = data?.reduce((s, d) => s + (d.commission_amount || 0), 0) || 0;
         months.push({
           month: format(monthStart, 'MMM yyyy'),
@@ -119,36 +93,36 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Recent activity logs
+  // Recent activity logs — same query shape as ActivityLogs page
   const { data: activityLogs = [] } = useQuery({
     queryKey: ['platform-activity-logs'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('activity_logs')
-        .select(`
-          *,
-          users:user_id(full_name, email),
-          tenants:tenant_id(company_name)
-        `)
+        .select(`*, users:user_id(full_name, email), tenants:tenant_id(company_name)`)
         .order('created_at', { ascending: false })
         .limit(50);
-      
       if (error) throw error;
-      
-      return (data || []).map((log: any) => ({
-        id: log.id,
-        time: log.created_at,
-        tenant: log.tenants?.company_name || 'System',
-        user: log.user_id ? (log.users?.full_name || log.users?.email || 'Unknown') : 'System',
-        action: log.action || log.details || 'Activity'
-      }));
+      return (data || []).map((log: any) => {
+        const actionInfo = getActionInfo(log.action);
+        return {
+          id: log.id,
+          time: log.created_at,
+          tenant: log.tenants?.company_name || 'System',
+          user: log.user_id ? (log.users?.full_name || log.users?.email || 'Unknown') : 'System',
+          action: log.action || 'Activity',
+          actionLabel: actionInfo.label,
+          actionColor: actionInfo.color,
+          summary: formatDetails(log.details),
+        };
+      });
     }
   });
 
   // Unique action legends from actual data
   const uniqueActions = useMemo(() => {
     const seen = new Map<string, { label: string; color: string; description: string }>();
-    activityLogs.forEach(log => {
+    activityLogs.forEach((log: any) => {
       const info = getActionInfo(log.action);
       if (!seen.has(info.label)) seen.set(info.label, info);
     });
@@ -185,14 +159,16 @@ export default function PlatformDashboard() {
     {
       key: 'action',
       header: 'Action',
-      render: (row) => {
-        const info = getActionInfo(row.action);
-        return (
-          <Badge variant="outline" className={info.color}>
-            {info.label}
-          </Badge>
-        );
-      },
+      render: (row) => (
+        <Badge variant="outline" className={row.actionColor}>{row.actionLabel}</Badge>
+      ),
+    },
+    {
+      key: 'summary',
+      header: 'Summary',
+      render: (row) => (
+        <span className="text-sm text-muted-foreground">{row.summary}</span>
+      ),
     },
   ];
 
@@ -203,12 +179,12 @@ export default function PlatformDashboard() {
         <p className="text-sm text-muted-foreground">Platform overview and key metrics</p>
       </div>
 
-      {/* Metric Cards — clickable drill-down */}
+      {/* Metric Cards — each links to a specific report tab */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" href="/platform-admin/tenants" />
-        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" href="/platform-admin/tenants" />
-        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" href="/platform-admin/reports" />
-        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" href="/platform-admin/reports" />
+        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" href="/platform-admin/reports?tab=tenant" />
+        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" href="/platform-admin/reports?tab=tenant" />
+        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" href="/platform-admin/reports?tab=financial" />
+        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" href="/platform-admin/reports?tab=courier" />
       </div>
 
       {/* Charts */}
@@ -253,8 +229,8 @@ export default function PlatformDashboard() {
       {/* Recent Activity */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-2">Recent Activity</h2>
-        
-        {/* Action Legends — consistent with ActivityLogs page */}
+
+        {/* Action Legends */}
         {uniqueActions.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {uniqueActions.map((legend) => (
@@ -262,9 +238,6 @@ export default function PlatformDashboard() {
                 <Badge variant="outline" className={`${legend.color} text-xs`}>
                   {legend.label}
                 </Badge>
-                {legend.description && (
-                  <span className="text-xs text-muted-foreground hidden sm:inline">— {legend.description}</span>
-                )}
               </div>
             ))}
           </div>
