@@ -192,7 +192,7 @@ export default function UsersPage() {
       key: 'status', header: <ColumnHeader title="Status" tooltip="Active (can log in), Inactive (access revoked)" />,
       render: (row) => (
         <Badge variant="outline" className={row.status === 'active' ? 'bg-success/10 text-success border-success/20' : 'bg-muted text-muted-foreground border-border'}>
-          {row.status}
+          {row.status === 'active' ? 'Active' : 'Inactive'}
         </Badge>
       ),
     },
