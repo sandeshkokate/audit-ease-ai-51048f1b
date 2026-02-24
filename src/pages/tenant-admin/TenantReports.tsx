@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ChartCard from '@/components/dashboard/ChartCard';
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -36,6 +38,7 @@ export default function TenantReports() {
   useDocumentTitle('Reports');
   const { user } = useAuth();
   const [dateRange, setDateRange] = useState('last_30');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
   const startDate = useMemo(() => getStartDate(dateRange), [dateRange]);
 
   // Fetch tenant commission
@@ -62,7 +65,7 @@ export default function TenantReports() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('courier_name, discrepancy_amount, recovery_amount, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, dispute_status, created_at, billed_amount, expected_amount, recovery_date')
+        .select('courier_name, discrepancy_amount, recovery_amount, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, dispute_status, created_at, billed_amount, expected_amount, recovery_date, awb')
         .eq('tenant_id', user.tenant_id)
         .gte('created_at', startDate.toISOString());
       if (error) throw error;
@@ -296,15 +299,64 @@ export default function TenantReports() {
           <div className="grid gap-4 lg:grid-cols-2">
             <ChartCard title="By Type">
               <ResponsiveContainer width="100%" height={260}>
-                <PieChart><Pie data={discrepancyTypes} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>{discrepancyTypes.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie><Tooltip /></PieChart>
+                <PieChart>
+                  <Pie
+                    data={discrepancyTypes} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={(data) => setSelectedType(selectedType === data.name ? null : data.name)}
+                  >
+                    {discrepancyTypes.map((entry, i) => (
+                      <Cell key={i} fill={COLORS[i]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
               </ResponsiveContainer>
             </ChartCard>
-            <ChartCard title="Trend">
+            <ChartCard title="Monthly disputed vs recovered">
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={auditSummary}><CartesianGrid strokeDasharray="3 3" className="stroke-border" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Line type="monotone" dataKey="discrepancies" stroke="hsl(221, 83%, 53%)" strokeWidth={2} /></LineChart>
+                <BarChart data={monthlyRecovery}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tickFormatter={v => `₹${(v/1000).toFixed(0)}K`} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                  <Bar dataKey="disputed_amount" name="Disputed (₹)" fill="hsl(38, 92%, 50%)" radius={[4,4,0,0]} />
+                  <Bar dataKey="recovered" name="Recovered (₹)" fill="hsl(160, 84%, 39%)" radius={[4,4,0,0]} />
+                </BarChart>
               </ResponsiveContainer>
             </ChartCard>
           </div>
+          {selectedType && (
+            <Card className="shadow-card">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-sm">{selectedType} discrepancies — detailed breakdown</p>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedType(null)}>Clear filter</Button>
+                </div>
+                <DataTable
+                  columns={[
+                    { key: 'awb', header: 'AWB', sortable: true },
+                    { key: 'courier_name', header: 'Courier', sortable: true },
+                    { key: 'discrepancy_amount', header: 'Amount (₹)', sortable: true, render: (r: any) => formatCurrency(r.discrepancy_amount) },
+                    { key: 'dispute_status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.dispute_status || 'detected'}</Badge> },
+                  ] as any}
+                  data={auditLogs.filter(l => {
+                    if (selectedType === 'Weight') return l.has_weight_discrepancy;
+                    if (selectedType === 'Zone') return l.has_zone_discrepancy;
+                    if (selectedType === 'RTO') return l.has_rto_overcharge;
+                    if (selectedType === 'Damage') return l.has_damage_misclassification;
+                    return (l.discrepancy_amount ?? 0) > 0 && !l.has_weight_discrepancy && !l.has_zone_discrepancy && !l.has_rto_overcharge && !l.has_damage_misclassification;
+                  })}
+                  pageSize={10}
+                  searchable
+                  searchKeys={['awb', 'courier_name']}
+                  searchPlaceholder="Search within this type..."
+                />
+              </CardContent>
+            </Card>
+          )}
           <DataTable columns={[
             { key: 'name', header: <ColumnHeader title="Discrepancy Type" tooltip="Category of billing error" />, sortable: true },
             { key: 'count', header: <ColumnHeader title="Count" tooltip="Number of occurrences" />, sortable: true },
@@ -355,11 +407,6 @@ export default function TenantReports() {
             { key: 'commission_rate', header: <ColumnHeader title="Commission %" tooltip="Rate charged" />, render: () => `${tenantCommission}%` },
             { key: 'net_savings', header: <ColumnHeader title="Net Savings (₹)" tooltip="Gross minus commission" />, sortable: true, render: r => <span className="font-semibold text-success">{formatCurrency(r.net_savings)}</span> },
           ] as Column<any>[]} data={financialImpact} pageSize={10} />
-          <ChartCard title="Savings Trend">
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={financialImpact}><CartesianGrid strokeDasharray="3 3" className="stroke-border" /><XAxis dataKey="month" /><YAxis tickFormatter={v => `₹${(v/1000).toFixed(0)}K`} /><Tooltip formatter={(v: number) => formatCurrency(v)} /><Legend /><Line type="monotone" dataKey="gross_savings" name="Gross" stroke="hsl(221, 83%, 53%)" strokeWidth={2} /><Line type="monotone" dataKey="net_savings" name="Net" stroke="hsl(160, 84%, 39%)" strokeWidth={2} /></LineChart>
-            </ResponsiveContainer>
-          </ChartCard>
         </TabsContent>
       </Tabs>
     </div>
