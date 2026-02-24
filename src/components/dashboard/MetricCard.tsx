@@ -1,6 +1,7 @@
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface MetricCardProps {
   title: string;
@@ -8,6 +9,7 @@ interface MetricCardProps {
   change?: number;
   icon: LucideIcon;
   iconColor?: string;
+  href?: string;
 }
 
 const iconBgMap: Record<string, string> = {
@@ -19,11 +21,19 @@ const iconBgMap: Record<string, string> = {
   'text-destructive': 'bg-destructive/10',
 };
 
-export default function MetricCard({ title, value, change, icon: Icon, iconColor = 'text-primary' }: MetricCardProps) {
+export default function MetricCard({ title, value, change, icon: Icon, iconColor = 'text-primary', href }: MetricCardProps) {
+  const navigate = useNavigate();
   const isPositive = change !== undefined && change >= 0;
+  const isClickable = !!href;
 
   return (
-    <Card className="shadow-card hover:shadow-card-hover transition-all duration-300 border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden relative group">
+    <Card
+      className={cn(
+        "shadow-card hover:shadow-card-hover transition-all duration-300 border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden relative group",
+        isClickable && "cursor-pointer hover:border-primary/30"
+      )}
+      onClick={isClickable ? () => navigate(href!) : undefined}
+    >
       {/* Subtle top accent bar */}
       <div className={cn(
         'absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity gradient-primary'
@@ -39,6 +49,9 @@ export default function MetricCard({ title, value, change, icon: Icon, iconColor
                 <span>{isPositive ? '+' : ''}{change.toFixed(1)}%</span>
                 <span className="text-muted-foreground">vs last period</span>
               </div>
+            )}
+            {isClickable && (
+              <p className="text-xs text-primary/70 group-hover:text-primary transition-colors">Click to view details →</p>
             )}
           </div>
           <div className={cn('rounded-xl p-3 transition-transform group-hover:scale-105', iconBgMap[iconColor] || 'bg-primary/10')}>

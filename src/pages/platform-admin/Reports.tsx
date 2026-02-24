@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,9 +46,19 @@ function getDateRange(key: string): { from: Date; to: Date } {
 }
 
 export default function Reports() {
+  const [searchParams] = useSearchParams();
   const [dateRange, setDateRange] = useState('last_30');
   const [pieDrillDown, setPieDrillDown] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const range = useMemo(() => getDateRange(dateRange), [dateRange]);
+
+  // Handle ?tab= query param for drill-down from cards
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['overview', 'tenant', 'courier', 'financial'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Fetch tenants
   const { data: tenantsRaw = [], isLoading: tenantsLoading } = useQuery({
@@ -337,7 +348,7 @@ export default function Reports() {
         </Select>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-muted/50">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tenant">Tenant Performance</TabsTrigger>
@@ -348,11 +359,11 @@ export default function Reports() {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-            <MetricCard title="Total Orders" value={(stats.totalOrders).toLocaleString()} icon={FileBarChart} />
-            <MetricCard title="Discrepancies Found" value={(stats.discrepancyCount).toLocaleString()} icon={TrendingUp} iconColor="text-warning" />
-            <MetricCard title="Detection Rate" value={`${stats.detectionRate}%`} icon={Target} iconColor="text-primary" />
-            <MetricCard title="Amount Recovered" value={formatCurrency(stats.totalRecovered)} icon={IndianRupee} iconColor="text-success" />
-            <MetricCard title="Active Tenants" value={String(activeTenantCount)} icon={Building2} />
+            <MetricCard title="Total Orders" value={(stats.totalOrders).toLocaleString()} icon={FileBarChart} href="/platform-admin/reports?tab=courier" />
+            <MetricCard title="Discrepancies Found" value={(stats.discrepancyCount).toLocaleString()} icon={TrendingUp} iconColor="text-warning" href="/platform-admin/reports?tab=courier" />
+            <MetricCard title="Detection Rate" value={`${stats.detectionRate}%`} icon={Target} iconColor="text-primary" href="/platform-admin/reports?tab=tenant" />
+            <MetricCard title="Amount Recovered" value={formatCurrency(stats.totalRecovered)} icon={IndianRupee} iconColor="text-success" href="/platform-admin/reports?tab=financial" />
+            <MetricCard title="Active Tenants" value={String(activeTenantCount)} icon={Building2} href="/platform-admin/tenants" />
           </div>
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
