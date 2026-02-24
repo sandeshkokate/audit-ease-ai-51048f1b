@@ -135,7 +135,7 @@ export default function Team() {
       }
 
       toast({
-        title: '✅ Invitation created!',
+        title: '✅ Invitation created',
         description: 'Email sent. Invite link also copied to clipboard.',
       });
       await navigator.clipboard.writeText(inviteLink).catch(() => {});
@@ -221,7 +221,7 @@ export default function Team() {
   const handleResendLink = async (token: string) => {
     const inviteLink = `${window.location.origin}/invite/${token}`;
     await navigator.clipboard.writeText(inviteLink);
-    toast({ title: 'Invite link copied to clipboard' });
+    toast({ title: 'Link copied' });
   };
 
   const roleLabels: Record<string, string> = {
@@ -251,7 +251,7 @@ export default function Team() {
         </div>
         <Button className="gap-2" onClick={() => setInviteModal(true)}>
           <UserPlus className="h-4 w-4" />
-          Invite Member
+          Invite member
         </Button>
       </div>
 
@@ -346,7 +346,7 @@ export default function Team() {
                     <Badge variant="outline">{roleLabels[inv.role] || inv.role}</Badge>
                     <Button variant="outline" size="sm" className="gap-1" onClick={() => handleResendLink(inv.token)}>
                       <Link2 className="h-3.5 w-3.5" />
-                      Copy Link
+                      Copy link
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleCancelInvitation(inv.id, inv.email)}>
                       Cancel
@@ -392,7 +392,7 @@ export default function Team() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteModal(false)}>Cancel</Button>
             <Button onClick={handleInvite} disabled={inviting}>
-              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create & Copy Link'}
+              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send invitation'}
             </Button>
           </DialogFooter>
         </DialogContent>

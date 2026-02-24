@@ -11,6 +11,7 @@ import MetricCard from '@/components/dashboard/MetricCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { Download, FileBarChart, TrendingUp, IndianRupee, Building2, Loader2, Target, ArrowLeft } from 'lucide-react';
+import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -283,7 +284,7 @@ export default function Reports() {
   const tenantColumns: Column<any>[] = [
     { key: 'name', header: <ColumnHeader title="Tenant" tooltip="Company name" />, sortable: true },
     { key: 'status', header: <ColumnHeader title="Status" tooltip="Tenant status" />, sortable: true, render: (r) => (
-      <Badge variant="outline" className={STATUS_COLORS[r.status] || ''}>{r.status.charAt(0).toUpperCase() + r.status.slice(1)}</Badge>
+      <Badge variant="outline" className={STATUS_COLORS[r.status] || ''}>{getLabel(TENANT_STATUS_LABELS, r.status)}</Badge>
     )},
     { key: 'total_orders', header: <ColumnHeader title="Total Orders" tooltip="Total shipments audited in selected period" />, sortable: true, render: (r) => r.total_orders.toLocaleString() },
     { key: 'total_billed', header: <ColumnHeader title="Billed (₹)" tooltip="Sum of amounts billed by couriers" />, sortable: true, render: (r) => formatCurrency(r.total_billed) },

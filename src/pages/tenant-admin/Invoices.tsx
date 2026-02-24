@@ -88,7 +88,7 @@ export default function Invoices() {
   <div class="divider"></div>
   <div class="meta-grid">
     <div class="meta-item"><label>Billing Period</label><p>${invoice.invoice_period_start} to ${invoice.invoice_period_end}</p></div>
-    <div class="meta-item"><label>Status</label><p><span class="badge ${invoice.status === 'paid' ? 'badge-paid' : 'badge-pending'}">${(invoice.status || 'pending').toUpperCase()}</span></p></div>
+    <div class="meta-item"><label>Status</label><p><span class="badge ${invoice.status === 'paid' ? 'badge-paid' : 'badge-pending'}">${{ generated: 'Generated', pending: 'Pending', paid: 'Paid', overdue: 'Overdue' }[invoice.status] || 'Pending'}</span></p></div>
     <div class="meta-item"><label>Invoice Date</label><p>${invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('en-IN') : '-'}</p></div>
     <div class="meta-item"><label>Due Date</label><p>${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-IN') : 'On receipt'}</p></div>
   </div>
@@ -201,7 +201,7 @@ export default function Invoices() {
           </Select>
           <Button variant="hero" className="gap-2" onClick={handleGenerate} disabled={generating}>
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            Generate Invoice
+            Generate invoice
           </Button>
         </CardContent>
       </Card>
