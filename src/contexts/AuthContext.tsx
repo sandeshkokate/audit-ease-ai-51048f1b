@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
   const fetchingRef = useRef(false);
+  const loadedRef = useRef(false);
   const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async (userId: string) => {
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(profile as User);
       setProfileError(false);
+      loadedRef.current = true;
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
       setProfileError(true);
@@ -91,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Safety timeout: if still loading after 10 seconds, unblock the UI
     const safetyTimer = setTimeout(() => {
-      if (mounted) {
+      if (mounted && !loadedRef.current) {
         setLoading(false);
         setProfileError(true);
       }
