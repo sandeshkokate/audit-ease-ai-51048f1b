@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
@@ -13,6 +14,7 @@ import { formatCurrency } from '@/lib/utils';
 import { getActionInfo, formatDetails, formatEntityType } from '@/lib/activity-actions';
 
 export default function PlatformDashboard() {
+  const navigate = useNavigate();
   const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
     queryKey: ['platform-tenants'],
     queryFn: async () => {
@@ -181,10 +183,10 @@ export default function PlatformDashboard() {
 
       {/* Metric Cards — each links to a specific report tab */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" href="/platform-admin/reports?tab=tenant" />
-        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" href="/platform-admin/reports?tab=tenant" />
-        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" href="/platform-admin/reports?tab=financial" />
-        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" href="/platform-admin/reports?tab=courier" />
+        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" onClick={() => navigate('/platform-admin/reports?tab=tenant')} />
+        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" onClick={() => navigate('/platform-admin/reports?tab=tenant')} />
+        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" onClick={() => navigate('/platform-admin/reports?tab=financial')} />
+        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" onClick={() => navigate('/platform-admin/reports?tab=courier')} />
       </div>
 
       {/* Charts */}

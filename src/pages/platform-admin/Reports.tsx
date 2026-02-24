@@ -360,11 +360,11 @@ export default function Reports() {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-            <MetricCard title="Total Orders" value={(stats.totalOrders).toLocaleString()} icon={FileBarChart} href="/platform-admin/reports?tab=courier" />
-            <MetricCard title="Discrepancies Found" value={(stats.discrepancyCount).toLocaleString()} icon={TrendingUp} iconColor="text-warning" href="/platform-admin/reports?tab=courier" />
-            <MetricCard title="Detection Rate" value={`${stats.detectionRate}%`} icon={Target} iconColor="text-primary" href="/platform-admin/reports?tab=tenant" />
-            <MetricCard title="Amount Recovered" value={formatCurrency(stats.totalRecovered)} icon={IndianRupee} iconColor="text-success" href="/platform-admin/reports?tab=financial" />
-            <MetricCard title="Active Tenants" value={String(activeTenantCount)} icon={Building2} href="/platform-admin/tenants" />
+            <MetricCard title="Total Orders" value={(stats.totalOrders).toLocaleString()} icon={FileBarChart} onClick={() => setActiveTab('courier')} />
+            <MetricCard title="Discrepancies Found" value={(stats.discrepancyCount).toLocaleString()} icon={TrendingUp} iconColor="text-warning" onClick={() => setActiveTab('courier')} />
+            <MetricCard title="Detection Rate" value={`${stats.detectionRate}%`} icon={Target} iconColor="text-primary" onClick={() => setActiveTab('tenant')} />
+            <MetricCard title="Amount Recovered" value={formatCurrency(stats.totalRecovered)} icon={IndianRupee} iconColor="text-success" onClick={() => setActiveTab('financial')} />
+            <MetricCard title="Active Tenants" value={String(activeTenantCount)} icon={Building2} />
           </div>
 
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
