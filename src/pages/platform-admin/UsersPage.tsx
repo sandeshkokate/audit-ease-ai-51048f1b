@@ -10,6 +10,7 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatDistanceToNow } from 'date-fns';
 import { Pencil, UserX, UserCheck, Loader2, AlertTriangle, Plus, Search } from 'lucide-react';
+import { ROLE_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -182,7 +183,7 @@ export default function UsersPage() {
       key: 'role', header: <ColumnHeader title="Role" tooltip="Platform Admin (full access), Tenant Admin (manages their company), Accountant (financial access), Viewer (read-only)" />, sortable: true,
       render: (row) => (
         <Badge variant="outline" className={ROLE_COLORS[row.role] || ''}>
-          {row.role.replace('_', ' ')}
+          {getLabel(ROLE_LABELS, row.role)}
         </Badge>
       ),
     },
@@ -228,7 +229,7 @@ export default function UsersPage() {
           <p className="text-sm text-muted-foreground">Manage all users across tenants</p>
         </div>
         <Button variant="hero" onClick={() => setAddOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> Add User
+          <Plus className="h-4 w-4" /> Add user
         </Button>
       </div>
 
@@ -307,7 +308,7 @@ export default function UsersPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button variant="hero" onClick={handleAddUser} disabled={adding}>
-              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add User
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add user
             </Button>
           </DialogFooter>
         </DialogContent>

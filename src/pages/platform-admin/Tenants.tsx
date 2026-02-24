@@ -11,6 +11,7 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency } from '@/lib/utils';
 import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
+import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -202,7 +203,7 @@ export default function Tenants() {
       key: 'status', header: <ColumnHeader title="Status" tooltip="Active (operational), Pending (awaiting approval), Suspended (temporarily disabled), Cancelled (deactivated)" />, sortable: true,
       render: (row) => (
         <Badge variant="outline" className={STATUS_COLORS[row.status] || ''}>
-          {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+          {getLabel(TENANT_STATUS_LABELS, row.status)}
         </Badge>
       ),
     },
@@ -244,7 +245,7 @@ export default function Tenants() {
           <p className="text-sm text-muted-foreground">Manage all registered companies</p>
         </div>
         <Button variant="hero" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" /> Add Tenant
+          <Plus className="h-4 w-4" /> Add tenant
         </Button>
       </div>
 
@@ -341,7 +342,7 @@ export default function Tenants() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button variant="hero" onClick={handleAdd} disabled={adding}>
-              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add Tenant
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add tenant
             </Button>
           </DialogFooter>
         </DialogContent>

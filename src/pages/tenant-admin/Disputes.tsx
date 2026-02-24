@@ -26,6 +26,7 @@ import {
   CheckCircle, XCircle, MessageSquare, AlertTriangle,
   RotateCcw, Trash2, Calendar,
 } from 'lucide-react';
+import { DISPUTE_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground border-border',
@@ -403,7 +404,7 @@ export default function Disputes() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-foreground">Disputes</h1><p className="text-sm text-muted-foreground">Manage and send dispute emails to couriers</p></div>
         <Button variant="hero" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-          {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate All Dispute Emails</>}
+          {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate all dispute emails</>}
         </Button>
       </div>
 
@@ -431,14 +432,14 @@ export default function Disputes() {
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm">{dispute.awb_number}</span>
-                  <Badge variant="outline" className={STATUS_COLORS[dispute.status]}>{dispute.status.replace('_', ' ')}</Badge>
+                  <Badge variant="outline" className={STATUS_COLORS[dispute.status] || STATUS_COLORS['draft']}>{getLabel(DISPUTE_STATUS_LABELS, dispute.status, 'Draft')}</Badge>
                   <span className="text-xs text-muted-foreground">{dispute.courier}</span>
                 </div>
                 <p className="text-sm text-destructive font-medium">{formatCurrency(dispute.amount)} overcharge</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
-                  <Mail className="h-4 w-4" /> Review & Copy Email
+                  <Mail className="h-4 w-4" /> Review & copy email
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -453,7 +454,7 @@ export default function Disputes() {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}>
                       <Send className="h-4 w-4 mr-2" />
-                      Mark as Sent
+                      Mark as sent
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success">
@@ -549,7 +550,7 @@ export default function Disputes() {
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
             <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
-            <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Sent</Button>
+            <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as sent</Button>
             <Button variant="ghost" className="gap-2" onClick={async () => {
               const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES;
               if (!webhookUrl) { toast({ variant: 'destructive', title: 'Webhook not configured', description: 'VITE_N8N_WEBHOOK_DISPUTES is not set.' }); return; }

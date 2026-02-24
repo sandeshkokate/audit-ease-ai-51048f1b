@@ -13,6 +13,7 @@ import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw } from 'lucide-react';
+import { DISPUTE_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 
 const STATUS_COLORS: Record<string, string> = {
   detected: 'bg-warning/10 text-warning border-warning/20',
@@ -94,7 +95,7 @@ export default function AuditLogs() {
     { key: 'charged_weight', header: <ColumnHeader title="Billed Wt" tooltip="Weight charged by courier (kg)." />, sortable: true, render: (r) => `${r.charged_weight ?? '-'} kg` },
     { key: 'max_expected_weight', header: <ColumnHeader title="Actual Wt" tooltip="Expected chargeable weight" />, render: (r) => `${r.max_expected_weight ?? '-'} kg` },
     { key: 'discrepancy_amount', header: <ColumnHeader title="Discrepancy" tooltip="Amount overcharged" />, sortable: true, render: (r) => <span className="font-medium text-destructive">₹{r.discrepancy_amount ?? 0}</span> },
-    { key: 'dispute_status', header: <ColumnHeader title="Status" tooltip="Detected, Disputed, Resolved, Rejected" />, sortable: true, render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.dispute_status] || ''}>{r.dispute_status}</Badge> },
+    { key: 'dispute_status', header: <ColumnHeader title="Status" tooltip="Detected, Disputed, Resolved, Rejected" />, sortable: true, render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.dispute_status] || ''}>{getLabel(DISPUTE_STATUS_LABELS, r.dispute_status, 'No Dispute')}</Badge> },
     { key: 'created_at', header: <ColumnHeader title="Date" tooltip="When this shipment record was uploaded and processed" />, render: (r) => <span className="text-sm text-muted-foreground">{r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : '-'}</span> },
     { key: 'actions', header: '', render: (r) => <Button variant="ghost" size="sm" onClick={() => setSelectedLog(r)}>View</Button> },
   ];
@@ -165,7 +166,7 @@ export default function AuditLogs() {
                     <span className="text-lg font-bold text-foreground">{selectedLog.awb || '-'}</span>
                     <span className="text-sm text-muted-foreground">{selectedLog.courier_name}</span>
                     <span className="text-sm text-muted-foreground">Order: {selectedLog.order_id}</span>
-                    <Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{selectedLog.dispute_status}</Badge>
+                    <Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{getLabel(DISPUTE_STATUS_LABELS, selectedLog.dispute_status, 'No Dispute')}</Badge>
                   </div>
                   <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
                     <span>Shipment: <span className="text-foreground font-medium">{selectedLog.shipment_status ?? '-'}</span></span>
@@ -250,7 +251,7 @@ export default function AuditLogs() {
                   <CardContent className="p-4 space-y-2">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recovery Status</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                      <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{selectedLog.dispute_status}</Badge></div>
+                      <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={STATUS_COLORS[selectedLog.dispute_status] || ''}>{getLabel(DISPUTE_STATUS_LABELS, selectedLog.dispute_status, 'No Dispute')}</Badge></div>
                       <div><p className="text-muted-foreground text-xs">Dispute Raised</p><p className="font-medium">{selectedLog.dispute_raised_date ? format(new Date(selectedLog.dispute_raised_date), 'dd MMM yyyy') : '-'}</p></div>
                       <div><p className="text-muted-foreground text-xs">Recovery Date</p><p className="font-medium">{selectedLog.recovery_date ? format(new Date(selectedLog.recovery_date), 'dd MMM yyyy') : '-'}</p></div>
                       <div><p className="text-muted-foreground text-xs">Recovery Amount</p><p className="font-medium text-success">{selectedLog.recovery_amount ? formatCurrency(selectedLog.recovery_amount) : '-'}</p></div>

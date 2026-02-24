@@ -247,7 +247,7 @@ export default function TenantSettings() {
 
           <div className="flex justify-end">
             <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Settings
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save settings
             </Button>
           </div>
         </TabsContent>
@@ -255,7 +255,7 @@ export default function TenantSettings() {
         <TabsContent value="ratecards" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Manage your courier rate cards for accurate discrepancy detection.</p>
-            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}><Plus className="h-4 w-4" /> Add Rate Card</Button>
+            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}><Plus className="h-4 w-4" /> Add rate card</Button>
           </div>
           {loadingRates ? (
             <div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -299,7 +299,7 @@ export default function TenantSettings() {
                 setSaving(false);
               }
             }} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Preferences
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save preferences
             </Button>
           </div>
         </TabsContent>
@@ -359,7 +359,7 @@ export default function TenantSettings() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setRateCardModal(false)}>Cancel</Button>
             <Button onClick={handleAddRateCard} disabled={addingRate}>
-              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Rate Card'}
+              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add rate card'}
             </Button>
           </DialogFooter>
         </DialogContent>

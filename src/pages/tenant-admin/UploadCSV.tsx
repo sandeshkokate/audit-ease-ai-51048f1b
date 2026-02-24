@@ -179,7 +179,7 @@ export default function UploadCSV() {
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-foreground">Upload CSV</h1><p className="text-sm text-muted-foreground">Upload your courier billing data for audit</p></div>
         <Button variant="outline" size="sm" className="gap-2" onClick={downloadSample}>
-          <Download className="h-4 w-4" /> Sample Template
+          <Download className="h-4 w-4" /> Download sample CSV
         </Button>
       </div>
 
@@ -289,7 +289,7 @@ export default function UploadCSV() {
 
           <div className="flex justify-end">
             <Button variant="hero" size="lg" className="gap-2" onClick={handleProcess} disabled={processing || !allValid}>
-              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> {processingStep || 'Processing...'}</> : <><Upload className="h-4 w-4" /> Process & Detect Discrepancies</>}
+              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> {processingStep || 'Processing...'}</> : <><Upload className="h-4 w-4" /> Process & detect discrepancies</>}
             </Button>
           </div>
         </div>
