@@ -35,7 +35,7 @@ export default function Recoveries() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('*, credit_notes(*)')
+        .select('*')
         .eq('tenant_id', user.tenant_id)
         .eq('dispute_status', 'recovered')
         .not('recovery_amount', 'is', null)
