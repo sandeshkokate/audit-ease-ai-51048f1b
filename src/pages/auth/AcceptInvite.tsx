@@ -103,10 +103,10 @@ export default function AcceptInvite() {
           })
           .eq('id', existingUser.id);
 
-        await supabase
-          .from('invitations')
-          .update({ invite_status: 'accepted', accepted_at: new Date().toISOString() })
-          .eq('id', invitation.id);
+        // Use security definer RPC to accept invitation (bypasses RLS)
+        const { data: result } = await supabase.rpc('accept_invitation', { token_value: token! });
+        const resultObj = result as any;
+        if (resultObj && !resultObj.success) throw new Error(resultObj.error);
 
         toast({ title: '✅ You have been added to the team!', description: 'You can now log in.' });
         navigate(`/login?email=${encodeURIComponent(invitation.email)}`);
@@ -128,22 +128,20 @@ export default function AcceptInvite() {
 
       if (authError) throw authError;
 
+      // Accept invitation via RPC
+      const { data: acceptResult } = await supabase.rpc('accept_invitation', { token_value: token! });
+      const acceptObj = acceptResult as any;
+      if (acceptObj && !acceptObj.success) throw new Error(acceptObj.error);
+
       // If email confirmation is required, session will be null
       if (!authData.session) {
         toast({
           title: '✅ Account created!',
           description: 'Please check your email to confirm your account before logging in.',
         });
-        await supabase.from('invitations').update({ invite_status: 'accepted', accepted_at: new Date().toISOString() }).eq('id', invitation.id);
         navigate(`/login?email=${encodeURIComponent(invitation.email)}`);
         return;
       }
-
-      // Update invitation status
-      await supabase
-        .from('invitations')
-        .update({ invite_status: 'accepted', accepted_at: new Date().toISOString() })
-        .eq('id', invitation.id);
 
       // Delay to avoid trigger race condition
       await new Promise(r => setTimeout(r, 1200));

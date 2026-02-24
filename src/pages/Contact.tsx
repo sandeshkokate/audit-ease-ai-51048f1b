@@ -33,6 +33,23 @@ export default function Contact() {
 
     setLoading(true);
     try {
+      // Rate limit check (3 submissions per 30 minutes per email)
+      const { data: allowed } = await supabase.rpc('check_rate_limit', {
+        p_identifier: formData.email.trim().toLowerCase(),
+        p_action: 'contact_form',
+        p_max_attempts: 3,
+        p_window_minutes: 30,
+      });
+      if (allowed === false) {
+        toast({
+          variant: 'destructive',
+          title: 'Too many submissions',
+          description: 'Please wait before submitting again.',
+        });
+        setLoading(false);
+        return;
+      }
+
       // Always save to Supabase (primary persistence)
       const leadPayload = {
         name: formData.name,

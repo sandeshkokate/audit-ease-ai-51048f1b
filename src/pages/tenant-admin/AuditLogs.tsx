@@ -108,8 +108,31 @@ export default function AuditLogs() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-32 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-56 rounded bg-muted animate-pulse mt-2" />
+          </div>
+          <div className="h-9 w-28 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+              <div className="h-3 w-12 rounded bg-muted animate-pulse" />
+              <div className="h-6 w-16 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-3 border-t border-border">
+              {Array.from({ length: 6 }).map((_, j) => (
+                <div key={j} className="h-4 flex-1 rounded bg-muted animate-pulse" />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

@@ -981,6 +981,27 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          action: string
+          attempted_at: string
+          id: string
+          identifier: string
+        }
+        Insert: {
+          action: string
+          attempted_at?: string
+          id?: string
+          identifier: string
+        }
+        Update: {
+          action?: string
+          attempted_at?: string
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
       tenant_feature_access: {
         Row: {
           created_at: string | null
@@ -1256,8 +1277,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: { Args: { token_value: string }; Returns: Json }
       auth_user_role: { Args: never; Returns: string }
       auth_user_tenant_id: { Args: never; Returns: string }
+      check_rate_limit: {
+        Args: {
+          p_action: string
+          p_identifier: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       expire_old_invitations: { Args: never; Returns: number }
       get_my_claim: { Args: { claim: string }; Returns: string }
@@ -1292,6 +1323,17 @@ export type Database = {
           role: string
           tenant_id: string
         }[]
+      }
+      log_activity: {
+        Args: {
+          p_action: string
+          p_details?: string
+          p_entity_id?: string
+          p_entity_type?: string
+          p_new_values?: Json
+          p_old_values?: Json
+        }
+        Returns: undefined
       }
       update_last_login: {
         Args: { lookup_user_id: string }

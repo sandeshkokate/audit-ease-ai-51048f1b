@@ -13,7 +13,11 @@ export default function ChartCard({ title, children, action }: ChartCardProps) {
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
         {action}
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent>
+        <div role="img" aria-label={`Chart: ${title}`}>
+          {children}
+        </div>
+      </CardContent>
     </Card>
   );
 }

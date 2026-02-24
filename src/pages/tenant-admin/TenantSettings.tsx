@@ -107,22 +107,43 @@ export default function TenantSettings() {
     if (!tenantId) return;
     setSaving(true);
     try {
+      // Capture old values for audit trail
+      const oldValues = tenantData ? {
+        company_name: tenantData.company_name,
+        contact_email: tenantData.contact_email,
+        contact_phone: tenantData.contact_phone,
+        gstin: tenantData.gstin,
+      } : null;
+
+      const newValues = {
+        company_name: company.company_name.trim(),
+        contact_email: company.contact_email.trim(),
+        contact_phone: company.contact_phone.trim() || null,
+        gstin: company.gstin.trim() || null,
+        address: company.address.trim() || null,
+        city: company.city.trim() || null,
+        state: company.state.trim() || null,
+        pincode: company.pincode.trim() || null,
+        updated_at: new Date().toISOString(),
+        updated_by: user?.id || null,
+      };
+
       const { error } = await supabase
         .from('tenants')
-        .update({
-          company_name: company.company_name.trim(),
-          contact_email: company.contact_email.trim(),
-          contact_phone: company.contact_phone.trim() || null,
-          gstin: company.gstin.trim() || null,
-          address: company.address.trim() || null,
-          city: company.city.trim() || null,
-          state: company.state.trim() || null,
-          pincode: company.pincode.trim() || null,
-          updated_at: new Date().toISOString(),
-          updated_by: user?.id || null,
-        })
+        .update(newValues)
         .eq('id', tenantId);
       if (error) throw error;
+
+      // Log settings change to activity_logs
+      supabase.rpc('log_activity', {
+        p_action: 'settings_updated',
+        p_entity_type: 'tenant',
+        p_entity_id: tenantId,
+        p_details: 'Tenant settings updated',
+        p_old_values: oldValues,
+        p_new_values: newValues,
+      }).then(() => {});
+
       toast({ title: 'Settings saved successfully' });
       queryClient.invalidateQueries({ queryKey: ['tenant-settings', tenantId] });
     } catch (err: any) {

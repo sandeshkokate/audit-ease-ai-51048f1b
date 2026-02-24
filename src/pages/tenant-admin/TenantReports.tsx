@@ -215,8 +215,24 @@ export default function TenantReports() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div><div className="h-7 w-24 rounded bg-muted animate-pulse" /><div className="h-4 w-40 rounded bg-muted animate-pulse mt-2" /></div>
+          <div className="h-9 w-36 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="h-10 w-full max-w-lg rounded bg-muted animate-pulse" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border p-4 space-y-3">
+              <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+              <div className="h-7 w-24 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-lg border border-border p-4 space-y-3">
+          <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+          <div className="h-[260px] w-full rounded bg-muted animate-pulse" />
+        </div>
       </div>
     );
   }

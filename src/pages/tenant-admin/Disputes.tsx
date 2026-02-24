@@ -275,7 +275,21 @@ export default function Disputes() {
     } catch (err: any) { toast({ variant: 'destructive', title: 'Error', description: err.message }); }
   };
 
-  if (isLoading) return <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+  if (isLoading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div><div className="h-7 w-24 rounded bg-muted animate-pulse" /><div className="h-4 w-56 rounded bg-muted animate-pulse mt-2" /></div>
+        <div className="h-9 w-48 rounded bg-muted animate-pulse" />
+      </div>
+      <div className="flex gap-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-10 w-32 rounded bg-muted animate-pulse" />)}</div>
+      <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="rounded-lg border border-border p-4 space-y-2">
+          <div className="flex justify-between"><div className="h-4 w-24 rounded bg-muted animate-pulse" /><div className="h-5 w-16 rounded bg-muted animate-pulse" /></div>
+          <div className="h-3 w-48 rounded bg-muted animate-pulse" />
+        </div>
+      ))}</div>
+    </div>
+  );
 
   if (isError) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
