@@ -14,40 +14,45 @@ import AccountantLayout from "@/components/layout/AccountantLayout";
 import ViewerLayout from "@/components/layout/ViewerLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
-// Signup removed — redirects to /contact
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AcceptInvite from "./pages/auth/AcceptInvite";
-// Platform Admin
-import PlatformDashboard from "./pages/platform-admin/Dashboard";
-import Tenants from "./pages/platform-admin/Tenants";
-import UsersPage from "./pages/platform-admin/UsersPage";
-import PlatformReports from "./pages/platform-admin/Reports";
-import PlatformSettings from "./pages/platform-admin/SettingsPage";
-import ActivityLogs from "./pages/platform-admin/ActivityLogs";
-import FeatureFlags from "./pages/platform-admin/FeatureFlags";
-// Tenant Admin
-import TenantDashboard from "./pages/tenant-admin/Dashboard";
-import UploadCSV from "./pages/tenant-admin/UploadCSV";
-import AuditLogs from "./pages/tenant-admin/AuditLogs";
-import Disputes from "./pages/tenant-admin/Disputes";
-import Recoveries from "./pages/tenant-admin/Recoveries";
-import Invoices from "./pages/tenant-admin/Invoices";
-import TenantReports from "./pages/tenant-admin/TenantReports";
-import Team from "./pages/tenant-admin/Team";
-import TenantSettings from "./pages/tenant-admin/TenantSettings";
-// Accountant
-import AccountantDashboard from "./pages/accountant/Dashboard";
-import AccountantInvoices from "./pages/accountant/Invoices";
-import AccountantReports from "./pages/accountant/Reports";
-// Viewer
-import ViewerDashboard from "./pages/viewer/Dashboard";
-import ViewerReports from "./pages/viewer/Reports";
+import NotFound from "./pages/NotFound";
+
+// Lazy-loaded pages
 const Contact = lazy(() => import('./pages/Contact'));
 const About = lazy(() => import('./pages/About'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
-import NotFound from "./pages/NotFound";
+
+// Platform Admin — lazy
+const PlatformDashboard = lazy(() => import('./pages/platform-admin/Dashboard'));
+const Tenants = lazy(() => import('./pages/platform-admin/Tenants'));
+const UsersPage = lazy(() => import('./pages/platform-admin/UsersPage'));
+const PlatformReports = lazy(() => import('./pages/platform-admin/Reports'));
+const PlatformSettings = lazy(() => import('./pages/platform-admin/SettingsPage'));
+const ActivityLogs = lazy(() => import('./pages/platform-admin/ActivityLogs'));
+const FeatureFlags = lazy(() => import('./pages/platform-admin/FeatureFlags'));
+
+// Tenant Admin — lazy
+const TenantDashboard = lazy(() => import('./pages/tenant-admin/Dashboard'));
+const UploadCSV = lazy(() => import('./pages/tenant-admin/UploadCSV'));
+const AuditLogs = lazy(() => import('./pages/tenant-admin/AuditLogs'));
+const Disputes = lazy(() => import('./pages/tenant-admin/Disputes'));
+const Recoveries = lazy(() => import('./pages/tenant-admin/Recoveries'));
+const Invoices = lazy(() => import('./pages/tenant-admin/Invoices'));
+const TenantReports = lazy(() => import('./pages/tenant-admin/TenantReports'));
+const Team = lazy(() => import('./pages/tenant-admin/Team'));
+const TenantSettings = lazy(() => import('./pages/tenant-admin/TenantSettings'));
+
+// Accountant — lazy
+const AccountantDashboard = lazy(() => import('./pages/accountant/Dashboard'));
+const AccountantInvoices = lazy(() => import('./pages/accountant/Invoices'));
+const AccountantReports = lazy(() => import('./pages/accountant/Reports'));
+
+// Viewer — lazy
+const ViewerDashboard = lazy(() => import('./pages/viewer/Dashboard'));
+const ViewerReports = lazy(() => import('./pages/viewer/Reports'));
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   platform_admin: '/platform-admin/dashboard',
@@ -63,6 +68,16 @@ function HomeRoute() {
   return <Landing />;
 }
 
+const LazyPage = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={
+    <div className="flex items-center justify-center h-64">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  }>
+    {children}
+  </Suspense>
+);
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -75,10 +90,10 @@ const App = () => (
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<HomeRoute />} />
-              <Route path="/contact" element={<Suspense fallback={null}><Contact /></Suspense>} />
-              <Route path="/about" element={<Suspense fallback={null}><About /></Suspense>} />
-              <Route path="/privacy" element={<Suspense fallback={null}><Privacy /></Suspense>} />
-              <Route path="/terms" element={<Suspense fallback={null}><Terms /></Suspense>} />
+              <Route path="/contact" element={<LazyPage><Contact /></LazyPage>} />
+              <Route path="/about" element={<LazyPage><About /></LazyPage>} />
+              <Route path="/privacy" element={<LazyPage><Privacy /></LazyPage>} />
+              <Route path="/terms" element={<LazyPage><Terms /></LazyPage>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -92,13 +107,13 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<PlatformDashboard />} />
-                <Route path="tenants" element={<Tenants />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="reports" element={<PlatformReports />} />
-                <Route path="settings" element={<PlatformSettings />} />
-                <Route path="activity-logs" element={<ActivityLogs />} />
-                <Route path="feature-flags" element={<FeatureFlags />} />
+                <Route path="dashboard" element={<LazyPage><PlatformDashboard /></LazyPage>} />
+                <Route path="tenants" element={<LazyPage><Tenants /></LazyPage>} />
+                <Route path="users" element={<LazyPage><UsersPage /></LazyPage>} />
+                <Route path="reports" element={<LazyPage><PlatformReports /></LazyPage>} />
+                <Route path="settings" element={<LazyPage><PlatformSettings /></LazyPage>} />
+                <Route path="activity-logs" element={<LazyPage><ActivityLogs /></LazyPage>} />
+                <Route path="feature-flags" element={<LazyPage><FeatureFlags /></LazyPage>} />
               </Route>
 
               {/* Tenant Admin Routes */}
@@ -108,15 +123,15 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<TenantDashboard />} />
-                <Route path="upload" element={<UploadCSV />} />
-                <Route path="audit-logs" element={<AuditLogs />} />
-                <Route path="disputes" element={<Disputes />} />
-                <Route path="recoveries" element={<Recoveries />} />
-                <Route path="invoices" element={<Invoices />} />
-                <Route path="reports" element={<TenantReports />} />
-                <Route path="team" element={<Team />} />
-                <Route path="settings" element={<TenantSettings />} />
+                <Route path="dashboard" element={<LazyPage><TenantDashboard /></LazyPage>} />
+                <Route path="upload" element={<LazyPage><UploadCSV /></LazyPage>} />
+                <Route path="audit-logs" element={<LazyPage><AuditLogs /></LazyPage>} />
+                <Route path="disputes" element={<LazyPage><Disputes /></LazyPage>} />
+                <Route path="recoveries" element={<LazyPage><Recoveries /></LazyPage>} />
+                <Route path="invoices" element={<LazyPage><Invoices /></LazyPage>} />
+                <Route path="reports" element={<LazyPage><TenantReports /></LazyPage>} />
+                <Route path="team" element={<LazyPage><Team /></LazyPage>} />
+                <Route path="settings" element={<LazyPage><TenantSettings /></LazyPage>} />
               </Route>
 
               {/* Accountant Routes */}
@@ -126,9 +141,9 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<AccountantDashboard />} />
-                <Route path="invoices" element={<AccountantInvoices />} />
-                <Route path="reports" element={<AccountantReports />} />
+                <Route path="dashboard" element={<LazyPage><AccountantDashboard /></LazyPage>} />
+                <Route path="invoices" element={<LazyPage><AccountantInvoices /></LazyPage>} />
+                <Route path="reports" element={<LazyPage><AccountantReports /></LazyPage>} />
               </Route>
 
               {/* Viewer Routes */}
@@ -138,8 +153,8 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<ViewerDashboard />} />
-                <Route path="reports" element={<ViewerReports />} />
+                <Route path="dashboard" element={<LazyPage><ViewerDashboard /></LazyPage>} />
+                <Route path="reports" element={<LazyPage><ViewerReports /></LazyPage>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

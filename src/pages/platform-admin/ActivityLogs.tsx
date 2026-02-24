@@ -4,12 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Search, Loader2, AlertTriangle, Info } from 'lucide-react';
+import { Search, Loader2, AlertTriangle, Info, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { getActionInfo, formatDetails, formatEntityType, getAllActions } from '@/lib/activity-actions';
+import { downloadCSV } from '@/lib/utils';
 
 export default function ActivityLogs() {
   const [actionFilter, setActionFilter] = useState('all');
@@ -127,11 +128,19 @@ export default function ActivityLogs() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Activity Logs</h1>
-        <p className="text-sm text-muted-foreground">
-          Track all platform activity — each log records a specific event such as a shipment audit, dispute update, or user action.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Activity Logs</h1>
+          <p className="text-sm text-muted-foreground">
+            Track all platform activity — each log records a specific event such as a shipment audit, dispute update, or user action.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" className="gap-2 self-start" onClick={() => downloadCSV(filtered.map(l => ({
+          When: l.time, Tenant: l.tenant, User: l.user, Action: l.actionLabel,
+          What_Changed: l.affectedItem, Summary: l.summary,
+        })), 'activity_logs')}>
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
       </div>
 
       {/* Info callout — explains when logs are created */}
