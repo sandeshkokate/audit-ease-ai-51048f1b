@@ -3,7 +3,7 @@ import { Building2, Users, IndianRupee, TrendingUp, Loader2 } from 'lucide-react
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { subMonths, format } from 'date-fns';
+import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
 import { formatDistanceToNow } from 'date-fns';
 import MetricCard from '@/components/dashboard/MetricCard';
 import ChartCard from '@/components/dashboard/ChartCard';
@@ -11,29 +11,30 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 
-const ACTION_LEGEND: Record<string, { label: string; color: string; description: string }> = {
-  'user.login': { label: 'Login', color: 'bg-primary/10 text-primary border-primary/20', description: 'User signed in' },
-  'user.logout': { label: 'Logout', color: 'bg-muted text-muted-foreground border-border', description: 'User signed out' },
-  'csv.upload': { label: 'CSV Upload', color: 'bg-success/10 text-success border-success/20', description: 'Shipment data uploaded' },
-  'dispute.created': { label: 'Dispute Created', color: 'bg-warning/10 text-warning border-warning/20', description: 'New dispute raised' },
+// Consistent action map — same as ActivityLogs page
+const ACTION_MAP: Record<string, { label: string; color: string; description: string }> = {
+  'user.login': { label: 'User Login', color: 'bg-primary/10 text-primary border-primary/20', description: 'A user signed into the platform' },
+  'user.logout': { label: 'User Logout', color: 'bg-muted text-muted-foreground border-border', description: 'A user signed out' },
+  'csv.upload': { label: 'CSV Upload', color: 'bg-success/10 text-success border-success/20', description: 'Shipment data file uploaded' },
+  'dispute.created': { label: 'Dispute Raised', color: 'bg-warning/10 text-warning border-warning/20', description: 'New billing dispute raised' },
   'dispute.updated': { label: 'Dispute Updated', color: 'bg-accent/10 text-accent border-accent/20', description: 'Dispute status changed' },
-  'tenant.created': { label: 'Tenant Created', color: 'bg-secondary/10 text-secondary border-secondary/20', description: 'New tenant onboarded' },
-  'settings.updated': { label: 'Settings', color: 'bg-primary/10 text-primary border-primary/20', description: 'Configuration changed' },
-  'user.created': { label: 'User Created', color: 'bg-success/10 text-success border-success/20', description: 'New user added' },
-  'invoice.generated': { label: 'Invoice', color: 'bg-warning/10 text-warning border-warning/20', description: 'Invoice generated' },
-  'recovery.recorded': { label: 'Recovery', color: 'bg-success/10 text-success border-success/20', description: 'Recovery amount recorded' },
+  'tenant.created': { label: 'Tenant Onboarded', color: 'bg-secondary/10 text-secondary border-secondary/20', description: 'New tenant added' },
+  'settings.updated': { label: 'Settings Changed', color: 'bg-primary/10 text-primary border-primary/20', description: 'Configuration modified' },
+  'user.created': { label: 'User Created', color: 'bg-success/10 text-success border-success/20', description: 'New user account created' },
+  'invoice.generated': { label: 'Invoice Generated', color: 'bg-warning/10 text-warning border-warning/20', description: 'Commission invoice generated' },
+  'recovery.recorded': { label: 'Recovery Recorded', color: 'bg-success/10 text-success border-success/20', description: 'Recovery amount recorded' },
 };
 
 function getActionInfo(action: string) {
-  const key = action?.toLowerCase().replace(/\s+/g, '.') || '';
-  for (const [pattern, info] of Object.entries(ACTION_LEGEND)) {
-    if (key.includes(pattern.split('.')[0])) return info;
+  const normalized = action?.toLowerCase().replace(/\s+/g, '.') || '';
+  if (ACTION_MAP[normalized]) return ACTION_MAP[normalized];
+  for (const [pattern, info] of Object.entries(ACTION_MAP)) {
+    if (normalized.includes(pattern.split('.')[0])) return info;
   }
   return { label: action || 'Activity', color: 'bg-muted text-muted-foreground border-border', description: '' };
 }
 
 export default function PlatformDashboard() {
-  // Fetch all tenants
   const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
     queryKey: ['platform-tenants'],
     queryFn: async () => {
@@ -46,7 +47,6 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Fetch platform-wide stats
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['platform-stats'],
     queryFn: async () => {
@@ -68,55 +68,58 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Fetch tenant growth (last 6 months)
+  // Tenant growth — chronologically sorted
   const { data: tenantGrowth = [] } = useQuery({
     queryKey: ['platform-tenant-growth'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('tenants')
-        .select('created_at')
-        .gte('created_at', subMonths(new Date(), 6).toISOString())
-        .order('created_at', { ascending: true });
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
 
-      const monthCounts: Record<string, number> = {};
-      (data || []).forEach(t => {
-        const month = format(new Date(t.created_at!), 'MMM');
-        monthCounts[month] = (monthCounts[month] || 0) + 1;
-      });
+        const { data } = await supabase
+          .from('tenants')
+          .select('id')
+          .gte('created_at', monthStart.toISOString())
+          .lte('created_at', monthEnd.toISOString());
 
-      return Array.from({ length: 6 }, (_, i) => {
-        const d = subMonths(new Date(), 5 - i);
-        const month = format(d, 'MMM');
-        return { month, count: monthCounts[month] || 0 };
-      });
+        months.push({
+          month: format(monthStart, 'MMM yyyy'),
+          sortKey: format(monthStart, 'yyyy-MM'),
+          count: data?.length || 0,
+        });
+      }
+      return months.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
     }
   });
 
-  // Fetch revenue by month (last 6 months)
+  // Revenue by month — chronologically sorted
   const { data: revenueByMonth = [] } = useQuery({
     queryKey: ['platform-revenue-by-month'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('invoices')
-        .select('commission_amount, created_at')
-        .gte('created_at', subMonths(new Date(), 6).toISOString())
-        .order('created_at', { ascending: true });
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
 
-      const monthRevenue: Record<string, number> = {};
-      (data || []).forEach(inv => {
-        const month = format(new Date(inv.created_at!), 'MMM');
-        monthRevenue[month] = (monthRevenue[month] || 0) + (inv.commission_amount || 0);
-      });
+        const { data } = await supabase
+          .from('invoices')
+          .select('commission_amount')
+          .gte('created_at', monthStart.toISOString())
+          .lte('created_at', monthEnd.toISOString());
 
-      return Array.from({ length: 6 }, (_, i) => {
-        const d = subMonths(new Date(), 5 - i);
-        const month = format(d, 'MMM');
-        return { month, revenue: monthRevenue[month] || 0 };
-      });
+        const revenue = data?.reduce((s, d) => s + (d.commission_amount || 0), 0) || 0;
+        months.push({
+          month: format(monthStart, 'MMM yyyy'),
+          sortKey: format(monthStart, 'yyyy-MM'),
+          revenue,
+        });
+      }
+      return months.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
     }
   });
 
-  // Fetch recent activity logs
+  // Recent activity logs
   const { data: activityLogs = [] } = useQuery({
     queryKey: ['platform-activity-logs'],
     queryFn: async () => {
@@ -142,18 +145,14 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Compute unique actions for legend
+  // Unique action legends from actual data
   const uniqueActions = useMemo(() => {
-    const seen = new Set<string>();
-    const legends: { label: string; color: string; description: string }[] = [];
+    const seen = new Map<string, { label: string; color: string; description: string }>();
     activityLogs.forEach(log => {
       const info = getActionInfo(log.action);
-      if (!seen.has(info.label)) {
-        seen.add(info.label);
-        legends.push(info);
-      }
+      if (!seen.has(info.label)) seen.set(info.label, info);
     });
-    return legends;
+    return Array.from(seen.values());
   }, [activityLogs]);
 
   const isLoading = tenantsLoading || statsLoading;
@@ -204,12 +203,12 @@ export default function PlatformDashboard() {
         <p className="text-sm text-muted-foreground">Platform overview and key metrics</p>
       </div>
 
-      {/* Metric Cards */}
+      {/* Metric Cards — clickable drill-down */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" />
-        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" />
-        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" />
-        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" />
+        <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" href="/platform-admin/tenants" />
+        <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" href="/platform-admin/tenants" />
+        <MetricCard title="Monthly Revenue" value={formatCurrency(monthlyRevenue)} icon={IndianRupee} iconColor="text-warning" href="/platform-admin/reports" />
+        <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" href="/platform-admin/reports" />
       </div>
 
       {/* Charts */}
@@ -255,7 +254,7 @@ export default function PlatformDashboard() {
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-2">Recent Activity</h2>
         
-        {/* Action Legends */}
+        {/* Action Legends — consistent with ActivityLogs page */}
         {uniqueActions.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {uniqueActions.map((legend) => (
