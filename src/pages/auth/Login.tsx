@@ -36,6 +36,23 @@ export default function Login() {
 
     setLoading(true);
     try {
+      // Rate limit check (5 attempts per 15 minutes per email)
+      const { data: allowed } = await supabase.rpc('check_rate_limit', {
+        p_identifier: email.trim().toLowerCase(),
+        p_action: 'login',
+        p_max_attempts: 5,
+        p_window_minutes: 15,
+      });
+      if (allowed === false) {
+        toast({
+          variant: 'destructive',
+          title: 'Too many attempts',
+          description: 'Please wait 15 minutes before trying again.',
+        });
+        setLoading(false);
+        return;
+      }
+
       let authData: any = null;
       let lastAuthError: any = null;
       for (let attempt = 0; attempt < 3; attempt++) {

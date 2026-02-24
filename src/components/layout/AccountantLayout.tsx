@@ -73,7 +73,7 @@ export default function AccountantLayout() {
           </div>
           <HeaderActions />
         </header>
-        <main className="flex-1 overflow-auto p-3 md:p-4"><Outlet /></main>
+        <main className="flex-1 overflow-auto p-3 md:p-4 lg:p-6"><Outlet /></main>
       </div>
     </div>
   );

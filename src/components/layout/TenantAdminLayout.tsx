@@ -137,7 +137,7 @@ export default function TenantAdminLayout() {
           </div>
           <HeaderActions />
         </header>
-        <main className="flex-1 overflow-auto p-3 md:p-4">
+        <main className="flex-1 overflow-auto p-3 md:p-4 lg:p-6">
           <Breadcrumbs />
           <Outlet />
         </main>
