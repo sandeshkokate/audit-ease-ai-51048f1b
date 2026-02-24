@@ -33,7 +33,10 @@ export default function PlatformAdminLayout() {
 
   const sidebarContent = (
     <>
-      <div className={cn('flex items-center gap-2.5 border-b border-sidebar-border px-4 h-16', collapsed && 'justify-center px-2')}>
+      <button
+        onClick={() => navigate('/')}
+        className={cn('flex items-center gap-2.5 border-b border-sidebar-border px-4 h-16 w-full hover:bg-accent/5 transition-colors', collapsed && 'justify-center px-2')}
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary shadow-button shrink-0">
           <Shield className="h-4 w-4 text-primary-foreground" />
         </div>
@@ -42,7 +45,7 @@ export default function PlatformAdminLayout() {
             Audit<span className="text-sidebar-primary">Ease</span>
           </span>
         )}
-      </div>
+      </button>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {NAV_ITEMS.map((item) => (
