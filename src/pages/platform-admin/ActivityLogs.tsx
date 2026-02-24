@@ -1,56 +1,27 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable, { Column } from '@/components/shared/DataTable';
-import ColumnHeader from '@/components/shared/ColumnHeader';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Search, Loader2, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-
-// Human-readable action definitions with consistent labels
-const ACTION_MAP: Record<string, { label: string; description: string; color: string }> = {
-  'user.login': { label: 'User Login', description: 'A user signed into the platform', color: 'bg-primary/10 text-primary border-primary/20' },
-  'user.logout': { label: 'User Logout', description: 'A user signed out', color: 'bg-muted text-muted-foreground border-border' },
-  'user.created': { label: 'User Created', description: 'A new user account was created', color: 'bg-success/10 text-success border-success/20' },
-  'csv.upload': { label: 'CSV Upload', description: 'Shipment data file was uploaded for auditing', color: 'bg-secondary/10 text-secondary border-secondary/20' },
-  'dispute.created': { label: 'Dispute Raised', description: 'A new billing dispute was raised against a courier', color: 'bg-warning/10 text-warning border-warning/20' },
-  'dispute.updated': { label: 'Dispute Updated', description: 'A dispute status was changed (e.g. resolved, rejected)', color: 'bg-accent/10 text-accent border-accent/20' },
-  'tenant.created': { label: 'Tenant Onboarded', description: 'A new tenant/company was added to the platform', color: 'bg-primary/10 text-primary border-primary/20' },
-  'settings.updated': { label: 'Settings Changed', description: 'Platform or tenant configuration was modified', color: 'bg-muted text-muted-foreground border-border' },
-  'invoice.generated': { label: 'Invoice Generated', description: 'A commission invoice was generated for a tenant', color: 'bg-warning/10 text-warning border-warning/20' },
-  'recovery.recorded': { label: 'Recovery Recorded', description: 'A recovery amount was recorded against a dispute', color: 'bg-success/10 text-success border-success/20' },
-};
-
-function getActionInfo(action: string) {
-  const normalized = action?.toLowerCase().replace(/\s+/g, '.') || '';
-  // Try exact match first
-  if (ACTION_MAP[normalized]) return ACTION_MAP[normalized];
-  // Try partial match
-  for (const [pattern, info] of Object.entries(ACTION_MAP)) {
-    if (normalized.includes(pattern.split('.')[0])) return info;
-  }
-  return { label: action || 'Activity', description: '', color: 'bg-muted text-muted-foreground border-border' };
-}
+import { getActionInfo, formatDetails, formatEntityType, getAllActions } from '@/lib/activity-actions';
 
 export default function ActivityLogs() {
-  const [userFilter, setUserFilter] = useState('all');
+  const [actionFilter, setActionFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
-  const [entityFilter, setEntityFilter] = useState('all');
+  const [tenantFilter, setTenantFilter] = useState('all');
 
   const { data: logs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['platform-activity-logs-page'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('activity_logs')
-        .select(`
-          *,
-          users:user_id(full_name, email),
-          tenants:tenant_id(company_name)
-        `)
+        .select(`*, users:user_id(full_name, email), tenants:tenant_id(company_name)`)
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -64,32 +35,35 @@ export default function ActivityLogs() {
           action: log.action || 'Activity',
           actionLabel: actionInfo.label,
           actionColor: actionInfo.color,
-          entityType: log.entity_type || '-',
-          entityId: log.entity_id || '-',
-          details: log.details || '-',
+          affectedItem: formatEntityType(log.entity_type),
+          summary: formatDetails(log.details),
         };
       });
     }
   });
 
-  const uniqueUsers = [...new Set(logs.map((l: any) => l.user))];
-  const uniqueEntities = [...new Set(logs.map((l: any) => l.entityType).filter((e: string) => e !== '-'))];
+  const uniqueTenants = useMemo(() => [...new Set(logs.map((l: any) => l.tenant).filter(Boolean))], [logs]);
 
-  // Compute visible action legends from filtered data
-  const visibleActions = (() => {
+  // Compute visible action legends from the data
+  const visibleActions = useMemo(() => {
     const seen = new Map<string, { label: string; description: string; color: string }>();
     logs.forEach((l: any) => {
       const info = getActionInfo(l.action);
       if (!seen.has(info.label)) seen.set(info.label, info);
     });
     return Array.from(seen.values());
-  })();
+  }, [logs]);
+
+  // Unique action labels for filter dropdown
+  const uniqueActionLabels = useMemo(() => [...new Set(logs.map((l: any) => l.actionLabel))], [logs]);
 
   const filtered = logs.filter((l: any) => {
-    const matchesUser = userFilter === 'all' || l.user === userFilter;
-    const matchesEntity = entityFilter === 'all' || l.entityType === entityFilter;
-    const matchesSearch = !searchQ || l.actionLabel.toLowerCase().includes(searchQ.toLowerCase()) || l.tenant.toLowerCase().includes(searchQ.toLowerCase()) || l.details.toLowerCase().includes(searchQ.toLowerCase());
-    return matchesUser && matchesSearch && matchesEntity;
+    const matchesAction = actionFilter === 'all' || l.actionLabel === actionFilter;
+    const matchesTenant = tenantFilter === 'all' || l.tenant === tenantFilter;
+    const matchesSearch = !searchQ || [l.actionLabel, l.tenant, l.user, l.summary].some(
+      (v) => v?.toLowerCase().includes(searchQ.toLowerCase())
+    );
+    return matchesAction && matchesTenant && matchesSearch;
   });
 
   if (isLoading) {
@@ -117,7 +91,7 @@ export default function ActivityLogs() {
 
   const columns: Column<any>[] = [
     {
-      key: 'time', header: <ColumnHeader title="Time" tooltip="When this activity occurred" />, sortable: true,
+      key: 'time', header: 'When', sortable: true,
       render: (row) => (
         <div className="space-y-0.5">
           <span className="text-sm text-foreground">{format(new Date(row.time), 'dd MMM yyyy, HH:mm')}</span>
@@ -125,19 +99,21 @@ export default function ActivityLogs() {
         </div>
       ),
     },
-    { key: 'tenant', header: <ColumnHeader title="Tenant" tooltip="The company/tenant where this activity happened" />, sortable: true },
-    { key: 'user', header: <ColumnHeader title="User" tooltip="The user who performed this action" />, sortable: true },
+    { key: 'tenant', header: 'Tenant', sortable: true },
+    { key: 'user', header: 'User', sortable: true },
     {
-      key: 'action', header: <ColumnHeader title="Action" tooltip="Type of activity performed" />, sortable: true,
+      key: 'action', header: 'Action', sortable: true,
       render: (row) => (
         <Badge variant="outline" className={row.actionColor}>{row.actionLabel}</Badge>
       ),
     },
-    { key: 'entityType', header: <ColumnHeader title="Entity" tooltip="What was affected — e.g. order, upload_batch, tenant, user" />, sortable: true,
-      render: (row) => <span className="text-sm capitalize">{row.entityType.replace(/_/g, ' ')}</span>
+    {
+      key: 'affectedItem', header: 'What Changed', sortable: true,
+      render: (row) => <span className="text-sm">{row.affectedItem}</span>,
     },
-    { key: 'details', header: <ColumnHeader title="Details" tooltip="Additional context about the activity" />,
-      render: (row) => <span className="text-sm text-muted-foreground max-w-[200px] truncate block">{row.details}</span>
+    {
+      key: 'summary', header: 'Summary',
+      render: (row) => <span className="text-sm text-muted-foreground max-w-[260px] truncate block">{row.summary}</span>,
     },
   ];
 
@@ -145,23 +121,30 @@ export default function ActivityLogs() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Activity Logs</h1>
-        <p className="text-sm text-muted-foreground">Track all platform activity — each log represents a specific user or system action (e.g. login, CSV upload, dispute raised)</p>
+        <p className="text-sm text-muted-foreground">
+          Track all platform activity — each log records a specific event such as a shipment audit, dispute update, or user action.
+        </p>
       </div>
 
-      {/* Info callout */}
+      {/* Info callout — explains when logs are created */}
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="py-3 px-4 flex items-start gap-2">
           <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            Logs are recorded at the <strong>action level</strong> — each entry represents a single event such as a user login, a CSV file upload, a dispute being raised, or a recovery being recorded. 
-            The <strong>Entity</strong> column shows what was affected (e.g. an order, upload batch, or user account).
+            Logs are created automatically when key events occur:&nbsp;
+            <strong>shipments are audited</strong> (from CSV uploads),&nbsp;
+            <strong>discrepancies are detected</strong>,&nbsp;
+            <strong>disputes are raised or updated</strong>,&nbsp;
+            <strong>recoveries are recorded</strong>, and&nbsp;
+            <strong>users log in or settings change</strong>.
+            The <strong>"What Changed"</strong> column shows the type of record affected, and <strong>"Summary"</strong> provides the key details.
           </p>
         </CardContent>
       </Card>
 
-      {/* Action Legends */}
+      {/* Action Legends — complete list from actual data */}
       {visibleActions.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
           {visibleActions.map((a) => (
             <div key={a.label} className="flex items-center gap-1.5" title={a.description}>
               <Badge variant="outline" className={`${a.color} text-xs`}>{a.label}</Badge>
@@ -175,20 +158,20 @@ export default function ActivityLogs() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search actions, tenants, details..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)} className="pl-9" />
+          <Input placeholder="Search actions, tenants, users, details..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)} className="pl-9" />
         </div>
-        <Select value={userFilter} onValueChange={setUserFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Filter by user" /></SelectTrigger>
+        <Select value={actionFilter} onValueChange={setActionFilter}>
+          <SelectTrigger className="w-52"><SelectValue placeholder="Filter by action" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Users</SelectItem>
-            {uniqueUsers.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+            <SelectItem value="all">All Actions</SelectItem>
+            {uniqueActionLabels.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={entityFilter} onValueChange={setEntityFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Filter by entity" /></SelectTrigger>
+        <Select value={tenantFilter} onValueChange={setTenantFilter}>
+          <SelectTrigger className="w-52"><SelectValue placeholder="Filter by tenant" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Entities</SelectItem>
-            {uniqueEntities.map((e) => <SelectItem key={e} value={e}>{e.replace(/_/g, ' ')}</SelectItem>)}
+            <SelectItem value="all">All Tenants</SelectItem>
+            {uniqueTenants.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
