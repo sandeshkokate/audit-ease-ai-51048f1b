@@ -235,8 +235,23 @@ export default function Team() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div><div className="h-7 w-16 rounded bg-muted animate-pulse" /><div className="h-4 w-40 rounded bg-muted animate-pulse mt-2" /></div>
+          <div className="h-10 w-36 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="rounded-lg border border-border p-4 space-y-3">
+          <div className="h-5 w-32 rounded bg-muted animate-pulse" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                <div className="space-y-1"><div className="h-4 w-24 rounded bg-muted animate-pulse" /><div className="h-3 w-36 rounded bg-muted animate-pulse" /></div>
+              </div>
+              <div className="flex gap-2"><div className="h-6 w-20 rounded bg-muted animate-pulse" /><div className="h-6 w-14 rounded bg-muted animate-pulse" /></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

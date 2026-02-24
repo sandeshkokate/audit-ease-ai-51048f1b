@@ -83,7 +83,16 @@ export default function HeaderActions() {
             </div>
           ) : (
             notifications.map((n) => (
-              <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-1 py-2.5 cursor-default">
+              <DropdownMenuItem
+                key={n.id}
+                className="flex flex-col items-start gap-1 py-2.5 cursor-pointer"
+                onClick={() => {
+                  if (n.link) navigate(n.link);
+                  supabase.from('notifications').update({ is_read: true }).eq('id', n.id).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ['header-notifications'] });
+                  });
+                }}
+              >
                 <span className="text-sm font-medium">{n.title}</span>
                 {n.message && (
                   <span className="text-xs text-muted-foreground line-clamp-2">{n.message}</span>
