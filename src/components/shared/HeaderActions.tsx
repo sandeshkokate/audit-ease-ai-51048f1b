@@ -1,5 +1,6 @@
 import { Bell, LogOut, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -56,8 +57,8 @@ export default function HeaderActions() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Notification Bell */}
+    <div className="flex items-center gap-1">
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">

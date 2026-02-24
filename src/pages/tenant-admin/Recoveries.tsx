@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { formatCurrency } from '@/lib/utils';
-import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
+import { formatCurrency, downloadCSV } from '@/lib/utils';
+import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2, Download } from 'lucide-react';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { cn } from '@/lib/utils';
 
@@ -155,7 +155,18 @@ export default function Recoveries() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-foreground">Recoveries</h1><p className="text-sm text-muted-foreground">Upload credit notes and match with disputes</p></div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div><h1 className="text-2xl font-bold text-foreground">Recoveries</h1><p className="text-sm text-muted-foreground">Upload credit notes and match with disputes</p></div>
+        {recoveries.length > 0 && (
+          <Button variant="outline" size="sm" className="gap-2 self-start" onClick={() => downloadCSV(recoveries.map(r => ({
+            Credit_Note: r.credit_note_number, AWB: r.awb, Order_ID: r.order_id,
+            Courier: r.courier, Disputed_Amount: r.disputed_amount, Recovered_Amount: r.amount,
+            Date: r.date, Status: r.status,
+          })), 'recoveries')}>
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
+        )}
+      </div>
 
       {/* Upload Section */}
       <Card className="shadow-card">

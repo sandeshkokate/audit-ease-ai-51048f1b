@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Shield, ArrowRight, Menu, X } from 'lucide-react';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function LandingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function LandingNav() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <Link to="/login"><Button variant="ghost" size="sm" className="font-medium">Sign In</Button></Link>
           <Link to="/contact"><Button variant="hero" size="sm" className="shadow-button">Request Demo <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
         </div>

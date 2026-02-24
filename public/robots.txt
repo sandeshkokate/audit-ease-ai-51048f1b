@@ -12,3 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /platform-admin/
+Disallow: /tenant-admin/
+Disallow: /accountant/
+Disallow: /viewer/
+Disallow: /reset-password
+Disallow: /invite/
+
+Sitemap: https://auditease.ai/sitemap.xml
