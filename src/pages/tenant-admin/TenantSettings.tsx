@@ -35,7 +35,6 @@ export default function TenantSettings() {
   const [company, setCompany] = useState({
     company_name: '', contact_email: '', contact_phone: '', gstin: '',
     address: '', city: '', state: '', pincode: '',
-    email_signature: '', email_tone: 'professional',
   });
   const [notifications, setNotifications] = useState({
     email_disputes: true, email_recoveries: true, email_invoices: true,
@@ -99,8 +98,6 @@ export default function TenantSettings() {
       city: tenantData.city || '',
       state: tenantData.state || '',
       pincode: tenantData.pincode || '',
-      email_signature: tenantData.email_signature || '',
-      email_tone: tenantData.email_tone || 'professional',
     });
   }, [tenantData]);
 
@@ -121,8 +118,6 @@ export default function TenantSettings() {
           city: company.city.trim() || null,
           state: company.state.trim() || null,
           pincode: company.pincode.trim() || null,
-          email_signature: company.email_signature.trim() || null,
-          email_tone: company.email_tone,
           updated_at: new Date().toISOString(),
           updated_by: user?.id || null,
         })
@@ -227,23 +222,6 @@ export default function TenantSettings() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-card">
-            <CardHeader><CardTitle className="text-lg">Email Settings</CardTitle><CardDescription>Configure dispute email defaults</CardDescription></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Email Tone</Label>
-                <Select value={company.email_tone} onValueChange={(v) => update('email_tone', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="formal">Formal</SelectItem>
-                    <SelectItem value="assertive">Assertive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Email Signature</Label><Textarea value={company.email_signature} onChange={e => update('email_signature', e.target.value)} rows={3} /></div>
-            </CardContent>
-          </Card>
 
           <div className="flex justify-end">
             <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
