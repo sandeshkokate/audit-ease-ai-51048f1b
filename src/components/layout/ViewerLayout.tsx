@@ -22,12 +22,15 @@ export default function ViewerLayout() {
 
   const sidebarContent = (
     <>
-      <div className={cn('flex items-center gap-2.5 border-b border-sidebar-border px-4 h-16', collapsed && 'justify-center px-2')}>
+      <button
+        onClick={() => navigate('/')}
+        className={cn('flex items-center gap-2.5 border-b border-sidebar-border px-4 h-16 w-full hover:bg-accent/5 transition-colors', collapsed && 'justify-center px-2')}
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary shadow-button shrink-0">
           <Shield className="h-4 w-4 text-primary-foreground" />
         </div>
         {!collapsed && <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap tracking-tight">Audit<span className="text-sidebar-primary">Ease</span></span>}
-      </div>
+      </button>
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.url} to={item.url} end={item.url.endsWith('dashboard')}
