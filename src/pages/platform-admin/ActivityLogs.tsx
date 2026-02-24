@@ -68,8 +68,16 @@ export default function ActivityLogs() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-4">
+        <div><div className="h-7 w-32 rounded bg-muted animate-pulse" /><div className="h-4 w-64 rounded bg-muted animate-pulse mt-2" /></div>
+        <div className="flex gap-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 w-40 rounded bg-muted animate-pulse" />)}</div>
+        <div className="space-y-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex gap-4 p-3 border-t border-border">
+              {Array.from({ length: 5 }).map((_, j) => (<div key={j} className="h-4 flex-1 rounded bg-muted animate-pulse" />))}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
