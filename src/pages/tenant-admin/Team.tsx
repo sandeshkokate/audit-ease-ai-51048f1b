@@ -212,7 +212,7 @@ export default function Team() {
       toast({ title: 'Invitation cancelled' });
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
     } catch (err: any) {
-      console.error('Failed to cancel invitation:', err);
+      // error handled via toast
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };

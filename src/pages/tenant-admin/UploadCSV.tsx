@@ -94,11 +94,16 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''));
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
         const row: Record<string, string> = {};
-        hdrs.forEach((h, i) => { row[h] = values[i]?.trim() || ''; });
+        hdrs.forEach((h, i) => {
+          // Sanitize: strip control chars, limit length, escape formula injection
+          let val = (values[i]?.trim() || '').replace(/[\x00-\x1F\x7F]/g, '').slice(0, 500);
+          if (/^[=+\-@\t\r]/.test(val)) val = `'${val}`;
+          row[h] = val;
+        });
         return row;
       });
       

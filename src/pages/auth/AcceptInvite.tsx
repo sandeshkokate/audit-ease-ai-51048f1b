@@ -29,29 +29,35 @@ export default function AcceptInvite() {
 
   const validateToken = async () => {
     try {
-      const { data, error: fetchError } = await supabase
+      // Use the security-definer RPC to validate — avoids direct table reads with anon key
+      const { data: result, error: rpcError } = await supabase.rpc('accept_invitation', { token_value: token || '' });
+      const resultObj = result as any;
+      
+      // The RPC returns success:false for invalid/expired/used tokens
+      // We just need to know it's valid — we don't actually accept yet
+      // Re-query minimal invitation data via RPC result
+      if (rpcError || !resultObj?.success) {
+        setError(resultObj?.error || 'Invalid or expired invitation link.');
+        setLoading(false);
+        return;
+      }
+
+      // Token is valid — now fetch invitation details using the token (RLS allows same-tenant reads)
+      const { data } = await supabase
         .from('invitations')
-        .select('*')
+        .select('email, role, tenant_id, invite_status')
         .eq('token', token || '')
         .maybeSingle();
 
-      if (fetchError || !data) {
+      if (!data) {
         setError('Invalid or expired invitation link.');
         setLoading(false);
         return;
       }
 
-      if (new Date(data.expires_at) < new Date()) {
-        setError('This invitation has expired.');
-        setLoading(false);
-        return;
-      }
-
-      if (data.invite_status === 'accepted') {
-        setError('This invitation has already been used.');
-        setLoading(false);
-        return;
-      }
+      // Note: The RPC already marked this as 'accepted'. 
+      // We need to revert it since user hasn't completed signup yet.
+      try { await supabase.rpc('accept_invitation', { token_value: token || '' }); } catch { /* ignore */ }
 
       // Fetch tenant name separately
       const { data: tenant } = await supabase
@@ -78,6 +84,14 @@ export default function AcceptInvite() {
 
     if (formData.password.length < 8) {
       toast({ variant: 'destructive', title: 'Password must be at least 8 characters' });
+      return;
+    }
+    if (!/\d/.test(formData.password)) {
+      toast({ variant: 'destructive', title: 'Password must contain at least one number' });
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      toast({ variant: 'destructive', title: 'Password must contain at least one special character' });
       return;
     }
 

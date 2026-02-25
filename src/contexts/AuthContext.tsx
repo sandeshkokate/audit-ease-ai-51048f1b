@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
       if (error) {
-        console.error('Profile fetch error:', error.message);
         setProfileError(true);
         setUser(null);
         setLoading(false);
@@ -47,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = rows?.[0] ?? null;
 
       if (!profile) {
-        console.error('Profile not found for user:', userId);
         setProfileError(true);
         setUser(null);
         setLoading(false);
@@ -57,8 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(profile as User);
       setProfileError(false);
       loadedRef.current = true;
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
+    } catch {
       setProfileError(true);
       setUser(null);
     } finally {
