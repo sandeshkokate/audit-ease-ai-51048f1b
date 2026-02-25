@@ -80,21 +80,15 @@ export default function Login() {
         .rpc('get_user_profile_for_login', { lookup_user_id: userId });
 
       if (profileError) {
-        console.error('Profile RPC error:', profileError);
         await supabase.auth.signOut();
-        throw new Error('Unable to load your profile. Please try again.');
+        throw new Error('Invalid email or password.');
       }
 
       const profile = rows?.[0] ?? null;
 
-      if (!profile) {
+      if (!profile || profile.is_active === false) {
         await supabase.auth.signOut();
-        throw new Error('Account setup is incomplete. Please contact your administrator.');
-      }
-
-      if (profile.is_active === false) {
-        await supabase.auth.signOut();
-        throw new Error('Your account has been deactivated. Contact your administrator.');
+        throw new Error('Invalid email or password.');
       }
 
       supabase.rpc('update_last_login', { lookup_user_id: userId }).then(() => {});
@@ -104,11 +98,11 @@ export default function Login() {
       const role = profile.role as UserRole;
       navigate(ROLE_REDIRECTS[role] || '/');
 
-    } catch (err: any) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: err?.message || 'Invalid email or password',
+        description: 'Invalid email or password.',
       });
     } finally {
       setLoading(false);

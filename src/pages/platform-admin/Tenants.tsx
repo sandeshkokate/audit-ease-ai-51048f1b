@@ -96,7 +96,7 @@ export default function Tenants() {
       setEditTenant(null);
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
-      console.error('Action failed:', err);
+      // error handled via toast
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
@@ -142,7 +142,7 @@ export default function Tenants() {
       toast({ title: `${tenant.name} approved` });
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
-      console.error('Action failed:', err);
+      // error handled via toast
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
@@ -155,7 +155,7 @@ export default function Tenants() {
       toast({ title: `${tenant.name} suspended` });
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
-      console.error('Action failed:', err);
+      // error handled via toast
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
@@ -168,7 +168,7 @@ export default function Tenants() {
       toast({ title: `${tenant.name} reactivated` });
       queryClient.invalidateQueries({ queryKey: ['platform-tenants-page'] });
     } catch (err: any) {
-      console.error('Action failed:', err);
+      // error handled via toast
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
     }
   };
