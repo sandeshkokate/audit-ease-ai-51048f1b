@@ -3,7 +3,7 @@ import { useDocumentTitle } from '@/hooks/use-document-title';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,28 +29,27 @@ export default function Recoveries() {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
 
+  // #1 FIX: Query credit_notes table directly instead of invalid join on audit_logs
   const { data: recoveries = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['recoveries', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
-        .from('audit_logs')
+        .from('credit_notes')
         .select('*')
         .eq('tenant_id', user.tenant_id)
-        .eq('dispute_status', 'recovered')
-        .not('recovery_amount', 'is', null)
-        .order('recovery_date', { ascending: false });
+        .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map(log => ({
-        id: log.id,
-        awb: log.awb,
-        order_id: log.order_id,
-        courier: log.courier_name,
-        disputed_amount: log.discrepancy_amount,
-        amount: log.recovery_amount ?? 0,
-        credit_note_number: log.credit_note_number,
-        date: log.recovery_date,
-        status: 'recovered'
+      return (data || []).map(cn => ({
+        id: cn.id,
+        awb: cn.awb,
+        order_id: cn.order_id,
+        courier: cn.courier_name,
+        disputed_amount: 0, // credit_notes doesn't have disputed_amount
+        amount: cn.amount ?? 0,
+        credit_note_number: cn.credit_note_number,
+        date: cn.credit_date,
+        status: cn.match_status || 'unmatched',
       }));
     },
     enabled: !!user?.tenant_id
@@ -107,6 +106,7 @@ export default function Recoveries() {
       });
       setFile(null);
       setCreditNotes([]);
+      refetch();
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Matching failed', description: error.message });
     } finally {
@@ -149,9 +149,9 @@ export default function Recoveries() {
     );
   }
 
-  const matched = recoveries.filter(r => r.status === 'recovered');
-  const review: any[] = [];
-  const unmatched: any[] = [];
+  const matched = recoveries.filter(r => r.status === 'matched' || r.status === 'recovered');
+  const review = recoveries.filter(r => r.status === 'review');
+  const unmatched = recoveries.filter(r => r.status === 'unmatched');
 
   return (
     <div className="space-y-6">
@@ -160,7 +160,7 @@ export default function Recoveries() {
         {recoveries.length > 0 && (
           <Button variant="outline" size="sm" className="gap-2 self-start" onClick={() => downloadCSV(recoveries.map(r => ({
             Credit_Note: r.credit_note_number, AWB: r.awb, Order_ID: r.order_id,
-            Courier: r.courier, Disputed_Amount: r.disputed_amount, Recovered_Amount: r.amount,
+            Courier: r.courier, Recovered_Amount: r.amount,
             Date: r.date, Status: r.status,
           })), 'recoveries')}>
             <Download className="h-4 w-4" /> Export CSV
@@ -244,7 +244,7 @@ export default function Recoveries() {
                   <TableHead><ColumnHeader title="Order" tooltip="Your internal order reference number" /></TableHead>
                   <TableHead><ColumnHeader title="Amount" tooltip="Credit amount received from courier" /></TableHead>
                   <TableHead><ColumnHeader title="Date" tooltip="Date the credit note was issued" /></TableHead>
-                  <TableHead><ColumnHeader title="Status" tooltip="Auto-matched (exact AWB match found), Review (partial match needs verification), Unmatched (no corresponding dispute found)" /></TableHead>
+                  <TableHead><ColumnHeader title="Status" tooltip="Matched (exact AWB match found), Review (partial match needs verification), Unmatched (no corresponding dispute found)" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

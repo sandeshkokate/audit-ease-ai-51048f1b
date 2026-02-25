@@ -13,7 +13,6 @@ const ROLE_REDIRECTS: Record<UserRole, string> = {
   platform_admin: '/platform-admin/dashboard',
   tenant_admin: '/tenant-admin/dashboard',
   accountant: '/accountant/dashboard',
-  viewer: '/viewer/dashboard',
 };
 
 export default function Login() {

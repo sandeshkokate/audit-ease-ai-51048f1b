@@ -10,7 +10,6 @@ const ROLE_DASHBOARDS: Record<UserRole, string> = {
   platform_admin: '/platform-admin/dashboard',
   tenant_admin: '/tenant-admin/dashboard',
   accountant: '/accountant/dashboard',
-  viewer: '/viewer/dashboard',
 };
 
 interface ProtectedRouteProps {

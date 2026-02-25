@@ -41,7 +41,6 @@ export const ROLE_LABELS: Record<string, string> = {
   platform_admin: 'Platform Admin',
   tenant_admin: 'Tenant Admin',
   accountant: 'Accountant',
-  viewer: 'Viewer',
 };
 
 export const DISCREPANCY_TYPE_LABELS: Record<string, string> = {
