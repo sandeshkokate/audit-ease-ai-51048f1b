@@ -22,7 +22,7 @@ export default function Team() {
 
   const [inviteModal, setInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('viewer');
+  const [inviteRole, setInviteRole] = useState('accountant');
   const [inviting, setInviting] = useState(false);
 
   // Change role dialog state
@@ -141,7 +141,7 @@ export default function Team() {
       await navigator.clipboard.writeText(inviteLink).catch(() => {});
       setInviteModal(false);
       setInviteEmail('');
-      setInviteRole('viewer');
+      setInviteRole('accountant');
       queryClient.invalidateQueries({ queryKey: ['pending-invitations'] });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed', description: err.message });
@@ -228,7 +228,6 @@ export default function Team() {
     platform_admin: 'Platform Admin',
     tenant_admin: 'Administrator',
     accountant: 'Accountant',
-    viewer: 'Viewer'
   };
 
   const isLoading = membersLoading || invitationsLoading;
@@ -399,7 +398,6 @@ export default function Team() {
                 <SelectContent>
                   <SelectItem value="tenant_admin">Administrator</SelectItem>
                   <SelectItem value="accountant">Accountant</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>

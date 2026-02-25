@@ -171,7 +171,6 @@ export default function AcceptInvite() {
   const roleLabels: Record<string, string> = {
     tenant_admin: 'Administrator',
     accountant: 'Accountant',
-    viewer: 'Viewer'
   };
 
   const getPasswordStrength = (pw: string) => {

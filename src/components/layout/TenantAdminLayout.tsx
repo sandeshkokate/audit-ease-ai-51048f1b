@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 const NAV_ITEMS = [
   { title: 'Dashboard', url: '/tenant-admin/dashboard', icon: BarChart3 },
   { title: 'Upload CSV', url: '/tenant-admin/upload', icon: Upload },
+  { title: 'Upload History', url: '/tenant-admin/upload-history', icon: ScrollText },
   { title: 'Audit Logs', url: '/tenant-admin/audit-logs', icon: ScrollText },
   { title: 'Disputes', url: '/tenant-admin/disputes', icon: Mail },
   { title: 'Recoveries', url: '/tenant-admin/recoveries', icon: IndianRupee },

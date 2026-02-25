@@ -160,9 +160,25 @@ export default function TenantSettings() {
     }
     setAddingRate(true);
     try {
+      // #7 FIX: Validate rate structure JSON with Zod
+      const { rateStructureSchema } = await import('@/lib/validation-schemas');
       let rateStructure = {};
       if (rateCardForm.rate_structure_json.trim()) {
-        rateStructure = JSON.parse(rateCardForm.rate_structure_json);
+        let parsed: any;
+        try {
+          parsed = JSON.parse(rateCardForm.rate_structure_json);
+        } catch {
+          toast({ variant: 'destructive', title: 'Invalid JSON', description: 'Rate structure must be valid JSON. Check for missing commas or brackets.' });
+          setAddingRate(false);
+          return;
+        }
+        const validation = rateStructureSchema.safeParse(parsed);
+        if (!validation.success) {
+          toast({ variant: 'destructive', title: 'Invalid rate structure', description: validation.error.errors[0]?.message || 'Check your zone/weight/rate format.' });
+          setAddingRate(false);
+          return;
+        }
+        rateStructure = parsed;
       }
       const { error } = await supabase.from('rate_cards').insert({
         tenant_id: tenantId,
@@ -264,8 +280,15 @@ export default function TenantSettings() {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
+          {/* #9 FIX: Email delivery disclaimer */}
+          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm">
+            <span className="text-warning mt-0.5 shrink-0">⚠️</span>
+            <p className="text-muted-foreground">
+              <strong className="text-foreground">Email delivery is not yet integrated.</strong> These preferences are saved for future use. In-app notifications work as expected. Email notifications will be enabled once SMTP integration is configured by your administrator.
+            </p>
+          </div>
           <Card className="shadow-card">
-            <CardHeader><CardTitle className="text-lg">Email Notifications</CardTitle><CardDescription>Choose which notifications you receive</CardDescription></CardHeader>
+            <CardHeader><CardTitle className="text-lg">Email Notifications</CardTitle><CardDescription>Choose which notifications you receive (email delivery coming soon)</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {[
                 { key: 'email_disputes', label: 'Dispute Updates', desc: 'Get notified when dispute status changes' },

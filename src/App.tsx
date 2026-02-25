@@ -12,7 +12,6 @@ import HelpWidget from "@/components/shared/HelpWidget";
 import PlatformAdminLayout from "@/components/layout/PlatformAdminLayout";
 import TenantAdminLayout from "@/components/layout/TenantAdminLayout";
 import AccountantLayout from "@/components/layout/AccountantLayout";
-import ViewerLayout from "@/components/layout/ViewerLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -38,6 +37,7 @@ const FeatureFlags = lazy(() => import('./pages/platform-admin/FeatureFlags'));
 // Tenant Admin — lazy
 const TenantDashboard = lazy(() => import('./pages/tenant-admin/Dashboard'));
 const UploadCSV = lazy(() => import('./pages/tenant-admin/UploadCSV'));
+const UploadHistory = lazy(() => import('./pages/tenant-admin/UploadHistory'));
 const AuditLogs = lazy(() => import('./pages/tenant-admin/AuditLogs'));
 const Disputes = lazy(() => import('./pages/tenant-admin/Disputes'));
 const Recoveries = lazy(() => import('./pages/tenant-admin/Recoveries'));
@@ -51,15 +51,12 @@ const AccountantDashboard = lazy(() => import('./pages/accountant/Dashboard'));
 const AccountantInvoices = lazy(() => import('./pages/accountant/Invoices'));
 const AccountantReports = lazy(() => import('./pages/accountant/Reports'));
 
-// Viewer — lazy
-const ViewerDashboard = lazy(() => import('./pages/viewer/Dashboard'));
-const ViewerReports = lazy(() => import('./pages/viewer/Reports'));
+// #3 FIX: Viewer role removed entirely
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   platform_admin: '/platform-admin/dashboard',
   tenant_admin: '/tenant-admin/dashboard',
   accountant: '/accountant/dashboard',
-  viewer: '/viewer/dashboard',
 };
 
 function HomeRoute() {
@@ -127,6 +124,7 @@ const App = () => (
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<LazyPage><TenantDashboard /></LazyPage>} />
                 <Route path="upload" element={<LazyPage><UploadCSV /></LazyPage>} />
+                <Route path="upload-history" element={<LazyPage><UploadHistory /></LazyPage>} />
                 <Route path="audit-logs" element={<LazyPage><AuditLogs /></LazyPage>} />
                 <Route path="disputes" element={<LazyPage><Disputes /></LazyPage>} />
                 <Route path="recoveries" element={<LazyPage><Recoveries /></LazyPage>} />
@@ -148,16 +146,7 @@ const App = () => (
                 <Route path="reports" element={<LazyPage><AccountantReports /></LazyPage>} />
               </Route>
 
-              {/* Viewer Routes */}
-              <Route path="/viewer" element={
-                <ProtectedRoute allowedRoles={['viewer']}>
-                  <ViewerLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<LazyPage><ViewerDashboard /></LazyPage>} />
-                <Route path="reports" element={<LazyPage><ViewerReports /></LazyPage>} />
-              </Route>
+              {/* #3: Viewer routes removed — /viewer/* now redirects to 404 */}
 
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/utils';
@@ -27,6 +28,7 @@ import {
   Trash2, Calendar, Info, StickyNote, Clock,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { creditNoteSchema } from '@/lib/validation-schemas';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground border-border',
@@ -75,6 +77,13 @@ export default function Disputes() {
   const [followUpDate, setFollowUpDate] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkRecoverModal, setBulkRecoverModal] = useState(false);
+  const [bulkCreditNote, setBulkCreditNote] = useState({ number_prefix: '', date: '' });
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  // #4 FIX: Server-side pagination with limit
   const { data: disputesData, isLoading, isError, refetch: refetchDisputes } = useQuery({
     queryKey: ['disputes', user?.tenant_id],
     queryFn: async () => {
@@ -84,7 +93,8 @@ export default function Disputes() {
         .select('*, dispute_emails(*), dispute_notes(*)')
         .eq('tenant_id', user.tenant_id)
         .gt('discrepancy_amount', 0)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(1000); // #4 FIX: cap at 1000 rows max
       if (error) throw error;
       return (data || []).map(log => ({
         id: log.id,
@@ -141,6 +151,25 @@ export default function Disputes() {
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const couriers = [...new Set(allDisputes.map(d => d.courier).filter(Boolean))].sort();
+
+  // Selection handlers
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    const raisedOnPage = paginated.filter(d => ['raised', 'disputed'].includes(d.status));
+    const allSelected = raisedOnPage.every(d => selectedIds.has(d.id));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      raisedOnPage.forEach(d => allSelected ? next.delete(d.id) : next.add(d.id));
+      return next;
+    });
+  }, [paginated, selectedIds]);
 
   const openEmailModal = (dispute: any) => {
     setSelectedDispute(dispute);
@@ -206,7 +235,11 @@ export default function Disputes() {
   };
 
   const handleMarkRecovered = async () => {
-    if (!creditNote.number || !creditNote.amount) { toast({ variant: 'destructive', title: 'Please fill credit note details' }); return; }
+    const result = creditNoteSchema.safeParse(creditNote);
+    if (!result.success) {
+      toast({ variant: 'destructive', title: 'Validation error', description: result.error.errors[0]?.message });
+      return;
+    }
     setActionLoading(true);
     try {
       await supabase.from('audit_logs').update({ dispute_status: 'recovered', credit_note_number: creditNote.number, recovery_amount: parseFloat(creditNote.amount), credit_note_date: creditNote.date || null }).eq('id', recoveryModal.dispute.id);
@@ -217,6 +250,36 @@ export default function Disputes() {
       refetch();
     } catch (err: any) { toast({ variant: 'destructive', title: 'Error', description: err.message }); }
     finally { setActionLoading(false); }
+  };
+
+  // #6 FIX: Bulk mark as recovered
+  const handleBulkRecover = async () => {
+    if (!bulkCreditNote.number_prefix.trim()) {
+      toast({ variant: 'destructive', title: 'Please enter a credit note number prefix' });
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const updates = ids.map((id, i) =>
+        supabase.from('audit_logs').update({
+          dispute_status: 'recovered',
+          credit_note_number: `${bulkCreditNote.number_prefix}-${i + 1}`,
+          credit_note_date: bulkCreditNote.date || null,
+          recovery_amount: allDisputes.find(d => d.id === id)?.amount || 0,
+        }).eq('id', id)
+      );
+      await Promise.all(updates);
+      toast({ title: `${ids.length} disputes marked as recovered` });
+      setSelectedIds(new Set());
+      setBulkRecoverModal(false);
+      setBulkCreditNote({ number_prefix: '', date: '' });
+      refetch();
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Bulk update failed', description: err.message });
+    } finally {
+      setBulkLoading(false);
+    }
   };
 
   const handleMarkRejected = async () => {
@@ -309,16 +372,32 @@ export default function Disputes() {
           <h1 className="text-2xl font-bold text-foreground">Disputes</h1>
           <p className="text-sm text-muted-foreground">Manage and send dispute emails to couriers</p>
         </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-              {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate all dispute emails</>}
+        <div className="flex items-center gap-2">
+          {/* #6 FIX: Bulk recover button */}
+          {selectedIds.size > 0 && (
+            <Button variant="outline" className="gap-2 text-success border-success/30" onClick={() => setBulkRecoverModal(true)}>
+              <CheckCircle className="h-4 w-4" /> Recover {selectedIds.size} selected
             </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs">
-            <p>Sends all your unprocessed audit log discrepancies to our AI engine, which generates ready-to-send dispute emails for each one based on your courier's billing error. Emails appear as drafts for your review before sending.</p>
-          </TooltipContent>
-        </Tooltip>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
+                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate all dispute emails</>}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>Sends all your unprocessed audit log discrepancies to our AI engine, which generates ready-to-send dispute emails for each one based on your courier's billing error. Emails appear as drafts for your review before sending.</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+
+      {/* #5 FIX: SMTP disclaimer */}
+      <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm">
+        <Info className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+        <p className="text-muted-foreground">
+          <strong className="text-foreground">"Mark as Raised"</strong> is self-reported. Email delivery is not verified via SMTP. Please confirm delivery manually with your courier's billing team.
+        </p>
       </div>
 
       {/* Search + Filters */}
@@ -350,7 +429,7 @@ export default function Disputes() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setPage(0); }}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setPage(0); setSelectedIds(new Set()); }}>
         <TabsList>
           <TabsTrigger value="draft">Draft <Badge variant="secondary" className="ml-1.5 text-xs">{counts.draft}</Badge></TabsTrigger>
           <TabsTrigger value="raised">Raised <Badge variant="secondary" className="ml-1.5 text-xs">{counts.raised}</Badge></TabsTrigger>
@@ -361,6 +440,17 @@ export default function Disputes() {
 
         {['draft', 'raised', 'recovered', 'rejected', 'all'].map(tab => (
           <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
+            {/* #6: Select all for raised tab */}
+            {(tab === 'raised' || tab === 'all') && paginated.filter(d => ['raised', 'disputed'].includes(d.status)).length > 0 && (
+              <div className="flex items-center gap-2 pb-1">
+                <Checkbox
+                  checked={paginated.filter(d => ['raised', 'disputed'].includes(d.status)).every(d => selectedIds.has(d.id))}
+                  onCheckedChange={toggleSelectAll}
+                />
+                <span className="text-sm text-muted-foreground">Select all raised disputes on this page</span>
+              </div>
+            )}
+
             {paginated.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Mail className="h-10 w-10 text-muted-foreground mb-3" />
@@ -373,16 +463,26 @@ export default function Disputes() {
                   <CardContent className="p-4">
                     {/* Main row */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-sm">{dispute.awb_number}</span>
-                          <Badge variant="outline" className={STATUS_COLORS[dispute.status] || ''}>{STATUS_LABELS[dispute.status] || dispute.status}</Badge>
-                          <Badge variant="outline">{dispute.discrepancy_type}</Badge>
-                          {dispute.escalated && <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">High Priority</Badge>}
-                          <span className="text-xs text-muted-foreground">{dispute.courier}</span>
+                      <div className="flex items-start gap-3 flex-1">
+                        {/* #6: Checkbox for raised disputes */}
+                        {['raised', 'disputed'].includes(dispute.status) && (
+                          <Checkbox
+                            checked={selectedIds.has(dispute.id)}
+                            onCheckedChange={() => toggleSelect(dispute.id)}
+                            className="mt-1"
+                          />
+                        )}
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-sm">{dispute.awb_number}</span>
+                            <Badge variant="outline" className={STATUS_COLORS[dispute.status] || ''}>{STATUS_LABELS[dispute.status] || dispute.status}</Badge>
+                            <Badge variant="outline">{dispute.discrepancy_type}</Badge>
+                            {dispute.escalated && <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">High Priority</Badge>}
+                            <span className="text-xs text-muted-foreground">{dispute.courier}</span>
+                          </div>
+                          <p className="text-sm text-destructive font-medium">{formatCurrency(dispute.amount)} overcharge</p>
+                          {dispute.created_at && <p className="text-xs text-muted-foreground">{format(new Date(dispute.created_at), 'dd MMM yyyy')}</p>}
                         </div>
-                        <p className="text-sm text-destructive font-medium">{formatCurrency(dispute.amount)} overcharge</p>
-                        {dispute.created_at && <p className="text-xs text-muted-foreground">{format(new Date(dispute.created_at), 'dd MMM yyyy')}</p>}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
@@ -519,6 +619,22 @@ export default function Disputes() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setRecoveryModal({ open: false, dispute: null })}>Cancel</Button>
             <Button onClick={handleMarkRecovered} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm recovery'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* #6: Bulk Recovery Modal */}
+      <Dialog open={bulkRecoverModal} onOpenChange={(o) => !o && setBulkRecoverModal(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-success" />Bulk Mark as Recovered</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">{selectedIds.size} disputes selected. Each will be assigned a sequential credit note number.</p>
+            <div className="space-y-2"><Label>Credit note prefix *</Label><Input placeholder="CN-BATCH-001" value={bulkCreditNote.number_prefix} onChange={e => setBulkCreditNote({ ...bulkCreditNote, number_prefix: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Credit note date</Label><Input type="date" value={bulkCreditNote.date} onChange={e => setBulkCreditNote({ ...bulkCreditNote, date: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkRecoverModal(false)}>Cancel</Button>
+            <Button onClick={handleBulkRecover} disabled={bulkLoading}>{bulkLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : `Recover ${selectedIds.size} disputes`}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
