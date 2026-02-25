@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Search } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export interface Column<T> {
   key: string;
@@ -26,7 +27,11 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   searchKeys?: string[];
   actions?: React.ReactNode;
+  virtualize?: boolean;
 }
+
+const ROW_HEIGHT = 48;
+const VIRTUAL_THRESHOLD = 100;
 
 export default function DataTable<T extends Record<string, any>>({
   columns,
@@ -36,11 +41,13 @@ export default function DataTable<T extends Record<string, any>>({
   searchPlaceholder = 'Search...',
   searchKeys = [],
   actions,
+  virtualize = false,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data;
@@ -60,13 +67,58 @@ export default function DataTable<T extends Record<string, any>>({
     });
   }, [filtered, sortKey, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const shouldVirtualize = virtualize || sorted.length >= VIRTUAL_THRESHOLD;
+  const totalPages = shouldVirtualize ? 1 : Math.max(1, Math.ceil(sorted.length / pageSize));
+  const paged = shouldVirtualize ? sorted : sorted.slice(page * pageSize, (page + 1) * pageSize);
+
+  const virtualizer = useVirtualizer({
+    count: paged.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 20,
+    enabled: shouldVirtualize,
+  });
 
   const toggleSort = (key: string) => {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     else { setSortKey(key); setSortDir('asc'); }
   };
+
+  const renderHeader = () => (
+    <TableHeader>
+      <TableRow className="bg-muted/50">
+        {columns.map((col) => (
+          <TableHead key={col.key} className="whitespace-nowrap">
+            {col.sortable ? (
+              <button
+                className="flex items-center gap-1 hover:text-foreground transition-colors group"
+                onClick={() => toggleSort(col.key)}
+              >
+                {typeof col.header === 'string' ? col.header : col.header}
+                {sortKey === col.key ? (
+                  sortDir === 'asc' ?
+                    <ArrowUp className="h-3.5 w-3.5 text-primary" /> :
+                    <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                ) : (
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+                )}
+              </button>
+            ) : (
+              col.header
+            )}
+          </TableHead>
+        ))}
+      </TableRow>
+    </TableHeader>
+  );
+
+  const renderRow = (row: T, i: number) => (
+    <TableRow key={i} className="hover:bg-muted/30">
+      {columns.map((col) => (
+        <TableCell key={col.key}>{col.render ? col.render(row) : String(row[col.key] ?? '')}</TableCell>
+      ))}
+    </TableRow>
+  );
 
   return (
     <div className="space-y-4">
@@ -88,53 +140,56 @@ export default function DataTable<T extends Record<string, any>>({
       )}
 
       <div className="rounded-lg border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              {columns.map((col) => (
-                <TableHead key={col.key} className="whitespace-nowrap">
-                  {col.sortable ? (
-                    <button
-                      className="flex items-center gap-1 hover:text-foreground transition-colors group"
-                      onClick={() => toggleSort(col.key)}
-                    >
-                      {typeof col.header === 'string' ? col.header : col.header}
-                      {sortKey === col.key ? (
-                        sortDir === 'asc' ? 
-                          <ArrowUp className="h-3.5 w-3.5 text-primary" /> : 
-                          <ArrowDown className="h-3.5 w-3.5 text-primary" />
-                      ) : (
-                        <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
-                      )}
-                    </button>
+        {/* Horizontal scroll wrapper for mobile */}
+        <div className="overflow-x-auto">
+          {shouldVirtualize ? (
+            <div ref={scrollRef} style={{ maxHeight: 500, overflow: 'auto' }}>
+              <Table>
+                {renderHeader()}
+                <TableBody>
+                  {paged.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
+                        No data found
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    col.header
+                    <>
+                      {virtualizer.getVirtualItems().length > 0 && (
+                        <tr style={{ height: virtualizer.getVirtualItems()[0]?.start ?? 0 }}><td colSpan={columns.length} /></tr>
+                      )}
+                      {virtualizer.getVirtualItems().map((virtualRow) => {
+                        const row = paged[virtualRow.index];
+                        return renderRow(row, virtualRow.index);
+                      })}
+                      {virtualizer.getVirtualItems().length > 0 && (
+                        <tr style={{ height: virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0) }}><td colSpan={columns.length} /></tr>
+                      )}
+                    </>
                   )}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paged.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
-                  No data found
-                </TableCell>
-              </TableRow>
-            ) : (
-              paged.map((row, i) => (
-                <TableRow key={i} className="hover:bg-muted/30">
-                  {columns.map((col) => (
-                    <TableCell key={col.key}>{col.render ? col.render(row) : String(row[col.key] ?? '')}</TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <Table>
+              {renderHeader()}
+              <TableBody>
+                {paged.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
+                      No data found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paged.map((row, i) => renderRow(row, i))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </div>
       </div>
 
-      {totalPages > 1 && (
+      {!shouldVirtualize && totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {sorted.length} result{sorted.length !== 1 ? 's' : ''} — Page {page + 1} of {totalPages}
@@ -154,6 +209,12 @@ export default function DataTable<T extends Record<string, any>>({
             </Button>
           </div>
         </div>
+      )}
+
+      {shouldVirtualize && (
+        <p className="text-sm text-muted-foreground">
+          {sorted.length} result{sorted.length !== 1 ? 's' : ''}
+        </p>
       )}
     </div>
   );
