@@ -225,8 +225,8 @@ export default function TenantDashboard() {
   if (!isLoading && stats?.totalOrders === 0) {
     const checklist = [
       { label: 'Account Created', done: true },
-      { label: 'Rate Card Uploaded', done: !!hasRateCard },
-      { label: 'First CSV Uploaded', done: false },
+      { label: 'Rate Card Configured', done: !!hasRateCard, action: () => navigate('/tenant-admin/settings'), actionLabel: 'Configure' },
+      { label: 'First CSV Uploaded', done: false, action: () => navigate('/tenant-admin/upload'), actionLabel: 'Upload' },
     ];
 
     return (
@@ -242,9 +242,14 @@ export default function TenantDashboard() {
                 ) : (
                   <Square className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
                 )}
-                <span className={`text-sm ${item.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                <span className={`text-sm flex-1 ${item.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                   {item.label}
                 </span>
+                {!item.done && item.action && (
+                  <Button variant="ghost" size="sm" className="h-6 text-xs text-primary px-2" onClick={item.action}>
+                    {item.actionLabel}
+                  </Button>
+                )}
               </div>
             ))}
           </div>

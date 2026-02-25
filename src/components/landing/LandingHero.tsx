@@ -11,15 +11,15 @@ export default function LandingHero() {
       <div className="pointer-events-none absolute inset-0 gradient-mesh" />
       <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-40" />
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-primary/8 blur-[120px] animate-pulse-glow" />
-        <div className="absolute top-1/3 -right-40 h-[500px] w-[500px] rounded-full bg-secondary/8 blur-[120px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute bottom-0 left-1/4 h-[400px] w-[400px] rounded-full bg-accent/6 blur-[100px]" />
+        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-primary/10 blur-[120px] animate-pulse-glow" />
+        <div className="absolute top-1/3 -right-40 h-[500px] w-[500px] rounded-full bg-secondary/10 blur-[120px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute bottom-0 left-1/4 h-[400px] w-[400px] rounded-full bg-accent/5 blur-[100px]" />
       </div>
 
       <div className="container relative mx-auto px-4">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="text-center lg:text-left">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
               <Sparkles className="h-3.5 w-3.5" />
               Introducing AuditEase AI for Indian E-commerce
             </div>

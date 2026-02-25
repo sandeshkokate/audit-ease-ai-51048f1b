@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { INVOICE_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { format, subMonths } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -230,7 +231,7 @@ export default function Invoices() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><p className="text-muted-foreground text-xs">Period</p><p className="font-medium">{selectedInvoice.invoice_period_start} – {selectedInvoice.invoice_period_end}</p></div>
                 <div><p className="text-muted-foreground text-xs">Line Items</p><p className="font-medium">{Array.isArray(selectedInvoice.line_items) ? selectedInvoice.line_items.length : '-'}</p></div>
-                <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={selectedInvoice.status === 'paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}>{selectedInvoice.status}</Badge></div>
+                <div><p className="text-muted-foreground text-xs">Status</p><Badge variant="outline" className={selectedInvoice.status === 'paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}>{getLabel(INVOICE_STATUS_LABELS, selectedInvoice.status)}</Badge></div>
                 <div><p className="text-muted-foreground text-xs">Created</p><p className="font-medium">{selectedInvoice.created_at ? new Date(selectedInvoice.created_at).toLocaleDateString() : '-'}</p></div>
               </div>
               <Card className="bg-muted/30"><CardContent className="p-4 space-y-2 text-sm">
