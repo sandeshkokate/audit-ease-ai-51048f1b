@@ -431,7 +431,6 @@ export default function Team() {
                   <SelectContent>
                     <SelectItem value="tenant_admin">Administrator</SelectItem>
                     <SelectItem value="accountant">Accountant</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
