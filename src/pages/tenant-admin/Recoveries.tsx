@@ -38,7 +38,8 @@ export default function Recoveries() {
         .from('credit_notes')
         .select('*')
         .eq('tenant_id', user.tenant_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(0, 4999); // Explicit pagination guard
       if (error) throw error;
       return (data || []).map(cn => ({
         id: cn.id,
