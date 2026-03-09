@@ -358,7 +358,7 @@ export default function Disputes() {
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <AlertTriangle className="h-8 w-8 text-destructive" />
       <p className="font-semibold">Failed to load disputes</p>
-      <Button variant="outline" size="sm" onClick={() => refetchDisputes()}>Try again</Button>
+      <Button variant="outline" size="sm" onClick={() => refetchDisputes()}>Try Again</Button>
     </div>
   );
 
@@ -382,7 +382,7 @@ export default function Disputes() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate all dispute emails</>}
+                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate All Dispute Emails</>}
               </Button>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
@@ -486,23 +486,23 @@ export default function Disputes() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
-                          <Mail className="h-4 w-4" /> Review email
+                          <Mail className="h-4 w-4" /> Review Email
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48 bg-popover">
-                            <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}><Send className="h-4 w-4 mr-2" />Mark as raised</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}><Send className="h-4 w-4 mr-2" />Mark as Raised</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success"><CheckCircle className="h-4 w-4 mr-2" />Mark as recovered</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setRejectModal({ open: true, dispute })} className="text-destructive focus:text-destructive"><XCircle className="h-4 w-4 mr-2" />Mark as rejected</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success"><CheckCircle className="h-4 w-4 mr-2" />Mark as Recovered</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRejectModal({ open: true, dispute })} className="text-destructive focus:text-destructive"><XCircle className="h-4 w-4 mr-2" />Mark as Rejected</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}><MessageSquare className="h-4 w-4 mr-2" />Add note</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}><Calendar className="h-4 w-4 mr-2" />Set follow-up</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}><MessageSquare className="h-4 w-4 mr-2" />Add Note</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}><Calendar className="h-4 w-4 mr-2" />Set Follow-Up</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEscalate(dispute)}><AlertTriangle className="h-4 w-4 mr-2" />Escalate</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleWithdraw(dispute)} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Withdraw dispute</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleWithdraw(dispute)} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Withdraw Dispute</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -552,7 +552,7 @@ export default function Disputes() {
       {/* Email Review Modal */}
       <Dialog open={!!selectedDispute} onOpenChange={() => setSelectedDispute(null)}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Review dispute email</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Review Dispute Email</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -567,7 +567,7 @@ export default function Disputes() {
             {selectedDispute?.dispute_reasoning && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><ChevronDown className="h-4 w-4" /> Dispute reasoning</Button>
+                  <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><ChevronDown className="h-4 w-4" /> Dispute Reasoning</Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-2 space-y-2">
                   {selectedDispute.dispute_reasoning.issues?.map((issue: any, i: number) => (
@@ -582,15 +582,15 @@ export default function Disputes() {
               </Collapsible>
             )}
             <div className="space-y-1.5">
-              <Label className="text-xs">Email body</Label>
+              <Label className="text-xs">Email Body</Label>
               <Textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={12} className="font-mono text-sm" />
             </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy email</Button>
-            <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & open Gmail</Button>
-            <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as raised</Button>
-            <Button variant="ghost" className="gap-2" onClick={async () => {
+             <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
+             <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
+             <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Raised</Button>
+             <Button variant="ghost" className="gap-2" onClick={async () => {
               const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES;
               if (!webhookUrl) { toast({ variant: 'destructive', title: 'Webhook not configured' }); return; }
               try {
@@ -609,7 +609,7 @@ export default function Disputes() {
       {/* Recovery Modal */}
       <Dialog open={recoveryModal.open} onOpenChange={(o) => !o && setRecoveryModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle className="h-5 w-5 text-success" />Mark as recovered</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle className="h-5 w-5 text-success" />Mark as Recovered</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{recoveryModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Credit note number *</Label><Input placeholder="CN-12345" value={creditNote.number} onChange={e => setCreditNote({ ...creditNote, number: e.target.value })} /></div>
@@ -618,7 +618,7 @@ export default function Disputes() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRecoveryModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button onClick={handleMarkRecovered} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm recovery'}</Button>
+            <Button onClick={handleMarkRecovered} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Recovery'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -642,14 +642,14 @@ export default function Disputes() {
       {/* Rejection Modal */}
       <Dialog open={rejectModal.open} onOpenChange={(o) => !o && setRejectModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" />Mark as rejected</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" />Mark as Rejected</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{rejectModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Rejection reason *</Label><Textarea placeholder="Enter the courier's rejection reason..." value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button variant="destructive" onClick={handleMarkRejected} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm rejection'}</Button>
+            <Button variant="destructive" onClick={handleMarkRejected} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Rejection'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -657,14 +657,14 @@ export default function Disputes() {
       {/* Note Modal */}
       <Dialog open={noteModal.open} onOpenChange={(o) => !o && setNoteModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" />Add note</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" />Add Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{noteModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Note *</Label><Textarea placeholder="Add your note or follow-up details..." value={noteText} onChange={e => setNoteText(e.target.value)} rows={4} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNoteModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button onClick={handleAddNote} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save note'}</Button>
+            <Button onClick={handleAddNote} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Note'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -672,14 +672,14 @@ export default function Disputes() {
       {/* Follow-up Modal */}
       <Dialog open={followUpModal.open} onOpenChange={(o) => !o && setFollowUpModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Set follow-up date</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Set Follow-Up Date</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{followUpModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Follow-up date *</Label><Input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} min={new Date().toISOString().split('T')[0]} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFollowUpModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button onClick={handleSetFollowUp} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set reminder'}</Button>
+            <Button onClick={handleSetFollowUp} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set Reminder'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

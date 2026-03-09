@@ -245,7 +245,7 @@ export default function Tenants() {
           <p className="text-sm text-muted-foreground">Manage all registered companies</p>
         </div>
         <Button variant="hero" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" /> Add tenant
+          <Plus className="h-4 w-4" /> Add Tenant
         </Button>
       </div>
 
@@ -342,7 +342,7 @@ export default function Tenants() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button variant="hero" onClick={handleAdd} disabled={adding}>
-              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add tenant
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add Tenant
             </Button>
           </DialogFooter>
         </DialogContent>

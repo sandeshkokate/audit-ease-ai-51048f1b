@@ -294,7 +294,7 @@ export default function UploadCSV() {
 
           <div className="flex justify-end">
             <Button variant="hero" size="lg" className="gap-2" onClick={handleProcess} disabled={processing || !allValid}>
-              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> {processingStep || 'Processing...'}</> : <><Upload className="h-4 w-4" /> Process & detect discrepancies</>}
+              {processing ? <><Loader2 className="h-4 w-4 animate-spin" /> {processingStep || 'Processing...'}</> : <><Upload className="h-4 w-4" /> Process & Detect Discrepancies</>}
             </Button>
           </div>
         </div>

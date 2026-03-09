@@ -265,7 +265,7 @@ export default function Team() {
         </div>
         <Button className="gap-2" onClick={() => setInviteModal(true)}>
           <UserPlus className="h-4 w-4" />
-          Invite member
+          Invite Member
         </Button>
       </div>
 
@@ -360,7 +360,7 @@ export default function Team() {
                     <Badge variant="outline">{roleLabels[inv.role] || inv.role}</Badge>
                     <Button variant="outline" size="sm" className="gap-1" onClick={() => handleResendLink(inv.token)}>
                       <Link2 className="h-3.5 w-3.5" />
-                      Copy link
+                      Copy Link
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleCancelInvitation(inv.id, inv.email)}>
                       Cancel
@@ -405,7 +405,7 @@ export default function Team() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteModal(false)}>Cancel</Button>
             <Button onClick={handleInvite} disabled={inviting}>
-              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send invitation'}
+              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Invitation'}
             </Button>
           </DialogFooter>
         </DialogContent>
