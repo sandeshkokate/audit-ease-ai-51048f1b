@@ -145,7 +145,6 @@ const App = () => (
                 <Route path="reports" element={<LazyPage><AccountantReports /></LazyPage>} />
               </Route>
 
-              {/* #3: Viewer routes removed — /viewer/* now redirects to 404 */}
 
               <Route path="*" element={<NotFound />} />
             </Routes>
