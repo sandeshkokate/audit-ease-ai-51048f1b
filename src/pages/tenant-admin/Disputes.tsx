@@ -657,7 +657,7 @@ export default function Disputes() {
       {/* Note Modal */}
       <Dialog open={noteModal.open} onOpenChange={(o) => !o && setNoteModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" />Add note</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" />Add Note</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{noteModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Note *</Label><Textarea placeholder="Add your note or follow-up details..." value={noteText} onChange={e => setNoteText(e.target.value)} rows={4} /></div>
