@@ -493,16 +493,16 @@ export default function Disputes() {
                             <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48 bg-popover">
-                            <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}><Send className="h-4 w-4 mr-2" />Mark as raised</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}><Send className="h-4 w-4 mr-2" />Mark as Raised</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success"><CheckCircle className="h-4 w-4 mr-2" />Mark as recovered</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setRejectModal({ open: true, dispute })} className="text-destructive focus:text-destructive"><XCircle className="h-4 w-4 mr-2" />Mark as rejected</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRecoveryModal({ open: true, dispute })} className="text-success focus:text-success"><CheckCircle className="h-4 w-4 mr-2" />Mark as Recovered</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRejectModal({ open: true, dispute })} className="text-destructive focus:text-destructive"><XCircle className="h-4 w-4 mr-2" />Mark as Rejected</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}><MessageSquare className="h-4 w-4 mr-2" />Add note</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}><Calendar className="h-4 w-4 mr-2" />Set follow-up</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}><MessageSquare className="h-4 w-4 mr-2" />Add Note</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}><Calendar className="h-4 w-4 mr-2" />Set Follow-Up</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEscalate(dispute)}><AlertTriangle className="h-4 w-4 mr-2" />Escalate</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleWithdraw(dispute)} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Withdraw dispute</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleWithdraw(dispute)} className="text-destructive focus:text-destructive"><Trash2 className="h-4 w-4 mr-2" />Withdraw Dispute</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
