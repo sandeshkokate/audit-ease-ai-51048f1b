@@ -382,7 +382,7 @@ export default function Disputes() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate all dispute emails</>}
+                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate All Dispute Emails</>}
               </Button>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
