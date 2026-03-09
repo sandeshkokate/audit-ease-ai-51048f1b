@@ -486,7 +486,7 @@ export default function Disputes() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="gap-2" onClick={() => openEmailModal(dispute)}>
-                          <Mail className="h-4 w-4" /> Review email
+                          <Mail className="h-4 w-4" /> Review Email
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
