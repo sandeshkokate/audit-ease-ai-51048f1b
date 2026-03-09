@@ -262,7 +262,7 @@ export default function TenantSettings() {
 
           <div className="flex justify-end">
             <Button variant="hero" onClick={handleSave} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save settings
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Settings
             </Button>
           </div>
         </TabsContent>
