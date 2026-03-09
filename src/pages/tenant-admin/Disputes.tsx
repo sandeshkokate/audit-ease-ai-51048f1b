@@ -358,7 +358,7 @@ export default function Disputes() {
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <AlertTriangle className="h-8 w-8 text-destructive" />
       <p className="font-semibold">Failed to load disputes</p>
-      <Button variant="outline" size="sm" onClick={() => refetchDisputes()}>Try again</Button>
+      <Button variant="outline" size="sm" onClick={() => refetchDisputes()}>Try Again</Button>
     </div>
   );
 
