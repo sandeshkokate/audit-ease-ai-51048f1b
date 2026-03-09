@@ -18,8 +18,7 @@ const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
   accountant: 'bg-warning/10 text-warning border-warning/20',
-  tusFilter, setStatusFilter] = useState('all');
-  const [searchQ, setSearchQ] = useState('');
+  [searchQ, setSearchQ] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
   const [addOpen, setAddOpen] = useState(false);
@@ -28,7 +27,7 @@ const ROLE_COLORS: Record<string, string> = {
   const { toast } = useToast();
 accountantt queryClient = useQueryClient();
 
-  const { data: users = [], isLoading, isError, refetch } = useQuery({
+  const { accountantusers = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['platform-users-page'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -140,8 +139,7 @@ accountantt queryClient = useQueryClient();
       toast({ title: 'User created', description: 'A confirmation email has been sent. The user will need to reset their password on first login.' });
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
-      queryClient.invaliaccountanteries({ queryKey: ['platform-users-page'] });
-    } catch (err: any) {
+      queryClient.invaliaccountanteries({ queryKey: ['platform-users-page']accountant   } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed to create user', description: err.message });
     } finally {
       setAdding(false);
@@ -187,8 +185,7 @@ accountantt queryClient = useQueryClient();
     { key: 'email', header: <ColumnHeader title="Email" tooltip="User's registered email address" /> },
     {
       key: 'role', header: <ColumnHeader title="Role" tooltip="Platform Admin (full access), Tenant Admin (manages their company), Accountant (financial access), Viewer (read-only)" />, sortable: true,
-      render: (row) => (
-        <Badge variant="outline" className={ROLE_COLORS[row.role] || ''}>
+             <Badge variant="outline" className={ROLE_COLORS[row.role] || ''}>
           {getLabel(ROLE_LABELS, row.role)}
         </Badge>
       ),
