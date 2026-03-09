@@ -381,7 +381,7 @@ export default function TenantSettings() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setRateCardModal(false)}>Cancel</Button>
             <Button onClick={handleAddRateCard} disabled={addingRate}>
-              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add rate card'}
+              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Rate Card'}
             </Button>
           </DialogFooter>
         </DialogContent>
