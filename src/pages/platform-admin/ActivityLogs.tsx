@@ -147,7 +147,7 @@ export default function ActivityLogs() {
       {/* Collapsible definitions & legends */}
       <Collapsible>
         <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 text-muted-foreground">
+          <Button variant="outline" size="sm" className="gap-2 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary">
             <Info className="h-4 w-4" /> Definitions & Legends
           </Button>
         </CollapsibleTrigger>
