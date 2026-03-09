@@ -15,7 +15,7 @@ Allow: /
 Disallow: /platform-admin/
 Disallow: /tenant-admin/
 Disallow: /accountant/
-Disallow: /viewer/
+
 Disallow: /reset-password
 Disallow: /invite/
 
