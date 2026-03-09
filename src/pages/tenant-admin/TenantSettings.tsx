@@ -321,7 +321,7 @@ export default function TenantSettings() {
                 setSaving(false);
               }
             }} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save preferences
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Preferences
             </Button>
           </div>
         </TabsContent>
