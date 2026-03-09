@@ -582,7 +582,7 @@ export default function Disputes() {
               </Collapsible>
             )}
             <div className="space-y-1.5">
-              <Label className="text-xs">Email body</Label>
+              <Label className="text-xs">Email Body</Label>
               <Textarea value={editBody} onChange={(e) => setEditBody(e.target.value)} rows={12} className="font-mono text-sm" />
             </div>
           </div>
