@@ -649,7 +649,7 @@ export default function Disputes() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button variant="destructive" onClick={handleMarkRejected} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm rejection'}</Button>
+            <Button variant="destructive" onClick={handleMarkRejected} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Rejection'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
