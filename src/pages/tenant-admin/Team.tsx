@@ -265,7 +265,7 @@ export default function Team() {
         </div>
         <Button className="gap-2" onClick={() => setInviteModal(true)}>
           <UserPlus className="h-4 w-4" />
-          Invite member
+          Invite Member
         </Button>
       </div>
 
