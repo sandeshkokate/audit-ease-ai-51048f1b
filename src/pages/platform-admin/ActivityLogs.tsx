@@ -8,6 +8,7 @@ import { Search, Loader2, AlertTriangle, Info, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { getActionInfo, formatDetails, formatEntityType, getAllActions } from '@/lib/activity-actions';
 import { downloadCSV } from '@/lib/utils';
@@ -143,33 +144,40 @@ export default function ActivityLogs() {
         </Button>
       </div>
 
-      {/* Info callout — explains when logs are created */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="py-3 px-4 flex items-start gap-2">
-          <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Logs are created automatically when key events occur:&nbsp;
-            <strong>shipments are audited</strong> (from CSV uploads),&nbsp;
-            <strong>discrepancies are detected</strong>,&nbsp;
-            <strong>disputes are raised or updated</strong>,&nbsp;
-            <strong>recoveries are recorded</strong>, and&nbsp;
-            <strong>users log in or settings change</strong>.
-            The <strong>"What Changed"</strong> column shows the type of record affected, and <strong>"Summary"</strong> provides the key details.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Action Legends — complete list from actual data */}
-      {visibleActions.length > 0 && (
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
-          {visibleActions.map((a) => (
-            <div key={a.label} className="flex items-center gap-1.5" title={a.description}>
-              <Badge variant="outline" className={`${a.color} text-xs`}>{a.label}</Badge>
-              <span className="text-xs text-muted-foreground hidden sm:inline">— {a.description}</span>
+      {/* Collapsible definitions & legends */}
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2 text-muted-foreground">
+            <Info className="h-4 w-4" /> Definitions & Legends
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-3 space-y-3">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="py-3 px-4 flex items-start gap-2">
+              <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                Logs are created automatically when key events occur:&nbsp;
+                <strong>shipments are audited</strong> (from CSV uploads),&nbsp;
+                <strong>discrepancies are detected</strong>,&nbsp;
+                <strong>disputes are raised or updated</strong>,&nbsp;
+                <strong>recoveries are recorded</strong>, and&nbsp;
+                <strong>users log in or settings change</strong>.
+                The <strong>"What Changed"</strong> column shows the type of record affected, and <strong>"Summary"</strong> provides the key details.
+              </p>
+            </CardContent>
+          </Card>
+          {visibleActions.length > 0 && (
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {visibleActions.map((a) => (
+                <div key={a.label} className="flex items-center gap-1.5" title={a.description}>
+                  <Badge variant="outline" className={`${a.color} text-xs`}>{a.label}</Badge>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">— {a.description}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
