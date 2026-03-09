@@ -51,7 +51,6 @@ const AccountantDashboard = lazy(() => import('./pages/accountant/Dashboard'));
 const AccountantInvoices = lazy(() => import('./pages/accountant/Invoices'));
 const AccountantReports = lazy(() => import('./pages/accountant/Reports'));
 
-// #3 FIX: Viewer role removed entirely
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   platform_admin: '/platform-admin/dashboard',
