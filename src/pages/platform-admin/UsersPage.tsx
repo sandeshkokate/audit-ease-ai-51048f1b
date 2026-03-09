@@ -18,18 +18,14 @@ const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
   accountant: 'bg-warning/10 text-warning border-warning/20',
-  
-};
-
-export default function UsersPage() {
-  const [roleFilter, setRoleFilter] = useState('all');
+  eFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] accountanttate(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
