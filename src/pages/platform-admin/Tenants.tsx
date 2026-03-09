@@ -245,7 +245,7 @@ export default function Tenants() {
           <p className="text-sm text-muted-foreground">Manage all registered companies</p>
         </div>
         <Button variant="hero" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" /> Add tenant
+          <Plus className="h-4 w-4" /> Add Tenant
         </Button>
       </div>
 
