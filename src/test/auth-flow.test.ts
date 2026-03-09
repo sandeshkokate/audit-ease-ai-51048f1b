@@ -65,14 +65,12 @@ describe('Auth Flow', () => {
       platform_admin: '/platform-admin/dashboard',
       tenant_admin: '/tenant-admin/dashboard',
       accountant: '/accountant/dashboard',
-      viewer: '/viewer/dashboard',
     };
 
-    it('maps all four roles to correct dashboard paths', () => {
+    it('maps all three roles to correct dashboard paths', () => {
       expect(ROLE_REDIRECTS.platform_admin).toBe('/platform-admin/dashboard');
       expect(ROLE_REDIRECTS.tenant_admin).toBe('/tenant-admin/dashboard');
       expect(ROLE_REDIRECTS.accountant).toBe('/accountant/dashboard');
-      expect(ROLE_REDIRECTS.viewer).toBe('/viewer/dashboard');
     });
 
     it('returns undefined for unknown role', () => {

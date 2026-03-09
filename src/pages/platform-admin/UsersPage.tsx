@@ -18,7 +18,6 @@ const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
   accountant: 'bg-warning/10 text-warning border-warning/20',
-  viewer: 'bg-muted text-muted-foreground border-border',
 };
 
 export default function UsersPage() {
@@ -28,7 +27,7 @@ export default function UsersPage() {
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
+  const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'accountant', tenant_id: '' });
   const [adding, setAdding] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -128,10 +127,9 @@ export default function UsersPage() {
     }
     setAdding(true);
     try {
-      // Create auth user via Supabase admin (this will trigger the handle_new_user function)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: addForm.email.trim(),
-        password: crypto.randomUUID().slice(0, 16) + 'A1!', // Temporary password
+        password: crypto.randomUUID().slice(0, 16) + 'A1!',
         options: {
           data: {
             full_name: addForm.full_name.trim() || addForm.email.split('@')[0],
@@ -144,7 +142,7 @@ export default function UsersPage() {
       
       toast({ title: 'User created', description: 'A confirmation email has been sent. The user will need to reset their password on first login.' });
       setAddOpen(false);
-      setAddForm({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
+      setAddForm({ full_name: '', email: '', role: 'accountant', tenant_id: '' });
       queryClient.invalidateQueries({ queryKey: ['platform-users-page'] });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed to create user', description: err.message });
@@ -191,7 +189,7 @@ export default function UsersPage() {
     { key: 'full_name', header: <ColumnHeader title="Name" tooltip="Full name of the user" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Email" tooltip="User's registered email address" /> },
     {
-      key: 'role', header: <ColumnHeader title="Role" tooltip="Platform Admin (full access), Tenant Admin (manages their company), Accountant (financial access), Viewer (read-only)" />, sortable: true,
+      key: 'role', header: <ColumnHeader title="Role" tooltip="Platform Admin (full access), Tenant Admin (manages their company), Accountant (financial access)" />, sortable: true,
       render: (row) => (
         <Badge variant="outline" className={ROLE_COLORS[row.role] || ''}>
           {getLabel(ROLE_LABELS, row.role)}
@@ -253,7 +251,6 @@ export default function UsersPage() {
             <SelectItem value="platform_admin">Platform Admin</SelectItem>
             <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
             <SelectItem value="accountant">Accountant</SelectItem>
-            <SelectItem value="viewer">Viewer</SelectItem>
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -295,7 +292,6 @@ export default function UsersPage() {
                   <SelectItem value="platform_admin">Platform Admin</SelectItem>
                   <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
                   <SelectItem value="accountant">Accountant</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -348,7 +344,6 @@ export default function UsersPage() {
                   <SelectItem value="platform_admin">Platform Admin</SelectItem>
                   <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
                   <SelectItem value="accountant">Accountant</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
