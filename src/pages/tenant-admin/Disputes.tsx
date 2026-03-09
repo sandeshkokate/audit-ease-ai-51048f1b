@@ -609,7 +609,7 @@ export default function Disputes() {
       {/* Recovery Modal */}
       <Dialog open={recoveryModal.open} onOpenChange={(o) => !o && setRecoveryModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle className="h-5 w-5 text-success" />Mark as recovered</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle className="h-5 w-5 text-success" />Mark as Recovered</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{recoveryModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Credit note number *</Label><Input placeholder="CN-12345" value={creditNote.number} onChange={e => setCreditNote({ ...creditNote, number: e.target.value })} /></div>
