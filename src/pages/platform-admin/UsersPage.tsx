@@ -286,7 +286,6 @@ accountantt queryClient = useQueryClient();
                   <SelectItem value="platform_admin">Platform Admin</SelectItem>
                   <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
                   <SelectItem value="accountant">Accountant</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
