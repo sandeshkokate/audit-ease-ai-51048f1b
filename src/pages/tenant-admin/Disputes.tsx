@@ -679,7 +679,7 @@ export default function Disputes() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFollowUpModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button onClick={handleSetFollowUp} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set reminder'}</Button>
+            <Button onClick={handleSetFollowUp} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set Reminder'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
