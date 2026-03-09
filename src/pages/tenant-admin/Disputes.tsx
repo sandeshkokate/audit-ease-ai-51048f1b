@@ -587,10 +587,10 @@ export default function Disputes() {
             </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy email</Button>
-            <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & open Gmail</Button>
-            <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as raised</Button>
-            <Button variant="ghost" className="gap-2" onClick={async () => {
+             <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
+             <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
+             <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Raised</Button>
+             <Button variant="ghost" className="gap-2" onClick={async () => {
               const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES;
               if (!webhookUrl) { toast({ variant: 'destructive', title: 'Webhook not configured' }); return; }
               try {
