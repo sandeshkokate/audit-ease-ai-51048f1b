@@ -552,7 +552,7 @@ export default function Disputes() {
       {/* Email Review Modal */}
       <Dialog open={!!selectedDispute} onOpenChange={() => setSelectedDispute(null)}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Review dispute email</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Review Dispute Email</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
