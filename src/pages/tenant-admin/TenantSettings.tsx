@@ -270,7 +270,7 @@ export default function TenantSettings() {
         <TabsContent value="ratecards" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Manage your courier rate cards for accurate discrepancy detection.</p>
-            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}><Plus className="h-4 w-4" /> Add rate card</Button>
+            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}><Plus className="h-4 w-4" /> Add Rate Card</Button>
           </div>
           {loadingRates ? (
             <div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
