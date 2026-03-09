@@ -405,7 +405,7 @@ export default function Team() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteModal(false)}>Cancel</Button>
             <Button onClick={handleInvite} disabled={inviting}>
-              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send invitation'}
+              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Invitation'}
             </Button>
           </DialogFooter>
         </DialogContent>

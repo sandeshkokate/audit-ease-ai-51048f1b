@@ -342,7 +342,7 @@ export default function Tenants() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button variant="hero" onClick={handleAdd} disabled={adding}>
-              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add tenant
+              {adding && <Loader2 className="h-4 w-4 animate-spin" />} Add Tenant
             </Button>
           </DialogFooter>
         </DialogContent>
