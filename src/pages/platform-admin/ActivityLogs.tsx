@@ -7,6 +7,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Search, Loader2, AlertTriangle, Info, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { getActionInfo, formatDetails, formatEntityType, getAllActions } from '@/lib/activity-actions';
