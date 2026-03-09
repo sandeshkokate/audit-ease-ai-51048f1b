@@ -18,8 +18,7 @@ const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
   accountant: 'bg-warning/10 text-warning border-warning/20',
-  eFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  tusFilter, setStatusFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
@@ -27,7 +26,7 @@ const ROLE_COLORS: Record<string, string> = {
   const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
   const [adding, setAdding] accountanttate(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+accountantt queryClient = useQueryClient();
 
   const { data: users = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['platform-users-page'],
@@ -141,7 +140,7 @@ const ROLE_COLORS: Record<string, string> = {
       toast({ title: 'User created', description: 'A confirmation email has been sent. The user will need to reset their password on first login.' });
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', role: 'viewer', tenant_id: '' });
-      queryClient.invalidateQueries({ queryKey: ['platform-users-page'] });
+      queryClient.invaliaccountanteries({ queryKey: ['platform-users-page'] });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Failed to create user', description: err.message });
     } finally {
