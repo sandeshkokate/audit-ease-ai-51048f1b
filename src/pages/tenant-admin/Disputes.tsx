@@ -664,7 +664,7 @@ export default function Disputes() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNoteModal({ open: false, dispute: null })}>Cancel</Button>
-            <Button onClick={handleAddNote} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save note'}</Button>
+            <Button onClick={handleAddNote} disabled={actionLoading}>{actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Note'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
