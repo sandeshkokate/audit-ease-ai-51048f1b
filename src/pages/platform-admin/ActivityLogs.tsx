@@ -24,7 +24,7 @@ export default function ActivityLogs() {
         .from('activity_logs')
         .select(`*, users:user_id(full_name, email), tenants:tenant_id(company_name)`)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .range(0, 999); // Explicit pagination guard
       if (error) throw error;
       return (data || []).map((log: any) => {
         const actionInfo = getActionInfo(log.action);

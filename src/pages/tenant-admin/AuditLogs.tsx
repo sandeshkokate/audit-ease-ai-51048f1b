@@ -94,12 +94,18 @@ export default function AuditLogs() {
     queryKey: ['audit-logs', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return [];
+      // Paginated fetch — get total count + page data
+      const { count } = await supabase
+        .from('audit_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', user.tenant_id);
+      
       const { data, error } = await supabase
         .from('audit_logs')
         .select('*')
         .eq('tenant_id', user.tenant_id)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .range(0, 4999); // Fetch up to 5000 rows with explicit range
       if (error) throw error;
       return data || [];
     },
