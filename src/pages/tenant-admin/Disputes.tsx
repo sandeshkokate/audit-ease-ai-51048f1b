@@ -567,7 +567,7 @@ export default function Disputes() {
             {selectedDispute?.dispute_reasoning && (
               <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><ChevronDown className="h-4 w-4" /> Dispute reasoning</Button>
+                  <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><ChevronDown className="h-4 w-4" /> Dispute Reasoning</Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-2 space-y-2">
                   {selectedDispute.dispute_reasoning.issues?.map((issue: any, i: number) => (
