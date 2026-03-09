@@ -18,7 +18,7 @@ const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
   accountant: 'bg-warning/10 text-warning border-warning/20',
-  viewer: 'bg-muted text-muted-foreground border-border',
+  
 };
 
 export default function UsersPage() {
