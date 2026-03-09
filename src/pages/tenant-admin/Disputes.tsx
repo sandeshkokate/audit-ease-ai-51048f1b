@@ -642,7 +642,7 @@ export default function Disputes() {
       {/* Rejection Modal */}
       <Dialog open={rejectModal.open} onOpenChange={(o) => !o && setRejectModal({ open: false, dispute: null })}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" />Mark as rejected</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" />Mark as Rejected</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">AWB: <span className="font-medium text-foreground">{rejectModal.dispute?.awb_number}</span></p>
             <div className="space-y-2"><Label>Rejection reason *</Label><Textarea placeholder="Enter the courier's rejection reason..." value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} /></div>
