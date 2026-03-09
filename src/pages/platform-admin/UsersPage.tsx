@@ -238,7 +238,7 @@ export default function UsersPage() {
           <p className="text-sm text-muted-foreground">Manage all users across tenants</p>
         </div>
         <Button variant="hero" onClick={() => setAddOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> Add user
+          <Plus className="h-4 w-4" /> Add User
         </Button>
       </div>
 
