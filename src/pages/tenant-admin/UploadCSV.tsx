@@ -10,11 +10,34 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const REQUIRED_COLUMNS = [
+/** Aliases: CSV column name (normalized) → internal column name */
+const COLUMN_ALIASES: Record<string, string> = {
+  zone: 'charged_zone',
+  billing_zone: 'charged_zone',
+  shipment_zone: 'charged_zone',
+  weight: 'charged_weight',
+  origin_city: 'origin_city',
+  origin_state: 'origin_state',
+  destination_city: 'destination_city',
+  destination_state: 'destination_state',
+};
+
+/** Columns always required */
+const ALWAYS_REQUIRED = [
   'awb_number', 'courier', 'order_id', 'shipment_status',
   'charged_weight', 'dead_weight', 'length', 'width', 'height',
-  'charged_zone', 'origin_pincode', 'destination_pincode',
-  'billed_amount', 'is_rto', 'payment_mode'
+  'charged_zone', 'billed_amount', 'is_rto', 'payment_mode'
+];
+
+/** Alternative groups: at least one set must be fully present */
+const ALTERNATIVE_GROUPS = [
+  {
+    label: 'Location (provide either pincodes OR city+state)',
+    options: [
+      { columns: ['origin_pincode', 'destination_pincode'], label: 'Pincodes' },
+      { columns: ['origin_city', 'origin_state', 'destination_city', 'destination_state'], label: 'City + State' },
+    ],
+  },
 ];
 
 /** Normalize a column name: lowercase, strip accents, remove units like (kg), collapse separators */
