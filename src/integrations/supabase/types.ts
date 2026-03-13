@@ -1347,6 +1347,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      notify_tenant_users: {
+        Args: {
+          p_link?: string
+          p_message?: string
+          p_only_user_id?: string
+          p_tenant_id: string
+          p_title: string
+          p_type?: string
+        }
+        Returns: undefined
+      }
       update_last_login: {
         Args: { lookup_user_id: string }
         Returns: undefined
