@@ -49,7 +49,7 @@ export default function UploadCSV() {
 
   const parseCSV = (text: string) => {
     const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const hdrs = lines[0].split(',').map(h => normalizeCol(h));
     const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
     return { hdrs, rows };
   };
