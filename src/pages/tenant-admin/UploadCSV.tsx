@@ -17,14 +17,16 @@ const REQUIRED_COLUMNS = [
   'billed_amount', 'is_rto', 'payment_mode'
 ];
 
-/** Normalize a column name: lowercase, strip accents, collapse whitespace/underscores/hyphens */
+/** Normalize a column name: lowercase, strip accents, remove units like (kg), collapse separators */
 const normalizeCol = (name: string): string =>
   name
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[_\s\-]+/g, '_')
+    .replace(/\(.*?\)/g, '')           // Remove parenthesized units like (kg), (cm)
+    .replace(/[_.\s\-]+/g, '_')        // Collapse whitespace/underscores/hyphens/periods
     .replace(/[^a-z0-9_]/g, '')
+    .replace(/_+$/, '')                // Trim trailing underscores
     .trim();
 
 const OPTIONAL_COLUMNS = ['cod_amount', 'delivery_date', 'pickup_date', 'product_name', 'sku'];
