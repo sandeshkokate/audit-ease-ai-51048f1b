@@ -16,6 +16,7 @@ const COLUMN_ALIASES: Record<string, string> = {
   billing_zone: 'charged_zone',
   shipment_zone: 'charged_zone',
   weight: 'charged_weight',
+  status: 'shipment_status',
   origin_city: 'origin_city',
   origin_state: 'origin_state',
   destination_city: 'destination_city',
