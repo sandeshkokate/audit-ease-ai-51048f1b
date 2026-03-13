@@ -90,6 +90,8 @@ export type Database = {
           customer_pincode: string | null
           dead_weight: number | null
           delivery_date: string | null
+          destination_city: string | null
+          destination_state: string | null
           dimensions_json: Json | null
           discrepancy_amount: number | null
           discrepancy_reasons: Json | null
@@ -113,7 +115,9 @@ export type Database = {
           max_expected_weight: number | null
           order_date: string | null
           order_id: string
+          origin_city: string | null
           origin_pincode: string | null
+          origin_state: string | null
           priority: string | null
           recovery_amount: number | null
           recovery_date: string | null
@@ -142,6 +146,8 @@ export type Database = {
           customer_pincode?: string | null
           dead_weight?: number | null
           delivery_date?: string | null
+          destination_city?: string | null
+          destination_state?: string | null
           dimensions_json?: Json | null
           discrepancy_amount?: number | null
           discrepancy_reasons?: Json | null
@@ -165,7 +171,9 @@ export type Database = {
           max_expected_weight?: number | null
           order_date?: string | null
           order_id: string
+          origin_city?: string | null
           origin_pincode?: string | null
+          origin_state?: string | null
           priority?: string | null
           recovery_amount?: number | null
           recovery_date?: string | null
@@ -194,6 +202,8 @@ export type Database = {
           customer_pincode?: string | null
           dead_weight?: number | null
           delivery_date?: string | null
+          destination_city?: string | null
+          destination_state?: string | null
           dimensions_json?: Json | null
           discrepancy_amount?: number | null
           discrepancy_reasons?: Json | null
@@ -217,7 +227,9 @@ export type Database = {
           max_expected_weight?: number | null
           order_date?: string | null
           order_id?: string
+          origin_city?: string | null
           origin_pincode?: string | null
+          origin_state?: string | null
           priority?: string | null
           recovery_amount?: number | null
           recovery_date?: string | null

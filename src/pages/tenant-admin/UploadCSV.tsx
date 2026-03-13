@@ -10,11 +10,34 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const REQUIRED_COLUMNS = [
+/** Aliases: CSV column name (normalized) → internal column name */
+const COLUMN_ALIASES: Record<string, string> = {
+  zone: 'charged_zone',
+  billing_zone: 'charged_zone',
+  shipment_zone: 'charged_zone',
+  weight: 'charged_weight',
+  origin_city: 'origin_city',
+  origin_state: 'origin_state',
+  destination_city: 'destination_city',
+  destination_state: 'destination_state',
+};
+
+/** Columns always required */
+const ALWAYS_REQUIRED = [
   'awb_number', 'courier', 'order_id', 'shipment_status',
   'charged_weight', 'dead_weight', 'length', 'width', 'height',
-  'charged_zone', 'origin_pincode', 'destination_pincode',
-  'billed_amount', 'is_rto', 'payment_mode'
+  'charged_zone', 'billed_amount', 'is_rto', 'payment_mode'
+];
+
+/** Alternative groups: at least one set must be fully present */
+const ALTERNATIVE_GROUPS = [
+  {
+    label: 'Location (provide either pincodes OR city+state)',
+    options: [
+      { columns: ['origin_pincode', 'destination_pincode'], label: 'Pincodes' },
+      { columns: ['origin_city', 'origin_state', 'destination_city', 'destination_state'], label: 'City + State' },
+    ],
+  },
 ];
 
 /** Normalize a column name: lowercase, strip accents, remove units like (kg), collapse separators */
@@ -49,9 +72,15 @@ export default function UploadCSV() {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
 
+  /** Normalize then apply aliases */
+  const resolveHeader = (raw: string): string => {
+    const normalized = normalizeCol(raw);
+    return COLUMN_ALIASES[normalized] || normalized;
+  };
+
   const parseCSV = (text: string) => {
     const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => normalizeCol(h));
+    const hdrs = lines[0].split(',').map(h => resolveHeader(h));
     const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
     return { hdrs, rows };
   };
@@ -106,7 +135,7 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => normalizeCol(h));
+      const hdrs = lines[0].split(',').map(h => resolveHeader(h));
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
         const row: Record<string, string> = {};
@@ -181,15 +210,32 @@ export default function UploadCSV() {
     link.click();
   };
 
-  const validationChecklist = REQUIRED_COLUMNS.map(col => ({
+  // Validate always-required columns
+  const alwaysRequiredChecklist = ALWAYS_REQUIRED.map(col => ({
     col,
     found: headers.includes(col),
   }));
+
+  // Validate alternative groups
+  const alternativeGroupsValid = ALTERNATIVE_GROUPS.every(group =>
+    group.options.some(option => option.columns.every(col => headers.includes(col)))
+  );
+
+  const alternativeGroupsStatus = ALTERNATIVE_GROUPS.map(group => ({
+    label: group.label,
+    options: group.options.map(option => ({
+      label: option.label,
+      columns: option.columns,
+      satisfied: option.columns.every(col => headers.includes(col)),
+    })),
+  }));
+
   const optionalChecklist = OPTIONAL_COLUMNS.map(col => ({
     col,
     found: headers.includes(col),
   }));
-  const allValid = validationChecklist.every(v => v.found);
+
+  const allValid = alwaysRequiredChecklist.every(v => v.found) && alternativeGroupsValid;
 
   return (
     <div className="space-y-6">
@@ -239,11 +285,11 @@ export default function UploadCSV() {
           <Card className="shadow-card">
             <CardHeader className="pb-3"><CardTitle className="text-base">Column Validation</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">Ensure your CSV contains these required columns. Column names are case-insensitive.</p>
+               <p className="text-sm text-muted-foreground">Ensure your CSV contains these required columns. Column names are case-insensitive; aliases like "Zone" for "charged_zone" are supported.</p>
               <div>
                 <p className="text-xs font-semibold text-foreground mb-2">Required columns:</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {validationChecklist.map(v => (
+                  {alwaysRequiredChecklist.map(v => (
                     <div key={v.col} className="flex items-center gap-2 text-sm">
                       {v.found ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
                       <span className={v.found ? 'text-foreground' : 'text-destructive'}>{v.col}</span>
@@ -251,6 +297,31 @@ export default function UploadCSV() {
                   ))}
                 </div>
               </div>
+              {alternativeGroupsStatus.map((group, gi) => (
+                <div key={gi}>
+                  <p className="text-xs font-semibold text-foreground mb-2">{group.label}:</p>
+                  <div className="space-y-2">
+                    {group.options.map((option, oi) => (
+                      <div key={oi}>
+                        <div className="flex items-center gap-1 mb-1">
+                          {option.satisfied
+                            ? <CheckCircle2 className="h-4 w-4 text-success" />
+                            : <span className="h-4 w-4 rounded-full border border-muted-foreground/30 inline-block" />}
+                          <span className={cn('text-xs font-medium', option.satisfied ? 'text-success' : 'text-muted-foreground')}>{option.label}</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 ml-5">
+                          {option.columns.map(col => (
+                            <div key={col} className="flex items-center gap-1 text-xs">
+                              {headers.includes(col) ? <CheckCircle2 className="h-3 w-3 text-success" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                              <span className={headers.includes(col) ? 'text-foreground' : 'text-muted-foreground'}>{col}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <div>
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Optional columns (enhance audit accuracy):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
