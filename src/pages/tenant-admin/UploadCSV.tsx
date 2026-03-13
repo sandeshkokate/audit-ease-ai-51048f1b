@@ -104,7 +104,7 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''));
+      const hdrs = lines[0].split(',').map(h => normalizeCol(h));
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
         const row: Record<string, string> = {};
