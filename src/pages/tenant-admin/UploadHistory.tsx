@@ -113,7 +113,7 @@ export default function UploadHistory() {
       key: 'created_at',
       header: <ColumnHeader title="Uploaded" tooltip="When the file was uploaded" />,
       sortable: true,
-      render: (r) => r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : '—',
+      render: (r) => r.created_at ? formatDistanceToNow(new Date(r.created_at.endsWith('Z') ? r.created_at : r.created_at + 'Z'), { addSuffix: true }) : '—',
     },
     {
       key: 'error_log',

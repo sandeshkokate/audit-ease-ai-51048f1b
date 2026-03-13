@@ -123,11 +123,12 @@ export default function UploadCSV() {
     setProcessing(true);
     setProcessingStep('Uploading file...');
     
+    let batchId = '';
     try {
       if (!user?.tenant_id) throw new Error('No tenant found');
       if (!user?.id) throw new Error('Not authenticated');
       
-      const batchId = crypto.randomUUID();
+      batchId = crypto.randomUUID();
       
       // Parse CSV to get actual row count
       const text = await file.text();
@@ -208,6 +209,16 @@ export default function UploadCSV() {
       setPreview([]);
       setHeaders([]);
     } catch (error: any) {
+      // Update batch with error status and error log
+      if (batchId) {
+        try {
+          await supabase.from('upload_batches').update({
+            status: 'failed',
+            error_log: { message: error.message, timestamp: new Date().toISOString() },
+            completed_at: new Date().toISOString(),
+          }).eq('id', batchId);
+        } catch (_) { /* best effort */ }
+      }
       toast({ variant: 'destructive', title: 'Failed', description: error.message });
     } finally {
       setProcessing(false);
