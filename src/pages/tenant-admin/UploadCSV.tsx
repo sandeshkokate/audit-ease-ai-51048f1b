@@ -123,11 +123,12 @@ export default function UploadCSV() {
     setProcessing(true);
     setProcessingStep('Uploading file...');
     
+    let batchId = '';
     try {
       if (!user?.tenant_id) throw new Error('No tenant found');
       if (!user?.id) throw new Error('Not authenticated');
       
-      const batchId = crypto.randomUUID();
+      batchId = crypto.randomUUID();
       
       // Parse CSV to get actual row count
       const text = await file.text();
