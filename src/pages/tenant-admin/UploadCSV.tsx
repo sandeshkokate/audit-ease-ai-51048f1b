@@ -17,6 +17,11 @@ const COLUMN_ALIASES: Record<string, string> = {
   shipment_zone: 'charged_zone',
   weight: 'charged_weight',
   status: 'shipment_status',
+  total_billed: 'billed_amount',
+  total_amount: 'billed_amount',
+  rto_charge: 'rto_charge',
+  cod_charge: 'cod_amount',
+  cod_amount: 'cod_amount',
   origin_city: 'origin_city',
   origin_state: 'origin_state',
   destination_city: 'destination_city',
@@ -27,7 +32,7 @@ const COLUMN_ALIASES: Record<string, string> = {
 const ALWAYS_REQUIRED = [
   'awb_number', 'courier', 'order_id', 'shipment_status',
   'charged_weight', 'dead_weight', 'length', 'width', 'height',
-  'charged_zone', 'billed_amount', 'is_rto', 'payment_mode'
+  'charged_zone', 'billed_amount', 'payment_mode'
 ];
 
 /** Alternative groups: at least one set must be fully present */
@@ -37,6 +42,13 @@ const ALTERNATIVE_GROUPS = [
     options: [
       { columns: ['origin_pincode', 'destination_pincode'], label: 'Pincodes' },
       { columns: ['origin_city', 'origin_state', 'destination_city', 'destination_state'], label: 'City + State' },
+    ],
+  },
+  {
+    label: 'RTO indicator (provide either is_rto flag OR rto_charge amount)',
+    options: [
+      { columns: ['is_rto'], label: 'is_rto (yes/no)' },
+      { columns: ['rto_charge'], label: 'RTO Charge (inferred: charge > 0 = RTO)' },
     ],
   },
 ];
