@@ -210,24 +210,32 @@ export default function UploadCSV() {
     link.click();
   };
 
-  const validationChecklist = REQUIRED_COLUMNS.map(col => ({
+  // Validate always-required columns
+  const alwaysRequiredChecklist = ALWAYS_REQUIRED.map(col => ({
     col,
     found: headers.includes(col),
   }));
+
+  // Validate alternative groups
+  const alternativeGroupsValid = ALTERNATIVE_GROUPS.every(group =>
+    group.options.some(option => option.columns.every(col => headers.includes(col)))
+  );
+
+  const alternativeGroupsStatus = ALTERNATIVE_GROUPS.map(group => ({
+    label: group.label,
+    options: group.options.map(option => ({
+      label: option.label,
+      columns: option.columns,
+      satisfied: option.columns.every(col => headers.includes(col)),
+    })),
+  }));
+
   const optionalChecklist = OPTIONAL_COLUMNS.map(col => ({
     col,
     found: headers.includes(col),
   }));
-  const allValid = validationChecklist.every(v => v.found);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-foreground">Upload CSV</h1><p className="text-sm text-muted-foreground">Upload your courier billing data for audit</p></div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={downloadSample}>
-          <Download className="h-4 w-4" /> Download sample CSV
-        </Button>
-      </div>
+  const allValid = alwaysRequiredChecklist.every(v => v.found) && alternativeGroupsValid;
 
       {!file ? (
         <Card className="shadow-card">
