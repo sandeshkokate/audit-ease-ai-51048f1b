@@ -285,11 +285,11 @@ export default function UploadCSV() {
           <Card className="shadow-card">
             <CardHeader className="pb-3"><CardTitle className="text-base">Column Validation</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">Ensure your CSV contains these required columns. Column names are case-insensitive.</p>
+               <p className="text-sm text-muted-foreground">Ensure your CSV contains these required columns. Column names are case-insensitive; aliases like "Zone" for "charged_zone" are supported.</p>
               <div>
                 <p className="text-xs font-semibold text-foreground mb-2">Required columns:</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {validationChecklist.map(v => (
+                  {alwaysRequiredChecklist.map(v => (
                     <div key={v.col} className="flex items-center gap-2 text-sm">
                       {v.found ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
                       <span className={v.found ? 'text-foreground' : 'text-destructive'}>{v.col}</span>
@@ -297,6 +297,31 @@ export default function UploadCSV() {
                   ))}
                 </div>
               </div>
+              {alternativeGroupsStatus.map((group, gi) => (
+                <div key={gi}>
+                  <p className="text-xs font-semibold text-foreground mb-2">{group.label}:</p>
+                  <div className="space-y-2">
+                    {group.options.map((option, oi) => (
+                      <div key={oi}>
+                        <div className="flex items-center gap-1 mb-1">
+                          {option.satisfied
+                            ? <CheckCircle2 className="h-4 w-4 text-success" />
+                            : <span className="h-4 w-4 rounded-full border border-muted-foreground/30 inline-block" />}
+                          <span className={cn('text-xs font-medium', option.satisfied ? 'text-success' : 'text-muted-foreground')}>{option.label}</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 ml-5">
+                          {option.columns.map(col => (
+                            <div key={col} className="flex items-center gap-1 text-xs">
+                              {headers.includes(col) ? <CheckCircle2 className="h-3 w-3 text-success" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                              <span className={headers.includes(col) ? 'text-foreground' : 'text-muted-foreground'}>{col}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <div>
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Optional columns (enhance audit accuracy):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
