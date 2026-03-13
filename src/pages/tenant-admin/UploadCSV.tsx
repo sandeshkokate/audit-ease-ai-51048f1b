@@ -72,9 +72,15 @@ export default function UploadCSV() {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
 
+  /** Normalize then apply aliases */
+  const resolveHeader = (raw: string): string => {
+    const normalized = normalizeCol(raw);
+    return COLUMN_ALIASES[normalized] || normalized;
+  };
+
   const parseCSV = (text: string) => {
     const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => normalizeCol(h));
+    const hdrs = lines[0].split(',').map(h => resolveHeader(h));
     const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
     return { hdrs, rows };
   };
