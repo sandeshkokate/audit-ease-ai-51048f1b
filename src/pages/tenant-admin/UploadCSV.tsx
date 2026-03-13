@@ -237,6 +237,15 @@ export default function UploadCSV() {
 
   const allValid = alwaysRequiredChecklist.every(v => v.found) && alternativeGroupsValid;
 
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div><h1 className="text-2xl font-bold text-foreground">Upload CSV</h1><p className="text-sm text-muted-foreground">Upload your courier billing data for audit</p></div>
+        <Button variant="outline" size="sm" className="gap-2" onClick={downloadSample}>
+          <Download className="h-4 w-4" /> Download sample CSV
+        </Button>
+      </div>
+
       {!file ? (
         <Card className="shadow-card">
           <CardContent className="p-0">
