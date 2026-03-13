@@ -17,6 +17,16 @@ const REQUIRED_COLUMNS = [
   'billed_amount', 'is_rto', 'payment_mode'
 ];
 
+/** Normalize a column name: lowercase, strip accents, collapse whitespace/underscores/hyphens */
+const normalizeCol = (name: string): string =>
+  name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_\s\-]+/g, '_')
+    .replace(/[^a-z0-9_]/g, '')
+    .trim();
+
 const OPTIONAL_COLUMNS = ['cod_amount', 'delivery_date', 'pickup_date', 'product_name', 'sku'];
 
 const SAMPLE_CSV = `awb_number,courier,order_id,shipment_status,charged_weight,dead_weight,length,width,height,charged_zone,origin_pincode,destination_pincode,billed_amount,is_rto,payment_mode
@@ -39,7 +49,7 @@ export default function UploadCSV() {
 
   const parseCSV = (text: string) => {
     const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const hdrs = lines[0].split(',').map(h => normalizeCol(h));
     const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
     return { hdrs, rows };
   };
@@ -94,7 +104,7 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''));
+      const hdrs = lines[0].split(',').map(h => normalizeCol(h));
       const rows = lines.slice(1).map(line => {
         const values = line.split(',');
         const row: Record<string, string> = {};
