@@ -208,6 +208,14 @@ export default function UploadCSV() {
       setPreview([]);
       setHeaders([]);
     } catch (error: any) {
+      // Update batch with error status and error log
+      try {
+        await supabase.from('upload_batches').update({
+          status: 'failed',
+          error_log: { message: error.message, timestamp: new Date().toISOString() },
+          completed_at: new Date().toISOString(),
+        }).eq('id', batchId);
+      } catch (_) { /* best effort */ }
       toast({ variant: 'destructive', title: 'Failed', description: error.message });
     } finally {
       setProcessing(false);
