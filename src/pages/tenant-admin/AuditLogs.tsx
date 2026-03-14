@@ -82,7 +82,7 @@ const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
 
 const AUDIT_PAGE_SIZE = 20;
 
-const getType = (r: any) => {
+const getType = (r: AuditLog) => {
   if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   if (r.has_weight_discrepancy) return 'weight';
   if (r.has_zone_discrepancy) return 'zone';
