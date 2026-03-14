@@ -100,10 +100,10 @@ export default function Disputes() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const [recoveryModal, setRecoveryModal] = useState<{ open: boolean; dispute: AuditLog | null }>({ open: false, dispute: null });
-  const [rejectModal, setRejectModal] = useState<{ open: boolean; dispute: AuditLog | null }>({ open: false, dispute: null });
-  const [noteModal, setNoteModal] = useState<{ open: boolean; dispute: AuditLog | null }>({ open: false, dispute: null });
-  const [followUpModal, setFollowUpModal] = useState<{ open: boolean; dispute: AuditLog | null }>({ open: false, dispute: null });
+  const [recoveryModal, setRecoveryModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({ open: false, dispute: null });
+  const [rejectModal, setRejectModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({ open: false, dispute: null });
+  const [noteModal, setNoteModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({ open: false, dispute: null });
+  const [followUpModal, setFollowUpModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({ open: false, dispute: null });
   const [creditNote, setCreditNote] = useState({ number: '', amount: '', date: '' });
   const [rejectReason, setRejectReason] = useState('');
   const [noteText, setNoteText] = useState('');
