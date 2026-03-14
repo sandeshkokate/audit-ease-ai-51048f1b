@@ -27,7 +27,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
-  const [editUser, setEditUser] = useState<any | null>(null);
+  const [editUser, setEditUser] = useState<UserRow | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'accountant', tenant_id: '' });
