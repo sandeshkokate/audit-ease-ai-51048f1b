@@ -18,6 +18,16 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type TenantRow = Tables<'tenants'>;
 
+interface TenantViewModel {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  commission: number;
+  credit_balance: number;
+  onboarding_date: string;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-success/10 text-success border-success/20',
   pending: 'bg-warning/10 text-warning border-warning/20',
