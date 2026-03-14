@@ -87,7 +87,7 @@ export default function Tenants() {
     return matchesStatus && matchesSearch;
   });
 
-  const openEdit = (tenant: any) => {
+  const openEdit = (tenant: TenantViewModel) => {
     setEditTenant(tenant);
     setEditForm({ ...tenant });
   };
