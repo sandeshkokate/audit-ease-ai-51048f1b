@@ -91,7 +91,7 @@ export default function Disputes() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(0);
-  const [selectedDispute, setSelectedDispute] = useState<AuditLog | null>(null);
+  const [selectedDispute, setSelectedDispute] = useState<DisputeViewModel | null>(null);
   const [editTo, setEditTo] = useState('');
   const [editSubject, setEditSubject] = useState('');
   const [editBody, setEditBody] = useState('');
