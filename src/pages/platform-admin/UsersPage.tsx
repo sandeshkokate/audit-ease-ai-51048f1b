@@ -200,7 +200,7 @@ export default function UsersPage() {
     );
   }
 
-  const columns: Column<UserRow>[] = [
+  const columns: Column<UserViewModel>[] = [
     { key: 'full_name', header: <ColumnHeader title="Name" tooltip="Full name of the user" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Email" tooltip="User's registered email address" /> },
     {

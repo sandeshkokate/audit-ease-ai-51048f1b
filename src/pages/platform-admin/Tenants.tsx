@@ -209,7 +209,7 @@ export default function Tenants() {
     );
   }
 
-  const columns: Column<TenantRow>[] = [
+  const columns: Column<TenantViewModel>[] = [
     { key: 'name', header: <ColumnHeader title="Company Name" tooltip="Registered company name of the tenant" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Contact Email" tooltip="Primary contact email for this tenant" /> },
     {

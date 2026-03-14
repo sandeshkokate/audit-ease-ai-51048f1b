@@ -268,7 +268,7 @@ export default function Disputes() {
     });
   }, [paginated, selectedIds]);
 
-  const openEmailModal = (dispute: any) => {
+  const openEmailModal = (dispute: DisputeViewModel) => {
     setSelectedDispute(dispute);
     setEditTo(dispute.courier_email);
     setEditSubject(dispute.email_subject);
