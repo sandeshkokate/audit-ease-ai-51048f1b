@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info } from 'lucide-react';
+import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -77,6 +77,22 @@ const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
 - Unclassified — Billing difference detected but type not yet categorised
 - No Issue — No billing error found for this shipment`;
 
+const AUDIT_PAGE_SIZE = 20;
+
+const getType = (r: any) => {
+  if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
+  if (r.has_weight_discrepancy) return 'weight';
+  if (r.has_zone_discrepancy) return 'zone';
+  if (r.has_rto_overcharge) return 'rto';
+  if (r.has_damage_misclassification) return 'damage';
+  return 'unclassified';
+};
+
+const getStatus = (r: any) => {
+  if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
+  return r.dispute_status || 'detected';
+};
+
 export default function AuditLogs() {
   useDocumentTitle('Audit Logs');
   const { user } = useAuth();
@@ -86,31 +102,153 @@ export default function AuditLogs() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(0);
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [showStatusDefs, setShowStatusDefs] = useState(false);
   const [showTypeDefs, setShowTypeDefs] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  const { data: auditLogs = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['audit-logs', user?.tenant_id],
+  // Lightweight stats query (two columns only)
+  const { data: stats = { total: 0, detected: 0, disputed: 0, resolved: 0, totalAmount: 0 } } = useQuery({
+    queryKey: ['audit-stats', user?.tenant_id],
     queryFn: async () => {
-      if (!user?.tenant_id) return [];
-      // Paginated fetch — get total count + page data
-      const { count } = await supabase
-        .from('audit_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', user.tenant_id);
-      
+      if (!user?.tenant_id) return { total: 0, detected: 0, disputed: 0, resolved: 0, totalAmount: 0 };
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('*')
-        .eq('tenant_id', user.tenant_id)
-        .order('created_at', { ascending: false })
-        .range(0, 4999); // Fetch up to 5000 rows with explicit range
+        .select('discrepancy_amount, dispute_status')
+        .eq('tenant_id', user.tenant_id);
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      return {
+        total: rows.length,
+        detected: rows.filter(r => (r.discrepancy_amount ?? 0) > 0 && (!r.dispute_status || r.dispute_status === 'detected')).length,
+        disputed: rows.filter(r => ['raised', 'disputed', 'email_copied', 'draft'].includes(r.dispute_status || '')).length,
+        resolved: rows.filter(r => r.dispute_status === 'recovered').length,
+        totalAmount: rows.reduce((s, r) => s + (r.discrepancy_amount || 0), 0),
+      };
     },
-    enabled: !!user?.tenant_id
+    enabled: !!user?.tenant_id,
   });
+
+  // Couriers for filter dropdown
+  const { data: availableCouriers = [] } = useQuery({
+    queryKey: ['audit-couriers', user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data } = await supabase
+        .from('audit_logs')
+        .select('courier_name')
+        .eq('tenant_id', user.tenant_id)
+        .not('courier_name', 'is', null);
+      return [...new Set((data || []).map(r => r.courier_name as string))].filter(Boolean).sort();
+    },
+    enabled: !!user?.tenant_id,
+  });
+
+  // Build server-side filters (shared between main query and export)
+  const applyFilters = useCallback((query: any) => {
+    // Status filter
+    if (statusFilter === 'no_issue') {
+      query = query.or('discrepancy_amount.is.null,discrepancy_amount.eq.0');
+    } else if (statusFilter === 'detected') {
+      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected');
+    } else if (statusFilter !== 'all') {
+      query = query.eq('dispute_status', statusFilter);
+    }
+
+    // Courier filter
+    if (courierFilter !== 'all') {
+      query = query.eq('courier_name', courierFilter);
+    }
+
+    // Type filter
+    if (typeFilter === 'weight') query = query.eq('has_weight_discrepancy', true);
+    else if (typeFilter === 'zone') query = query.eq('has_zone_discrepancy', true);
+    else if (typeFilter === 'rto') query = query.eq('has_rto_overcharge', true);
+    else if (typeFilter === 'damage') query = query.eq('has_damage_misclassification', true);
+    else if (typeFilter === 'no_issue') query = query.or('discrepancy_amount.is.null,discrepancy_amount.eq.0');
+    else if (typeFilter === 'unclassified') {
+      query = query
+        .gt('discrepancy_amount', 0)
+        .eq('has_weight_discrepancy', false)
+        .eq('has_zone_discrepancy', false)
+        .eq('has_rto_overcharge', false)
+        .eq('has_damage_misclassification', false);
+    }
+
+    // Search
+    if (searchQuery.trim()) {
+      query = query.or(`awb.ilike.%${searchQuery}%,courier_name.ilike.%${searchQuery}%,order_id.ilike.%${searchQuery}%`);
+    }
+
+    // Date filters
+    if (dateFrom) query = query.gte('created_at', dateFrom);
+    if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
+
+    return query;
+  }, [statusFilter, courierFilter, typeFilter, searchQuery, dateFrom, dateTo]);
+
+  // Server-side paginated main query
+  const { data: auditResult, isLoading, isError, refetch } = useQuery({
+    queryKey: ['audit-logs', user?.tenant_id, page, statusFilter, courierFilter, typeFilter, searchQuery, dateFrom, dateTo],
+    queryFn: async () => {
+      if (!user?.tenant_id) return { rows: [], total: 0 };
+
+      let query = supabase
+        .from('audit_logs')
+        .select('*', { count: 'exact' })
+        .eq('tenant_id', user.tenant_id);
+
+      query = applyFilters(query);
+
+      const from = page * AUDIT_PAGE_SIZE;
+      const to = from + AUDIT_PAGE_SIZE - 1;
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      return { rows: data || [], total: count || 0 };
+    },
+    enabled: !!user?.tenant_id,
+  });
+
+  const auditLogs = auditResult?.rows ?? [];
+  const totalCount = auditResult?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / AUDIT_PAGE_SIZE);
+
+  // Export handler — fetches all filtered rows (up to 5000)
+  const handleExport = async () => {
+    if (!user?.tenant_id) return;
+    setExporting(true);
+    try {
+      let query = supabase
+        .from('audit_logs')
+        .select('*')
+        .eq('tenant_id', user.tenant_id);
+
+      query = applyFilters(query);
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(5000);
+
+      if (error) throw error;
+
+      downloadCSV((data || []).map(l => ({
+        AWB: l.awb, Courier: l.courier_name, Order_ID: l.order_id,
+        Type: TYPE_LABELS[getType(l)], Charged_Weight: l.charged_weight,
+        Expected_Weight: l.max_expected_weight, Discrepancy_Amount: l.discrepancy_amount,
+        Status: STATUS_LABELS[getStatus(l)], Date: l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy') : '',
+      })), 'audit_logs');
+    } catch (err: any) {
+      console.error('Export failed:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -158,39 +296,6 @@ export default function AuditLogs() {
     );
   }
 
-  const getType = (r: any) => {
-    if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
-    if (r.has_weight_discrepancy) return 'weight';
-    if (r.has_zone_discrepancy) return 'zone';
-    if (r.has_rto_overcharge) return 'rto';
-    if (r.has_damage_misclassification) return 'damage';
-    return 'unclassified';
-  };
-
-  const getStatus = (r: any) => {
-    if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
-    return r.dispute_status || 'detected';
-  };
-
-  const filtered = auditLogs.filter(l => {
-    const type = getType(l);
-    const status = getStatus(l);
-    if (statusFilter !== 'all' && status !== statusFilter) return false;
-    if (courierFilter !== 'all' && l.courier_name !== courierFilter) return false;
-    if (typeFilter !== 'all' && type !== typeFilter) return false;
-    if (dateFrom && l.created_at && new Date(l.created_at) < new Date(dateFrom)) return false;
-    if (dateTo && l.created_at && new Date(l.created_at) > new Date(dateTo + 'T23:59:59')) return false;
-    return true;
-  });
-
-  const stats = {
-    total: auditLogs.length,
-    detected: auditLogs.filter(l => (l.discrepancy_amount ?? 0) > 0 && (!l.dispute_status || l.dispute_status === 'detected')).length,
-    disputed: auditLogs.filter(l => ['raised', 'disputed', 'email_copied', 'draft'].includes(l.dispute_status)).length,
-    resolved: auditLogs.filter(l => l.dispute_status === 'recovered').length,
-    totalAmount: auditLogs.reduce((s, l) => s + (l.discrepancy_amount || 0), 0),
-  };
-
   const columns: Column<any>[] = [
     { key: 'awb', header: <ColumnHeader title="AWB" tooltip="Air Waybill Number — unique shipment tracking ID assigned by the courier partner" />, sortable: true },
     { key: 'courier_name', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment (e.g., Delhivery, Blue Dart)" />, sortable: true },
@@ -230,13 +335,8 @@ export default function AuditLogs() {
           <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
           <p className="text-sm text-muted-foreground">All audited shipments and discrepancies</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadCSV(filtered.map(l => ({
-          AWB: l.awb, Courier: l.courier_name, Order_ID: l.order_id,
-          Type: TYPE_LABELS[getType(l)], Charged_Weight: l.charged_weight,
-          Expected_Weight: l.max_expected_weight, Discrepancy_Amount: l.discrepancy_amount,
-          Status: STATUS_LABELS[getStatus(l)], Date: l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy') : '',
-        })), 'audit_logs')}>
-          <Download className="h-4 w-4" /> Export CSV
+        <Button variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={exporting}>
+          {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Export CSV
         </Button>
       </div>
 
@@ -260,7 +360,16 @@ export default function AuditLogs() {
 
       {/* Filters — all in one row */}
       <div className="flex flex-wrap gap-3 items-center">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search AWB, courier, order..."
+            className="pl-8 w-56 text-sm"
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
@@ -272,14 +381,14 @@ export default function AuditLogs() {
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={courierFilter} onValueChange={setCourierFilter}>
+        <Select value={courierFilter} onValueChange={(v) => { setCourierFilter(v); setPage(0); }}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Couriers</SelectItem>
-            {[...new Set(auditLogs.map((l: any) => l.courier_name).filter(Boolean))].sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {availableCouriers.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(0); }}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
@@ -291,10 +400,10 @@ export default function AuditLogs() {
             <SelectItem value="no_issue">No Issue</SelectItem>
           </SelectContent>
         </Select>
-        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-36 text-sm" placeholder="From date" />
-        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-36 text-sm" placeholder="To date" />
+        <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="w-36 text-sm" placeholder="From date" />
+        <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(0); }} className="w-36 text-sm" placeholder="To date" />
         {(dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(''); setDateTo(''); }}>Clear dates</Button>
+          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(''); setDateTo(''); setPage(0); }}>Clear dates</Button>
         )}
         <div className="flex items-center gap-2 ml-auto">
           <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground" onClick={() => setShowTypeDefs(true)}>
@@ -306,7 +415,33 @@ export default function AuditLogs() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={filtered} pageSize={20} searchable searchKeys={['awb', 'courier_name', 'order_id']} searchPlaceholder="Search AWB, courier, order..." />
+      {/* Data table — no internal pagination/search since we handle it server-side */}
+      <DataTable columns={columns} data={auditLogs} pageSize={AUDIT_PAGE_SIZE + 1} />
+
+      {/* Server-side pagination controls */}
+      {totalPages > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {totalCount} result{totalCount !== 1 ? 's' : ''}{totalPages > 1 ? ` — Page ${page + 1} of ${totalPages}` : ''}
+          </p>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)}>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(page - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Detail Modal */}
       {selectedLog && (
