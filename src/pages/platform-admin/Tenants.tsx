@@ -69,7 +69,7 @@ export default function Tenants() {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map((t: any) => ({
+      return (data || []).map((t: TenantRow): TenantViewModel => ({
         id: t.id,
         name: t.company_name,
         email: t.contact_email,
