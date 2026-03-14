@@ -13,6 +13,21 @@ import { Pencil, UserX, UserCheck, Loader2, AlertTriangle, Plus, Search } from '
 import { ROLE_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type UserRow = Tables<'users'>;
+
+interface UserViewModel {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  tenant_id: string | null;
+  tenant_name: string;
+  status: string;
+  last_login: string;
+}
 
 const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
@@ -24,7 +39,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
-  const [editUser, setEditUser] = useState<any | null>(null);
+  const [editUser, setEditUser] = useState<UserViewModel | null>(null);
   const [editForm, setEditForm] = useState<{ full_name: string; role: string; is_active: string }>({ full_name: '', role: '', is_active: 'true' });
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', role: 'accountant', tenant_id: '' });
@@ -40,7 +55,7 @@ export default function UsersPage() {
         .select('*, tenants:tenant_id(company_name)')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map((u: any) => ({
+      return (data || []).map((u: any): UserViewModel => ({
         id: u.id,
         full_name: u.full_name || '-',
         email: u.email,
@@ -68,7 +83,7 @@ export default function UsersPage() {
     }
   });
 
-  const filtered = users.filter((u: any) => {
+  const filtered = users.filter((u: UserViewModel) => {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
     const matchesSearch = !searchQ || u.full_name.toLowerCase().includes(searchQ.toLowerCase()) || u.email.toLowerCase().includes(searchQ.toLowerCase());
@@ -185,7 +200,7 @@ export default function UsersPage() {
     );
   }
 
-  const columns: Column<any>[] = [
+  const columns: Column<UserViewModel>[] = [
     { key: 'full_name', header: <ColumnHeader title="Name" tooltip="Full name of the user" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Email" tooltip="User's registered email address" /> },
     {

@@ -12,6 +12,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { UPLOAD_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useState } from 'react';
+import type { Tables, Json } from '@/integrations/supabase/types';
+
+type UploadBatch = Tables<'upload_batches'>;
 
 const STATUS_COLORS: Record<string, string> = {
   completed: 'bg-success/10 text-success border-success/20',
@@ -23,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function UploadHistory() {
   useDocumentTitle('Upload History');
   const { user } = useAuth();
-  const [errorLog, setErrorLog] = useState<any>(null);
+  const [errorLog, setErrorLog] = useState<Json | null>(null);
 
   const { data: batches = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['upload-batches', user?.tenant_id],
@@ -66,7 +69,7 @@ export default function UploadHistory() {
     totalDiscrepancies: batches.reduce((s, b) => s + (b.discrepancy_rows || 0), 0),
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<UploadBatch>[] = [
     {
       key: 'filename',
       header: <ColumnHeader title="File" tooltip="Original filename uploaded" />,

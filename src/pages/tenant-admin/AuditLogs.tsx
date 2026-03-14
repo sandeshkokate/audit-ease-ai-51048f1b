@@ -15,6 +15,9 @@ import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { Tables } from '@/integrations/supabase/types';
+
+type AuditLog = Tables<'audit_logs'>;
 
 const STATUS_COLORS: Record<string, string> = {
   no_issue: 'bg-success/10 text-success border-success/20',
@@ -79,7 +82,7 @@ const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
 
 const AUDIT_PAGE_SIZE = 20;
 
-const getType = (r: any) => {
+const getType = (r: AuditLog) => {
   if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   if (r.has_weight_discrepancy) return 'weight';
   if (r.has_zone_discrepancy) return 'zone';
@@ -88,7 +91,7 @@ const getType = (r: any) => {
   return 'unclassified';
 };
 
-const getStatus = (r: any) => {
+const getStatus = (r: AuditLog) => {
   if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   return r.dispute_status || 'detected';
 };
@@ -104,7 +107,7 @@ export default function AuditLogs() {
   const [dateTo, setDateTo] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showStatusDefs, setShowStatusDefs] = useState(false);
   const [showTypeDefs, setShowTypeDefs] = useState(false);
   const [exporting, setExporting] = useState(false);

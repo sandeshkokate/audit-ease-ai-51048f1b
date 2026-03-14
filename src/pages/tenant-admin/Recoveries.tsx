@@ -12,6 +12,9 @@ import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2, Download } from 'lucide-react';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { cn } from '@/lib/utils';
+import type { Tables } from '@/integrations/supabase/types';
+
+type CreditNote = Tables<'credit_notes'>;
 
 const MATCH_COLORS: Record<string, string> = {
   matched: 'bg-success/10 text-success border-success/20',
@@ -23,7 +26,7 @@ const MATCH_COLORS: Record<string, string> = {
 export default function Recoveries() {
   useDocumentTitle('Recoveries');
   const { user } = useAuth();
-  const [creditNotes, setCreditNotes] = useState<any[]>([]);
+  const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);

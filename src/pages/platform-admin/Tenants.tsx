@@ -14,6 +14,19 @@ import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus, RefreshCw, AlertTrian
 import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type TenantRow = Tables<'tenants'>;
+
+interface TenantViewModel {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  commission: number;
+  credit_balance: number;
+  onboarding_date: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-success/10 text-success border-success/20',
@@ -40,8 +53,8 @@ const EMPTY_ADD_FORM = {
 export default function Tenants() {
   const [filter, setFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
-  const [editTenant, setEditTenant] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState<any>({});
+  const [editTenant, setEditTenant] = useState<TenantViewModel | null>(null);
+  const [editForm, setEditForm] = useState<Partial<TenantViewModel>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ ...EMPTY_ADD_FORM });
   const [adding, setAdding] = useState(false);
@@ -56,7 +69,7 @@ export default function Tenants() {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map((t: any) => ({
+      return (data || []).map((t: TenantRow): TenantViewModel => ({
         id: t.id,
         name: t.company_name,
         email: t.contact_email,
@@ -68,13 +81,13 @@ export default function Tenants() {
     }
   });
 
-  const filtered = tenants.filter((t: any) => {
+  const filtered = tenants.filter((t: TenantViewModel) => {
     const matchesStatus = filter === 'all' || t.status === filter;
     const matchesSearch = !searchQ || t.name.toLowerCase().includes(searchQ.toLowerCase()) || t.email.toLowerCase().includes(searchQ.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
-  const openEdit = (tenant: any) => {
+  const openEdit = (tenant: TenantViewModel) => {
     setEditTenant(tenant);
     setEditForm({ ...tenant });
   };
@@ -196,7 +209,7 @@ export default function Tenants() {
     );
   }
 
-  const columns: Column<any>[] = [
+  const columns: Column<TenantViewModel>[] = [
     { key: 'name', header: <ColumnHeader title="Company Name" tooltip="Registered company name of the tenant" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Contact Email" tooltip="Primary contact email for this tenant" /> },
     {

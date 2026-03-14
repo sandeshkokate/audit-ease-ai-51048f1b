@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Invoice = Tables<'invoices'>;
 
 const STATUS_COLORS: Record<string, string> = {
   paid: 'bg-success/10 text-success border-success/20',
@@ -45,7 +48,7 @@ export default function AccountantInvoices() {
     );
   }
 
-  const columns: Column<any>[] = [
+  const columns: Column<Invoice>[] = [
     { key: 'invoice_number', header: <ColumnHeader title="Invoice #" tooltip="Unique invoice reference number" />, sortable: true },
     { key: 'invoice_period_start', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" />, render: (r) => `${r.invoice_period_start} – ${r.invoice_period_end}` },
     { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (r) => <span className="font-medium">{formatCurrency(r.total_recovered)}</span> },
