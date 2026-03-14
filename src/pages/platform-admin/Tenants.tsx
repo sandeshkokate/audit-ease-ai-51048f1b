@@ -81,7 +81,7 @@ export default function Tenants() {
     }
   });
 
-  const filtered = tenants.filter((t: any) => {
+  const filtered = tenants.filter((t: TenantViewModel) => {
     const matchesStatus = filter === 'all' || t.status === filter;
     const matchesSearch = !searchQ || t.name.toLowerCase().includes(searchQ.toLowerCase()) || t.email.toLowerCase().includes(searchQ.toLowerCase());
     return matchesStatus && matchesSearch;
