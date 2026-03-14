@@ -12,6 +12,9 @@ import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { Upload, CheckCircle2, AlertTriangle, XCircle, Loader2, Download } from 'lucide-react';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { cn } from '@/lib/utils';
+import type { Tables } from '@/integrations/supabase/types';
+
+type CreditNote = Tables<'credit_notes'>;
 
 const MATCH_COLORS: Record<string, string> = {
   matched: 'bg-success/10 text-success border-success/20',
