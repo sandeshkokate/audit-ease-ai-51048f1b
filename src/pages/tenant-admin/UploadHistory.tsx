@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function UploadHistory() {
   useDocumentTitle('Upload History');
   const { user } = useAuth();
-  const [errorLog, setErrorLog] = useState<any>(null);
+  const [errorLog, setErrorLog] = useState<Json | null>(null);
 
   const { data: batches = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['upload-batches', user?.tenant_id],
