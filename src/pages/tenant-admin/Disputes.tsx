@@ -140,7 +140,7 @@ export default function Disputes() {
         .from('audit_logs')
         .select('*, dispute_emails(*), dispute_notes(*)', { count: 'exact' })
         .eq('tenant_id', user.tenant_id)
-        .gt('discrepancy_amount', 0);
+        .gt('discrepancy_amount', 0) as any;
 
       // Tab filter
       const statuses = TAB_STATUSES[activeTab];
