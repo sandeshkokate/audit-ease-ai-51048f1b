@@ -12,6 +12,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { UPLOAD_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useState } from 'react';
+import type { Tables, Json } from '@/integrations/supabase/types';
+
+type UploadBatch = Tables<'upload_batches'>;
 
 const STATUS_COLORS: Record<string, string> = {
   completed: 'bg-success/10 text-success border-success/20',
