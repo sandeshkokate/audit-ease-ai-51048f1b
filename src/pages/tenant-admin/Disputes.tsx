@@ -29,9 +29,31 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { creditNoteSchema } from '@/lib/validation-schemas';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, Json } from '@/integrations/supabase/types';
 
 type AuditLog = Tables<'audit_logs'>;
+
+interface DisputeViewModel {
+  id: string;
+  awb_number: string | null;
+  order_id: string;
+  courier: string | null;
+  courier_name: string | null;
+  discrepancy_type: string;
+  amount: number | null;
+  status: string;
+  courier_email: string;
+  email_subject: string;
+  email_body: string;
+  dispute_email: Tables<'dispute_emails'> | null;
+  dispute_reasoning: Json | null;
+  notes: Tables<'dispute_notes'>[];
+  follow_up_date: string | null;
+  escalated: boolean;
+  priority: string | null;
+  created_at: string | null;
+  tenant_id: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground border-border',
