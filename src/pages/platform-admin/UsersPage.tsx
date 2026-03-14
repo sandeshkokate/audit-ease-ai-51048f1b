@@ -55,7 +55,7 @@ export default function UsersPage() {
         .select('*, tenants:tenant_id(company_name)')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []).map((u: any) => ({
+      return (data || []).map((u: any): UserViewModel => ({
         id: u.id,
         full_name: u.full_name || '-',
         email: u.email,
