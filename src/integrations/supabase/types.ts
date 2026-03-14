@@ -847,6 +847,27 @@ export type Database = {
           },
         ]
       }
+      pincode_circle_map: {
+        Row: {
+          circle: string
+          prefix_end: number
+          prefix_start: number
+          region_label: string | null
+        }
+        Insert: {
+          circle: string
+          prefix_end: number
+          prefix_start: number
+          region_label?: string | null
+        }
+        Update: {
+          circle?: string
+          prefix_end?: number
+          prefix_start?: number
+          region_label?: string | null
+        }
+        Relationships: []
+      }
       pincode_zone_master: {
         Row: {
           city: string | null
@@ -1248,6 +1269,71 @@ export type Database = {
           },
         ]
       }
+      zone_circle_matrix: {
+        Row: {
+          destination_circle: string
+          origin_circle: string
+          zone_code: string
+        }
+        Insert: {
+          destination_circle: string
+          origin_circle: string
+          zone_code: string
+        }
+        Update: {
+          destination_circle?: string
+          origin_circle?: string
+          zone_code?: string
+        }
+        Relationships: []
+      }
+      zone_mapping: {
+        Row: {
+          courier_id: string
+          destination_circle: string
+          destination_pincode: string
+          id: string
+          is_fallback: boolean
+          resolved_at: string
+          source_circle: string
+          source_pincode: string
+          tenant_id: string
+          zone_code: string
+        }
+        Insert: {
+          courier_id: string
+          destination_circle: string
+          destination_pincode: string
+          id?: string
+          is_fallback?: boolean
+          resolved_at?: string
+          source_circle: string
+          source_pincode: string
+          tenant_id: string
+          zone_code: string
+        }
+        Update: {
+          courier_id?: string
+          destination_circle?: string
+          destination_pincode?: string
+          id?: string
+          is_fallback?: boolean
+          resolved_at?: string
+          source_circle?: string
+          source_pincode?: string
+          tenant_id?: string
+          zone_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_mapping_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zone_master: {
         Row: {
           created_at: string | null
@@ -1357,6 +1443,20 @@ export type Database = {
           p_type?: string
         }
         Returns: undefined
+      }
+      resolve_zone_mapping: {
+        Args: {
+          p_courier_id: string
+          p_dest_pincode: string
+          p_source_pincode: string
+          p_tenant_id: string
+        }
+        Returns: {
+          dest_circle: string
+          is_fallback: boolean
+          source_circle: string
+          zone_code: string
+        }[]
       }
       update_last_login: {
         Args: { lookup_user_id: string }
