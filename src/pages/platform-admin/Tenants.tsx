@@ -53,8 +53,8 @@ const EMPTY_ADD_FORM = {
 export default function Tenants() {
   const [filter, setFilter] = useState('all');
   const [searchQ, setSearchQ] = useState('');
-  const [editTenant, setEditTenant] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState<any>({});
+  const [editTenant, setEditTenant] = useState<TenantViewModel | null>(null);
+  const [editForm, setEditForm] = useState<Partial<TenantRow>>({});
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ ...EMPTY_ADD_FORM });
   const [adding, setAdding] = useState(false);
