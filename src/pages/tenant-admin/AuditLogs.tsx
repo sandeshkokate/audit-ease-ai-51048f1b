@@ -91,7 +91,7 @@ const getType = (r: AuditLog) => {
   return 'unclassified';
 };
 
-const getStatus = (r: any) => {
+const getStatus = (r: AuditLog) => {
   if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   return r.dispute_status || 'detected';
 };
