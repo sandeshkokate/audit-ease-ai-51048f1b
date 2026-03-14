@@ -83,7 +83,7 @@ export default function UsersPage() {
     }
   });
 
-  const filtered = users.filter((u: any) => {
+  const filtered = users.filter((u: UserViewModel) => {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
     const matchesSearch = !searchQ || u.full_name.toLowerCase().includes(searchQ.toLowerCase()) || u.email.toLowerCase().includes(searchQ.toLowerCase());
