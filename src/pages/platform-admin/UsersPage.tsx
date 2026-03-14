@@ -17,6 +17,18 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type UserRow = Tables<'users'>;
 
+interface UserViewModel {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  tenant_id: string | null;
+  tenant_name: string;
+  status: string;
+  last_login: string;
+}
+
 const ROLE_COLORS: Record<string, string> = {
   platform_admin: 'bg-primary/10 text-primary border-primary/20',
   tenant_admin: 'bg-accent/10 text-accent border-accent/20',
