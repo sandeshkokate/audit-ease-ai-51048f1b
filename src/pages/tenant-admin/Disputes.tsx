@@ -46,7 +46,7 @@ interface DisputeViewModel {
   email_subject: string;
   email_body: string;
   dispute_email: Tables<'dispute_emails'> | null;
-  dispute_reasoning: Json | null;
+  dispute_reasoning: Record<string, any> | null;
   notes: Tables<'dispute_notes'>[];
   follow_up_date: string | null;
   escalated: boolean;
