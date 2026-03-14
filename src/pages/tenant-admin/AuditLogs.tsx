@@ -15,6 +15,9 @@ import { formatCurrency, downloadCSV } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { Tables } from '@/integrations/supabase/types';
+
+type AuditLog = Tables<'audit_logs'>;
 
 const STATUS_COLORS: Record<string, string> = {
   no_issue: 'bg-success/10 text-success border-success/20',
