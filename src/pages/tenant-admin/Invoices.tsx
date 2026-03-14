@@ -15,6 +15,9 @@ import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Download, Plus, Loader2, AlertTriangle } from 'lucide-react';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Invoice = Tables<'invoices'>;
 
 export default function Invoices() {
   useDocumentTitle('Invoices');
