@@ -29,6 +29,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { creditNoteSchema } from '@/lib/validation-schemas';
+import type { Tables } from '@/integrations/supabase/types';
+
+type AuditLog = Tables<'audit_logs'>;
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground border-border',
