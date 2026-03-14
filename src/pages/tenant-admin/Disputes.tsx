@@ -49,6 +49,14 @@ const STATUS_LABELS: Record<string, string> = {
 
 const PAGE_SIZE = 25;
 
+const TAB_STATUSES: Record<string, string[]> = {
+  draft: ['draft', 'detected', 'email_copied'],
+  raised: ['raised', 'disputed'],
+  recovered: ['recovered'],
+  rejected: ['rejected'],
+  all: [],
+};
+
 export default function Disputes() {
   useDocumentTitle('Disputes');
   const [activeTab, setActiveTab] = useState('draft');
@@ -83,74 +91,138 @@ export default function Disputes() {
   const [bulkCreditNote, setBulkCreditNote] = useState({ number_prefix: '', date: '' });
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  // #4 FIX: Server-side pagination with limit
-  const { data: disputesData, isLoading, isError, refetch: refetchDisputes } = useQuery({
-    queryKey: ['disputes', user?.tenant_id],
+  // Lightweight counts query (single column, no joins)
+  const { data: counts = { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 } } = useQuery({
+    queryKey: ['dispute-counts', user?.tenant_id],
     queryFn: async () => {
-      if (!user?.tenant_id) return [];
+      if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 };
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('*, dispute_emails(*), dispute_notes(*)')
+        .select('dispute_status')
         .eq('tenant_id', user.tenant_id)
-        .gt('discrepancy_amount', 0)
-        .order('created_at', { ascending: false })
-        .limit(1000); // #4 FIX: cap at 1000 rows max
+        .gt('discrepancy_amount', 0);
       if (error) throw error;
-      return (data || []).map(log => ({
-        id: log.id,
-        awb_number: log.awb,
-        order_id: log.order_id,
-        courier: log.courier_name,
-        courier_name: log.courier_name,
-        discrepancy_type: log.has_weight_discrepancy ? 'Weight' : log.has_zone_discrepancy ? 'Zone' : log.has_rto_overcharge ? 'RTO' : 'Unclassified',
-        amount: log.discrepancy_amount,
-        status: log.dispute_status || 'draft',
-        courier_email: `billing@${(log.courier_name || 'courier').toLowerCase().replace(/\s+/g, '')}.com`,
-        email_subject: log.dispute_emails?.[0]?.subject || '',
-        email_body: log.dispute_emails?.[0]?.body || '',
-        dispute_email: log.dispute_emails?.[0] || null,
-        dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
-        notes: log.dispute_notes || [],
-        follow_up_date: log.follow_up_date || null,
-        escalated: log.escalated || false,
-        priority: log.priority || null,
-        created_at: log.created_at,
-        tenant_id: log.tenant_id,
-      }));
+      const rows = data || [];
+      return {
+        draft: rows.filter(r => !r.dispute_status || ['draft', 'detected', 'email_copied'].includes(r.dispute_status)).length,
+        raised: rows.filter(r => ['raised', 'disputed'].includes(r.dispute_status || '')).length,
+        recovered: rows.filter(r => r.dispute_status === 'recovered').length,
+        rejected: rows.filter(r => r.dispute_status === 'rejected').length,
+        all: rows.length,
+      };
     },
-    enabled: !!user?.tenant_id
+    enabled: !!user?.tenant_id,
   });
 
-  const allDisputes = disputesData ?? [];
+  // Couriers for filter dropdown
+  const { data: couriers = [] } = useQuery({
+    queryKey: ['dispute-couriers', user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data } = await supabase
+        .from('audit_logs')
+        .select('courier_name')
+        .eq('tenant_id', user.tenant_id)
+        .gt('discrepancy_amount', 0)
+        .not('courier_name', 'is', null);
+      return [...new Set((data || []).map(r => r.courier_name as string))].filter(Boolean).sort();
+    },
+    enabled: !!user?.tenant_id,
+  });
 
-  const refetch = () => queryClient.invalidateQueries({ queryKey: ['disputes'] });
+  // Server-side paginated main query
+  const { data: disputesResult, isLoading, isError, refetch: refetchDisputes } = useQuery({
+    queryKey: ['disputes', user?.tenant_id, activeTab, page, search, courierFilter, typeFilter, dateFrom, dateTo],
+    queryFn: async () => {
+      if (!user?.tenant_id) return { rows: [], total: 0 };
 
-  const counts = useMemo(() => ({
-    draft: allDisputes.filter(d => ['draft', 'detected', 'email_copied'].includes(d.status)).length,
-    raised: allDisputes.filter(d => ['raised', 'disputed'].includes(d.status)).length,
-    recovered: allDisputes.filter(d => d.status === 'recovered').length,
-    rejected: allDisputes.filter(d => d.status === 'rejected').length,
-    all: allDisputes.length,
-  }), [allDisputes]);
+      let query = supabase
+        .from('audit_logs')
+        .select('*, dispute_emails(*), dispute_notes(*)', { count: 'exact' })
+        .eq('tenant_id', user.tenant_id)
+        .gt('discrepancy_amount', 0);
 
-  const filtered = useMemo(() => {
-    return allDisputes.filter(d => {
-      if (activeTab === 'draft' && !['draft', 'detected', 'email_copied'].includes(d.status)) return false;
-      if (activeTab === 'raised' && !['raised', 'disputed'].includes(d.status)) return false;
-      if (activeTab === 'recovered' && d.status !== 'recovered') return false;
-      if (activeTab === 'rejected' && d.status !== 'rejected') return false;
-      if (search && !d.awb_number?.toLowerCase().includes(search.toLowerCase()) && !d.courier?.toLowerCase().includes(search.toLowerCase())) return false;
-      if (courierFilter !== 'all' && d.courier !== courierFilter) return false;
-      if (typeFilter !== 'all' && d.discrepancy_type.toLowerCase() !== typeFilter) return false;
-      if (dateFrom && d.created_at && new Date(d.created_at) < new Date(dateFrom)) return false;
-      if (dateTo && d.created_at && new Date(d.created_at) > new Date(dateTo + 'T23:59:59')) return false;
-      return true;
-    });
-  }, [allDisputes, activeTab, search, courierFilter, typeFilter, dateFrom, dateTo]);
+      // Tab filter
+      const statuses = TAB_STATUSES[activeTab];
+      if (statuses && statuses.length > 0) {
+        if (activeTab === 'draft') {
+          query = query.or(`dispute_status.is.null,dispute_status.in.(${statuses.join(',')})`);
+        } else {
+          query = query.in('dispute_status', statuses);
+        }
+      }
 
-  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const couriers = [...new Set(allDisputes.map(d => d.courier).filter(Boolean))].sort();
+      // Search
+      if (search.trim()) {
+        query = query.or(`awb.ilike.%${search}%,courier_name.ilike.%${search}%`);
+      }
+
+      // Courier
+      if (courierFilter !== 'all') {
+        query = query.eq('courier_name', courierFilter);
+      }
+
+      // Type
+      if (typeFilter !== 'all') {
+        const typeMap: Record<string, string> = {
+          weight: 'has_weight_discrepancy',
+          zone: 'has_zone_discrepancy',
+          rto: 'has_rto_overcharge',
+        };
+        if (typeMap[typeFilter]) {
+          query = query.eq(typeMap[typeFilter], true);
+        }
+      }
+
+      // Date range
+      if (dateFrom) query = query.gte('created_at', dateFrom);
+      if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
+
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      return {
+        rows: (data || []).map(log => ({
+          id: log.id,
+          awb_number: log.awb,
+          order_id: log.order_id,
+          courier: log.courier_name,
+          courier_name: log.courier_name,
+          discrepancy_type: log.has_weight_discrepancy ? 'Weight' : log.has_zone_discrepancy ? 'Zone' : log.has_rto_overcharge ? 'RTO' : 'Unclassified',
+          amount: log.discrepancy_amount,
+          status: log.dispute_status || 'draft',
+          courier_email: `billing@${(log.courier_name || 'courier').toLowerCase().replace(/\s+/g, '')}.com`,
+          email_subject: log.dispute_emails?.[0]?.subject || '',
+          email_body: log.dispute_emails?.[0]?.body || '',
+          dispute_email: log.dispute_emails?.[0] || null,
+          dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
+          notes: log.dispute_notes || [],
+          follow_up_date: log.follow_up_date || null,
+          escalated: log.escalated || false,
+          priority: log.priority || null,
+          created_at: log.created_at,
+          tenant_id: log.tenant_id,
+        })),
+        total: count || 0,
+      };
+    },
+    enabled: !!user?.tenant_id,
+  });
+
+  const paginated = disputesResult?.rows ?? [];
+  const totalCount = disputesResult?.total ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ['disputes'] });
+    queryClient.invalidateQueries({ queryKey: ['dispute-counts'] });
+  };
 
   // Selection handlers
   const toggleSelect = useCallback((id: string) => {
@@ -205,7 +277,7 @@ export default function Disputes() {
     if (!disputeId) return;
     try {
       await supabase.from('audit_logs').update({ dispute_status: 'raised', dispute_raised_date: new Date().toISOString().split('T')[0] }).eq('id', disputeId);
-      const emailId = id ? allDisputes.find(d => d.id === id)?.dispute_email?.id : selectedDispute?.dispute_email?.id;
+      const emailId = id ? paginated.find(d => d.id === id)?.dispute_email?.id : selectedDispute?.dispute_email?.id;
       if (emailId) await supabase.from('dispute_emails').update({ is_marked_sent: true, marked_sent_at: new Date().toISOString(), marked_sent_by: user?.id }).eq('id', emailId);
       toast({ title: 'Dispute marked as raised' });
       setSelectedDispute(null);
@@ -216,7 +288,7 @@ export default function Disputes() {
   };
 
   const handleGenerateAll = async () => {
-    const without = allDisputes.filter(d => !d.email_body);
+    const without = paginated.filter(d => !d.email_body);
     if (without.length === 0) { toast({ title: 'All disputes already have emails generated' }); return; }
     setGenerating(true);
     try {
@@ -252,7 +324,6 @@ export default function Disputes() {
     finally { setActionLoading(false); }
   };
 
-  // #6 FIX: Bulk mark as recovered
   const handleBulkRecover = async () => {
     if (!bulkCreditNote.number_prefix.trim()) {
       toast({ variant: 'destructive', title: 'Please enter a credit note number prefix' });
@@ -266,7 +337,7 @@ export default function Disputes() {
           dispute_status: 'recovered',
           credit_note_number: `${bulkCreditNote.number_prefix}-${i + 1}`,
           credit_note_date: bulkCreditNote.date || null,
-          recovery_amount: allDisputes.find(d => d.id === id)?.amount || 0,
+          recovery_amount: paginated.find(d => d.id === id)?.amount || 0,
         }).eq('id', id)
       );
       await Promise.all(updates);
@@ -373,7 +444,6 @@ export default function Disputes() {
           <p className="text-sm text-muted-foreground">Manage and send dispute emails to couriers</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* #6 FIX: Bulk recover button */}
           {selectedIds.size > 0 && (
             <Button variant="outline" className="gap-2 text-success border-success/30" onClick={() => setBulkRecoverModal(true)}>
               <CheckCircle className="h-4 w-4" /> Recover {selectedIds.size} selected
@@ -392,7 +462,7 @@ export default function Disputes() {
         </div>
       </div>
 
-      {/* #5 FIX: SMTP disclaimer */}
+      {/* SMTP disclaimer */}
       <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm">
         <Info className="h-4 w-4 text-warning mt-0.5 shrink-0" />
         <p className="text-muted-foreground">
@@ -440,7 +510,7 @@ export default function Disputes() {
 
         {['draft', 'raised', 'recovered', 'rejected', 'all'].map(tab => (
           <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
-            {/* #6: Select all for raised tab */}
+            {/* Select all for raised tab */}
             {(tab === 'raised' || tab === 'all') && paginated.filter(d => ['raised', 'disputed'].includes(d.status)).length > 0 && (
               <div className="flex items-center gap-2 pb-1">
                 <Checkbox
@@ -464,7 +534,6 @@ export default function Disputes() {
                     {/* Main row */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        {/* #6: Checkbox for raised disputes */}
                         {['raised', 'disputed'].includes(dispute.status) && (
                           <Checkbox
                             checked={selectedIds.has(dispute.id)}
@@ -533,11 +602,11 @@ export default function Disputes() {
               ))
             )}
 
-            {/* Pagination */}
+            {/* Server-side pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
                 <p className="text-sm text-muted-foreground">
-                  Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+                  Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 0}>Previous</Button>
@@ -623,7 +692,7 @@ export default function Disputes() {
         </DialogContent>
       </Dialog>
 
-      {/* #6: Bulk Recovery Modal */}
+      {/* Bulk Recovery Modal */}
       <Dialog open={bulkRecoverModal} onOpenChange={(o) => !o && setBulkRecoverModal(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-success" />Bulk Mark as Recovered</DialogTitle></DialogHeader>
