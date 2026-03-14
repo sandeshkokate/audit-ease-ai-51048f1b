@@ -48,7 +48,7 @@ export default function AccountantInvoices() {
     );
   }
 
-  const columns: Column<any>[] = [
+  const columns: Column<Invoice>[] = [
     { key: 'invoice_number', header: <ColumnHeader title="Invoice #" tooltip="Unique invoice reference number" />, sortable: true },
     { key: 'invoice_period_start', header: <ColumnHeader title="Period" tooltip="Billing period covered by this invoice" />, render: (r) => `${r.invoice_period_start} – ${r.invoice_period_end}` },
     { key: 'total_recovered', header: <ColumnHeader title="Recovered" tooltip="Total amount recovered from courier overcharges" />, sortable: true, render: (r) => <span className="font-medium">{formatCurrency(r.total_recovered)}</span> },

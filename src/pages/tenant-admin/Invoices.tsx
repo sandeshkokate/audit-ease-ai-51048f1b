@@ -22,7 +22,7 @@ type Invoice = Tables<'invoices'>;
 export default function Invoices() {
   useDocumentTitle('Invoices');
   const { user } = useAuth();
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [generateMonth, setGenerateMonth] = useState(() => format(subMonths(new Date(), 1), 'MMMM yyyy'));
   const monthOptions = useMemo(() => Array.from({ length: 12 }, (_, i) => format(subMonths(new Date(), i), 'MMMM yyyy')), []);
   const [generating, setGenerating] = useState(false);

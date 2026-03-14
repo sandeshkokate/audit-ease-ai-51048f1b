@@ -107,7 +107,7 @@ export default function AuditLogs() {
   const [dateTo, setDateTo] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [showStatusDefs, setShowStatusDefs] = useState(false);
   const [showTypeDefs, setShowTypeDefs] = useState(false);
   const [exporting, setExporting] = useState(false);

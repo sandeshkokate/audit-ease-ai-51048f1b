@@ -69,7 +69,7 @@ export default function UploadHistory() {
     totalDiscrepancies: batches.reduce((s, b) => s + (b.discrepancy_rows || 0), 0),
   };
 
-  const columns: Column<any>[] = [
+  const columns: Column<UploadBatch>[] = [
     {
       key: 'filename',
       header: <ColumnHeader title="File" tooltip="Original filename uploaded" />,

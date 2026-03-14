@@ -188,7 +188,7 @@ export default function UsersPage() {
     );
   }
 
-  const columns: Column<any>[] = [
+  const columns: Column<UserRow>[] = [
     { key: 'full_name', header: <ColumnHeader title="Name" tooltip="Full name of the user" />, sortable: true },
     { key: 'email', header: <ColumnHeader title="Email" tooltip="User's registered email address" /> },
     {

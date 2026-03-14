@@ -26,7 +26,7 @@ const MATCH_COLORS: Record<string, string> = {
 export default function Recoveries() {
   useDocumentTitle('Recoveries');
   const { user } = useAuth();
-  const [creditNotes, setCreditNotes] = useState<any[]>([]);
+  const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
