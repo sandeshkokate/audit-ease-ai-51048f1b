@@ -83,7 +83,7 @@ export default function LandingCalculator() {
                   Get Detailed Analysis <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <p className="mt-2 text-center text-xs text-muted-foreground">Free analysis • No commitment required</p>
+              <p className="mt-2 text-center text-xs text-muted-foreground">Setup fee is typically recovered within your first audit.</p>
             </div>
           </div>
         </div>
