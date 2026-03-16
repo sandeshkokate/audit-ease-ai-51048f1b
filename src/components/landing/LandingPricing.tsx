@@ -96,7 +96,7 @@ export default function LandingPricing() {
             </ul>
             <Link to="/contact">
               <Button variant="hero" className="w-full gap-2">
-                Get Started — ₹4,999 One-Time Setup <ArrowRight className="h-3.5 w-3.5" />
+                Get Started — ₹6,999 One-Time Setup <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
