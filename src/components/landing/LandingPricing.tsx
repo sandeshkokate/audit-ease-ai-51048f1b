@@ -83,7 +83,7 @@ export default function LandingPricing() {
               <p className="text-xs text-muted-foreground">Everything you need to get started</p>
             </div>
             <div className="mb-6">
-              <span className="text-4xl font-extrabold text-gradient">₹4,999</span>
+              <span className="text-4xl font-extrabold text-gradient">₹6,999</span>
               <span className="ml-1 text-sm text-muted-foreground">one-time</span>
             </div>
             <ul className="mb-6 flex-1 space-y-2.5">
@@ -96,7 +96,7 @@ export default function LandingPricing() {
             </ul>
             <Link to="/contact">
               <Button variant="hero" className="w-full gap-2">
-                Get Started — ₹4,999 One-Time Setup <ArrowRight className="h-3.5 w-3.5" />
+                Get Started — ₹6,999 One-Time Setup <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
