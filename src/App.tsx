@@ -82,7 +82,29 @@ const LazyPage = ({ children }: { children: React.ReactNode }) => (
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    const gaId = import.meta.env.VITE_GA4_ID;
+    if (!gaId) return;
+
+    // Inject gtag.js script
+    const script = document.createElement('script');
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+    script.async = true;
+    document.head.appendChild(script);
+
+    // Configure gtag
+    const inline = document.createElement('script');
+    inline.textContent = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${gaId}');
+    `;
+    document.head.appendChild(inline);
+  }, []);
+
+  return (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
