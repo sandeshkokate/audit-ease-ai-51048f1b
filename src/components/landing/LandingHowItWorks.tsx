@@ -3,11 +3,25 @@ import { Button } from '@/components/ui/button';
 import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
-  { icon: Upload, title: 'Upload Invoice Data', description: 'Export your courier invoices and upload as CSV', color: 'text-primary', bg: 'bg-primary/10' },
-  { icon: Search, title: 'System Audits Every Shipment', description: 'Each shipment is checked against your contracted rate cards', color: 'text-secondary', bg: 'bg-secondary/10' },
-  { icon: AlertTriangle, title: 'Discrepancies Flagged', description: 'Weight errors, zone mismatches and RTO overcharges identified', color: 'text-warning', bg: 'bg-warning/10' },
-  { icon: Mail, title: 'Dispute & Track Recovery', description: 'Ready-made dispute emails and a recovery tracker', color: 'text-success', bg: 'bg-success/10' },
+  { icon: Upload, title: 'Upload Invoice Data', description: 'Export your courier invoices and upload as CSV', color: 'text-primary', bg: 'bg-primary/10', screenshotLabel: 'CSV Upload Screenshot', alt: 'CSV upload interface with courier invoice column validation and mapping' },
+  { icon: Search, title: 'System Audits Every Shipment', description: 'Each shipment is checked against your contracted rate cards', color: 'text-secondary', bg: 'bg-secondary/10', screenshotLabel: 'Audit Processing Screenshot', alt: 'Automated shipping discrepancy detection showing weight and zone analysis results' },
+  { icon: AlertTriangle, title: 'Discrepancies Flagged', description: 'Weight errors, zone mismatches and RTO overcharges identified', color: 'text-warning', bg: 'bg-warning/10', screenshotLabel: 'Discrepancy Results Screenshot', alt: 'Courier billing discrepancy results with overcharge amounts and error categories' },
+  { icon: Mail, title: 'Dispute & Track Recovery', description: 'Ready-made dispute emails and a recovery tracker', color: 'text-success', bg: 'bg-success/10', screenshotLabel: 'Dispute Email Screenshot', alt: 'AI-generated dispute email for courier billing recovery with tracking status' },
 ];
+
+function StepScreenshotPlaceholder({ label, alt }: { label: string; alt: string }) {
+  return (
+    <div
+      className="mt-4 rounded-xl border border-border bg-muted/40 shadow-card overflow-hidden"
+      role="img"
+      aria-label={alt}
+    >
+      <div className="aspect-[16/10] flex items-center justify-center">
+        <span className="text-xs font-medium text-muted-foreground/60 select-none">{label}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function LandingHowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
@@ -52,72 +66,80 @@ export default function LandingHowItWorks() {
             ))}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
-            <div className="border-b border-border bg-muted/40 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {processSteps[activeStep].title}
-            </div>
-            <div className="p-6 min-h-[220px] flex flex-col justify-center">
-              {activeStep === 0 && (
-                <div className="flex flex-col items-center justify-center gap-4 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5">
-                    <Upload className="h-7 w-7 text-primary" />
+          <div>
+            <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
+              <div className="border-b border-border bg-muted/40 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {processSteps[activeStep].title}
+              </div>
+              <div className="p-6 min-h-[220px] flex flex-col justify-center">
+                {activeStep === 0 && (
+                  <div className="flex flex-col items-center justify-center gap-4 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5">
+                      <Upload className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">Drag &amp; drop your CSV file</div>
+                      <div className="text-sm text-muted-foreground">Supports Delhivery, Blue Dart, DTDC, and more</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-foreground">Drag &amp; drop your CSV file</div>
-                    <div className="text-sm text-muted-foreground">Supports Delhivery, Blue Dart, DTDC, and more</div>
-                  </div>
-                </div>
-              )}
-              {activeStep === 1 && (
-                <div className="flex flex-col gap-3">
-                  {['Checking weight data', 'Validating zone classifications', 'Comparing rate cards', 'Detecting RTO errors'].map((task, i) => (
-                    <div key={task} className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
-                      <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 300}ms` }} />
-                      <span className="text-sm font-medium text-foreground">{task}</span>
-                      <div className="ml-auto h-1.5 flex-1 max-w-24 rounded-full bg-border overflow-hidden">
-                        <div className="h-full rounded-full bg-primary/60 animate-pulse" style={{ width: `${[85, 70, 90, 65][i]}%` }} />
+                )}
+                {activeStep === 1 && (
+                  <div className="flex flex-col gap-3">
+                    {['Checking weight data', 'Validating zone classifications', 'Comparing rate cards', 'Detecting RTO errors'].map((task, i) => (
+                      <div key={task} className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+                        <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 300}ms` }} />
+                        <span className="text-sm font-medium text-foreground">{task}</span>
+                        <div className="ml-auto h-1.5 flex-1 max-w-24 rounded-full bg-border overflow-hidden">
+                          <div className="h-full rounded-full bg-primary/60 animate-pulse" style={{ width: `${[85, 70, 90, 65][i]}%` }} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {activeStep === 2 && (
-                <div className="flex flex-col gap-3">
-                  <div className="mb-1 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <span>AWB Number</span><span>Error Type</span><span>Est. Overcharge</span>
+                    ))}
                   </div>
-                  {[
-                    { awb: 'DEL789456', type: 'Weight', amount: '₹245', color: 'text-warning bg-warning/10' },
-                    { awb: 'BD456123', type: 'Zone', amount: '₹180', color: 'text-secondary bg-secondary/10' },
-                    { awb: 'XB321654', type: 'RTO', amount: '₹320', color: 'text-destructive bg-destructive/10' },
-                  ].map((item) => (
-                    <div key={item.awb} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
-                      <span className="font-mono text-sm font-medium text-foreground">{item.awb}</span>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${item.color}`}>{item.type}</span>
-                      <span className="font-semibold text-foreground">{item.amount}</span>
+                )}
+                {activeStep === 2 && (
+                  <div className="flex flex-col gap-3">
+                    <div className="mb-1 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span>AWB Number</span><span>Error Type</span><span>Est. Overcharge</span>
                     </div>
-                  ))}
-                </div>
-              )}
-              {activeStep === 3 && (
-                <div className="flex flex-col gap-4">
-                  <div className="rounded-xl border border-border bg-muted/30 p-4">
-                    <div className="mb-1 flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispute Email Draft</span>
+                    {[
+                      { awb: 'DEL789456', type: 'Weight', amount: '₹245', color: 'text-warning bg-warning/10' },
+                      { awb: 'BD456123', type: 'Zone', amount: '₹180', color: 'text-secondary bg-secondary/10' },
+                      { awb: 'XB321654', type: 'RTO', amount: '₹320', color: 'text-destructive bg-destructive/10' },
+                    ].map((item) => (
+                      <div key={item.awb} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
+                        <span className="font-mono text-sm font-medium text-foreground">{item.awb}</span>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${item.color}`}>{item.type}</span>
+                        <span className="font-semibold text-foreground">{item.amount}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {activeStep === 3 && (
+                  <div className="flex flex-col gap-4">
+                    <div className="rounded-xl border border-border bg-muted/30 p-4">
+                      <div className="mb-1 flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispute Email Draft</span>
+                      </div>
+                      <div className="text-sm font-medium text-foreground">Subject: Billing Discrepancy — AWB DEL789456</div>
+                      <div className="mt-1 text-xs text-muted-foreground">Dear Support Team, We have identified a billing discrepancy on the above shipment. The charged weight (2.5 kg) exceeds the actual volumetric weight (1.8 kg)...</div>
                     </div>
-                    <div className="text-sm font-medium text-foreground">Subject: Billing Discrepancy — AWB DEL789456</div>
-                    <div className="mt-1 text-xs text-muted-foreground">Dear Support Team, We have identified a billing discrepancy on the above shipment. The charged weight (2.5 kg) exceeds the actual volumetric weight (1.8 kg)...</div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="hero" className="flex-1 gap-1.5">
+                        <Mail className="h-3.5 w-3.5" /> Ready to Send
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1">Edit Draft</Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="hero" className="flex-1 gap-1.5">
-                      <Mail className="h-3.5 w-3.5" /> Ready to Send
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">Edit Draft</Button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
+
+            {/* Screenshot placeholder for active step */}
+            <StepScreenshotPlaceholder
+              label={processSteps[activeStep].screenshotLabel}
+              alt={processSteps[activeStep].alt}
+            />
           </div>
         </div>
       </div>
