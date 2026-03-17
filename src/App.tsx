@@ -23,8 +23,6 @@ import NotFound from "./pages/NotFound";
 // Lazy-loaded pages
 const Contact = lazy(() => import('./pages/Contact'));
 const About = lazy(() => import('./pages/About'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Terms = lazy(() => import('./pages/Terms'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogPostPage = lazy(() => import('./pages/BlogPost'));
 const CaseStudies = lazy(() => import('./pages/CaseStudies'));
