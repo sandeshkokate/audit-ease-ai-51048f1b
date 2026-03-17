@@ -24,6 +24,10 @@ const Contact = lazy(() => import('./pages/Contact'));
 const About = lazy(() => import('./pages/About'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
+const Blog = lazy(() => import('./pages/Blog'));
+const CaseStudies = lazy(() => import('./pages/CaseStudies'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // Platform Admin — lazy
 const PlatformDashboard = lazy(() => import('./pages/platform-admin/Dashboard'));
@@ -92,6 +96,10 @@ const App = () => (
               <Route path="/about" element={<LazyPage><About /></LazyPage>} />
               <Route path="/privacy" element={<LazyPage><Privacy /></LazyPage>} />
               <Route path="/terms" element={<LazyPage><Terms /></LazyPage>} />
+              <Route path="/blog" element={<LazyPage><Blog /></LazyPage>} />
+              <Route path="/case-studies" element={<LazyPage><CaseStudies /></LazyPage>} />
+              <Route path="/privacy-policy" element={<LazyPage><PrivacyPolicy /></LazyPage>} />
+              <Route path="/terms-of-service" element={<LazyPage><TermsOfService /></LazyPage>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
