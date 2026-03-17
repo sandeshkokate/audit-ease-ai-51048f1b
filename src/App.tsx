@@ -83,6 +83,7 @@ const LazyPage = ({ children }: { children: React.ReactNode }) => (
 const queryClient = new QueryClient();
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
