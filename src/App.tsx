@@ -122,6 +122,7 @@ const App = () => {
               <Route path="/privacy" element={<LazyPage><Privacy /></LazyPage>} />
               <Route path="/terms" element={<LazyPage><Terms /></LazyPage>} />
               <Route path="/blog" element={<LazyPage><Blog /></LazyPage>} />
+              <Route path="/blog/:slug" element={<LazyPage><BlogPostPage /></LazyPage>} />
               <Route path="/case-studies" element={<LazyPage><CaseStudies /></LazyPage>} />
               <Route path="/privacy-policy" element={<LazyPage><PrivacyPolicy /></LazyPage>} />
               <Route path="/terms-of-service" element={<LazyPage><TermsOfService /></LazyPage>} />
