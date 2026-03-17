@@ -1,6 +1,7 @@
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { Separator } from '@/components/ui/separator';
+import SEOHead from '@/components/shared/SEOHead';
 
 export default function PrivacyPolicy() {
   return (
