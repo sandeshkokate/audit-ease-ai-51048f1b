@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
+import SEOHead from '@/components/shared/SEOHead';
 
 const couriers = [
   'Delhivery', 'Blue Dart', 'DTDC', 'Ecom Express',
