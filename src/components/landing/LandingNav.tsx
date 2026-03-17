@@ -24,7 +24,12 @@ export default function LandingNav() {
     e.preventDefault();
     setMobileMenuOpen(false);
     const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Navigate to landing page with hash when on a different page
+      window.location.href = '/' + href;
+    }
   };
 
   return (
