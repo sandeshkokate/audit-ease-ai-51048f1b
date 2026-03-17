@@ -102,6 +102,11 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEOHead
+        title="Contact Us – AuditEase AI | Get a Free Courier Audit"
+        description="Have questions about courier billing audits? Contact AuditEase AI. We respond within 24 hours."
+        path="/contact"
+      />
       <LandingNav />
 
       <main className="flex-1 container mx-auto max-w-xl px-4 py-16 md:py-24">

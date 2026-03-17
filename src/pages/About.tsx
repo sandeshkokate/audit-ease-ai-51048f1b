@@ -15,6 +15,11 @@ const couriers = [
 export default function About() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead
+        title="About Us – AuditEase AI | Courier Billing Audit Platform"
+        description="Learn how AuditEase AI helps Indian e-commerce businesses recover 10-15% courier overcharges with automated billing audits."
+        path="/about"
+      />
       <LandingNav />
 
       <main className="flex-1">

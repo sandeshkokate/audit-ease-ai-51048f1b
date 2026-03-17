@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import SEOHead from '@/components/shared/SEOHead';
 
 export default function CaseStudies() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <SEOHead
+        title="Case Studies – AuditEase AI | Real Recovery Results"
+        description="See how Indian e-commerce brands recovered lakhs in courier overcharges using AuditEase AI automated billing audits."
+        path="/case-studies"
+      />
       <div className="container mx-auto px-4 py-10 max-w-2xl">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
           <ArrowLeft className="h-4 w-4" />
