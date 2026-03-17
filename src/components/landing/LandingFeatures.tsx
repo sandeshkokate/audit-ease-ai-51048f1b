@@ -1,96 +1,34 @@
-import { Search, Mail, BarChart3, PieChart } from 'lucide-react';
+import { Search, Mail, BarChart3, FileSpreadsheet, RefreshCw, PieChart } from 'lucide-react';
 
 const features = [
-  {
-    icon: BarChart3,
-    title: 'Real-time Dashboard',
-    description: 'Track all disputes, recoveries, and courier performance trends in one clear dashboard. See overcharge patterns, recovery rates, and pending actions at a glance.',
-    color: 'text-primary',
-    bg: 'bg-primary/10',
-    screenshotLabel: 'Dashboard Screenshot',
-    alt: 'Courier billing audit dashboard with recovery charts and dispute tracking',
-  },
-  {
-    icon: Search,
-    title: 'Smart Discrepancy Detection',
-    description: 'Advanced algorithms check every shipment against your rate cards to spot weight errors, zone mismatches, and RTO overcharges instantly.',
-    color: 'text-secondary',
-    bg: 'bg-secondary/10',
-    screenshotLabel: 'Audit Log Screenshot',
-    alt: 'Shipping discrepancy detection table with weight and zone mismatch status badges',
-  },
-  {
-    icon: Mail,
-    title: 'AI Dispute Emails',
-    description: "Professional dispute email templates tailored to each courier's preferred format — auto-filled with shipment data and ready to send in one click.",
-    color: 'text-accent',
-    bg: 'bg-accent/10',
-    screenshotLabel: 'Dispute Email Screenshot',
-    alt: 'AI-generated courier dispute email modal with shipment billing details',
-  },
-  {
-    icon: PieChart,
-    title: 'Detailed Reports & Analytics',
-    description: 'Comprehensive analytics on courier performance, error patterns, recovery trends, and billing insights to help you negotiate better rates.',
-    color: 'text-success',
-    bg: 'bg-success/10',
-    screenshotLabel: 'Reports Screenshot',
-    alt: 'Courier audit reports page with recovery analytics and billing trend charts',
-  },
+  { icon: Search, title: 'Smart Detection', description: 'Advanced algorithms check every shipment against your rate cards to spot discrepancies instantly.', color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Mail, title: 'Dispute Email Templates', description: "Professional dispute email templates tailored to each courier's preferred format — ready to send.", color: 'text-secondary', bg: 'bg-secondary/10' },
+  { icon: BarChart3, title: 'Real-time Dashboard', description: 'Track all disputes, recoveries, and courier performance trends in one clear dashboard.', color: 'text-accent', bg: 'bg-accent/10' },
+  { icon: FileSpreadsheet, title: 'Multi-Courier Support', description: 'Works with Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and more.', color: 'text-success', bg: 'bg-success/10' },
+  { icon: RefreshCw, title: 'Automated Reconciliation', description: 'Automatically match credit notes to disputes for complete, hassle-free reconciliation.', color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: PieChart, title: 'Detailed Reports', description: 'Comprehensive analytics on courier performance, error patterns, and recovery trends.', color: 'text-secondary', bg: 'bg-secondary/10' },
 ];
-
-function ScreenshotPlaceholder({ label, alt }: { label: string; alt: string }) {
-  return (
-    <div
-      className="rounded-xl border border-border bg-muted/40 shadow-card overflow-hidden"
-      role="img"
-      aria-label={alt}
-    >
-      <div className="aspect-[16/10] flex items-center justify-center">
-        <span className="text-sm font-medium text-muted-foreground/60 select-none">{label}</span>
-      </div>
-    </div>
-  );
-}
 
 export default function LandingFeatures() {
   return (
     <section id="features" className="relative bg-muted/30 py-20 md:py-28 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-20" />
       <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">
-            Everything You Need to Recover Lost Revenue
-          </h2>
-          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-            Powerful features built specifically for Indian e-commerce logistics
-          </p>
+        <div className="mb-14 text-center">
+          <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">Everything You Need to Recover Lost Revenue</h2>
+          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">Powerful features built specifically for Indian e-commerce logistics</p>
         </div>
 
-        <div className="flex flex-col gap-20 md:gap-28">
-          {features.map((f, i) => {
-            const isReversed = i % 2 !== 0;
-            return (
-              <div
-                key={f.title}
-                className={`grid items-center gap-8 md:gap-14 lg:grid-cols-2 ${isReversed ? 'lg:[direction:rtl]' : ''}`}
-              >
-                {/* Text column */}
-                <div className={isReversed ? 'lg:[direction:ltr]' : ''}>
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${f.bg}`}>
-                    <f.icon className={`h-5.5 w-5.5 ${f.color}`} />
-                  </div>
-                  <h3 className="mb-3 text-2xl font-bold text-foreground">{f.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{f.description}</p>
-                </div>
-
-                {/* Screenshot placeholder */}
-                <div className={isReversed ? 'lg:[direction:ltr]' : ''}>
-                  <ScreenshotPlaceholder label={f.screenshotLabel} alt={f.alt} />
-                </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((f) => (
+            <div key={f.title} className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
+              <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.bg}`}>
+                <f.icon className={`h-5 w-5 ${f.color}`} />
               </div>
-            );
-          })}
+              <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{f.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
