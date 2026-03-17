@@ -96,6 +96,10 @@ const App = () => (
               <Route path="/about" element={<LazyPage><About /></LazyPage>} />
               <Route path="/privacy" element={<LazyPage><Privacy /></LazyPage>} />
               <Route path="/terms" element={<LazyPage><Terms /></LazyPage>} />
+              <Route path="/blog" element={<LazyPage><Blog /></LazyPage>} />
+              <Route path="/case-studies" element={<LazyPage><CaseStudies /></LazyPage>} />
+              <Route path="/privacy-policy" element={<LazyPage><PrivacyPolicy /></LazyPage>} />
+              <Route path="/terms-of-service" element={<LazyPage><TermsOfService /></LazyPage>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Navigate to="/contact" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
