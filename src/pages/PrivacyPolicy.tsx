@@ -1,10 +1,16 @@
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { Separator } from '@/components/ui/separator';
+import SEOHead from '@/components/shared/SEOHead';
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Privacy Policy – AuditEase AI"
+        description="Learn how AuditEase AI collects, uses, and protects your shipment data. We never sell or share your courier billing data."
+        path="/privacy-policy"
+      />
       <LandingNav />
 
       <main className="container mx-auto max-w-3xl px-4 py-16 md:py-24">

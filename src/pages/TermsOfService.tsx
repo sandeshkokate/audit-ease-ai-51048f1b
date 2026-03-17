@@ -1,10 +1,16 @@
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { Separator } from '@/components/ui/separator';
+import SEOHead from '@/components/shared/SEOHead';
 
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Terms of Service – AuditEase AI"
+        description="Read the Terms of Service for AuditEase AI. Performance-based pricing, data ownership, and acceptable use policies."
+        path="/terms-of-service"
+      />
       <LandingNav />
 
       <main className="container mx-auto max-w-3xl px-4 py-16 md:py-24">
