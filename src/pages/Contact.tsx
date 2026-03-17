@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
+import SEOHead from '@/components/shared/SEOHead';
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
