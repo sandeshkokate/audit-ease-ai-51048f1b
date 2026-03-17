@@ -23,8 +23,6 @@ import NotFound from "./pages/NotFound";
 // Lazy-loaded pages
 const Contact = lazy(() => import('./pages/Contact'));
 const About = lazy(() => import('./pages/About'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Terms = lazy(() => import('./pages/Terms'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogPostPage = lazy(() => import('./pages/BlogPost'));
 const CaseStudies = lazy(() => import('./pages/CaseStudies'));
@@ -118,8 +116,8 @@ const App = () => {
             {/* Public routes — no auth needed, load instantly */}
             <Route path="/contact" element={<LazyPage><Contact /></LazyPage>} />
             <Route path="/about" element={<LazyPage><About /></LazyPage>} />
-            <Route path="/privacy" element={<LazyPage><Privacy /></LazyPage>} />
-            <Route path="/terms" element={<LazyPage><Terms /></LazyPage>} />
+            <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+            <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
             <Route path="/blog" element={<LazyPage><Blog /></LazyPage>} />
             <Route path="/blog/:slug" element={<LazyPage><BlogPostPage /></LazyPage>} />
             <Route path="/case-studies" element={<LazyPage><CaseStudies /></LazyPage>} />
