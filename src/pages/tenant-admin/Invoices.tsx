@@ -155,23 +155,22 @@ export default function Invoices() {
     if (!generateMonth) { toast({ variant: 'destructive', title: 'Select a month' }); return; }
     setGenerating(true);
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_INVOICE || '';
-      if (!webhookUrl) throw new Error('Invoice webhook not configured');
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: user?.tenant_id,
-          user_id: user?.id,
-          month: generateMonth,
-        }),
+      // Migrated from n8n to Supabase
+      const { data: result, error: rpcError } = await supabase.rpc('generate_monthly_invoice', {
+        p_tenant_id: user?.tenant_id,
+        p_billing_month: generateMonth,
+        p_generated_by: user?.id
       });
 
-      const result = await response.json();
+      if (rpcError) throw rpcError;
       if (!result.success) throw new Error(result.error || 'Invoice generation failed');
 
-      toast({ title: '✅ Invoice generated!', description: result.message || `Invoice for ${generateMonth} created.` });
+      toast({
+        title: '✅ Invoice generated!',
+        description: result.invoice_number
+          ? `Invoice ${result.invoice_number} — Total: ₹${result.total_amount}`
+          : result.message || `Invoice for ${generateMonth} created.`
+      });
       setGenerateMonth('');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Generation failed', description: error.message });

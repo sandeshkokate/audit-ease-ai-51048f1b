@@ -77,15 +77,7 @@ export default function Contact() {
         if (error) throw error;
       }
 
-      // Fire n8n webhook (fire-and-forget)
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CONTACT || '';
-      if (webhookUrl) {
-        fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(leadPayload),
-        }).catch(() => {});
-      }
+      // Migrated from n8n to Supabase — lead is already saved above
 
       toast({ title: 'Message sent!', description: 'We will get back to you within 24 hours.' });
       setFormData({ name: '', email: '', company: '', message: '' });

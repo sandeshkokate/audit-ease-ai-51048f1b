@@ -685,17 +685,19 @@ export default function Disputes() {
              <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
              <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
              <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Raised</Button>
+             {/* Migrated from n8n to Supabase */}
              <Button variant="ghost" className="gap-2" onClick={async () => {
-              const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES;
-              if (!webhookUrl) { toast({ variant: 'destructive', title: 'Webhook not configured' }); return; }
-              try {
-                const res = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: selectedDispute?.tenant_id, user_id: user?.id, audit_log_id: selectedDispute?.id, regenerate: true }) });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                toast({ title: 'Email regenerated' });
-                setSelectedDispute(null);
-                refetch();
-              } catch (err: any) { toast({ variant: 'destructive', title: 'Regeneration failed', description: err.message }); }
-            }}><Edit3 className="h-4 w-4" /> Regenerate</Button>
+               try {
+                 const { data: res, error: fnErr } = await supabase.functions.invoke('generate-dispute-email', {
+                   body: { tenant_id: selectedDispute?.tenant_id, user_id: user?.id, audit_log_id: selectedDispute?.id, regenerate: true }
+                 });
+                 if (fnErr) throw fnErr;
+                 if (!res.success) throw new Error(res.error);
+                 toast({ title: 'Email regenerated' });
+                 setSelectedDispute(null);
+                 refetch();
+               } catch (err: any) { toast({ variant: 'destructive', title: 'Regeneration failed', description: err.message }); }
+             }}><Edit3 className="h-4 w-4" /> Regenerate</Button>
             <Button variant="ghost" onClick={() => setSelectedDispute(null)}><X className="h-4 w-4" /></Button>
           </DialogFooter>
         </DialogContent>
