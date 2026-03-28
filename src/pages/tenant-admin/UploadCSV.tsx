@@ -143,7 +143,7 @@ export default function UploadCSV() {
         tenant_id: user.tenant_id,
         filename: file.name,
         file_size: file.size,
-        total_rows: actualRowCount,
+        total_rows: 0, // updated below after parse
         status: 'processing',
         created_by: user.id,
         started_at: new Date().toISOString()
