@@ -90,10 +90,10 @@ export default function Recoveries() {
     try {
       let matched = 0, reviewCount = 0, unmatchedCount = 0;
 
-      for (const cn of creditNotes) {
+      for (const cn of creditNotes as any[]) {
         const awb = cn.awb || cn.awb_number || '';
         const orderId = cn.order_id || '';
-        const amount = parseFloat(cn.amount) || 0;
+        const amount = parseFloat(String(cn.amount)) || 0;
         const creditNoteNumber = cn.credit_note_number || '';
         const creditDate = cn.date || cn.credit_date || null;
 
