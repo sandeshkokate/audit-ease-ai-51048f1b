@@ -1400,6 +1400,14 @@ export type Database = {
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       expire_old_invitations: { Args: never; Returns: number }
+      generate_dispute_email: {
+        Args: {
+          p_audit_log_id: string
+          p_generated_by: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       generate_monthly_invoice: {
         Args: {
           p_billing_month: string
