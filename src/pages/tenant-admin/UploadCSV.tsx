@@ -92,9 +92,13 @@ export default function UploadCSV() {
   };
 
   const parseCSV = (text: string) => {
-    const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => resolveHeader(h));
-    const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
+    const result = Papa.parse<string[]>(text, {
+      skipEmptyLines: true,
+      header: false,
+    });
+    const rawRows = result.data as string[][];
+    const hdrs = rawRows[0].map(h => resolveHeader(h));
+    const rows = rawRows.slice(1, 11).map(row => row.map(c => c.trim()));
     return { hdrs, rows };
   };
 
