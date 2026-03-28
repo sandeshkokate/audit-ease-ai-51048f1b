@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { startOfMonth, endOfMonth, subMonths, subDays, format, formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import MetricCard from '@/components/dashboard/MetricCard';
+import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
@@ -282,6 +283,7 @@ export default function TenantDashboard() {
 
   return (
     <div className="space-y-6">
+      {user?.tenant_id && <OnboardingChecklist tenantId={user.tenant_id} />}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
