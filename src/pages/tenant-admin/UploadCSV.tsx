@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Papa from 'papaparse';
 
 /** Aliases: CSV column name (normalized) → internal column name */
 const COLUMN_ALIASES: Record<string, string> = {
@@ -92,9 +93,13 @@ export default function UploadCSV() {
   };
 
   const parseCSV = (text: string) => {
-    const lines = text.trim().split('\n');
-    const hdrs = lines[0].split(',').map(h => resolveHeader(h));
-    const rows = lines.slice(1, 11).map(line => line.split(',').map(c => c.trim()));
+    const result = Papa.parse<string[]>(text, {
+      skipEmptyLines: true,
+      header: false,
+    });
+    const rawRows = result.data as string[][];
+    const hdrs = rawRows[0].map(h => resolveHeader(h));
+    const rows = rawRows.slice(1, 11).map(row => row.map(c => c.trim()));
     return { hdrs, rows };
   };
 
@@ -132,8 +137,6 @@ export default function UploadCSV() {
       
       // Parse CSV to get actual row count
       const text = await file.text();
-      const lines = text.trim().split('\n');
-      const actualRowCount = lines.length - 1; // minus header row
       
       // Create batch record
       await supabase.from('upload_batches').insert({
@@ -141,7 +144,7 @@ export default function UploadCSV() {
         tenant_id: user.tenant_id,
         filename: file.name,
         file_size: file.size,
-        total_rows: actualRowCount,
+        total_rows: 0, // updated below after parse
         status: 'processing',
         created_by: user.id,
         started_at: new Date().toISOString()
@@ -149,18 +152,20 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => resolveHeader(h));
-      const rows = lines.slice(1).map(line => {
-        const values = line.split(',');
-        const row: Record<string, string> = {};
-        hdrs.forEach((h, i) => {
-          // Sanitize: strip control chars, limit length, escape formula injection
-          let val = (values[i]?.trim() || '').replace(/[\x00-\x1F\x7F]/g, '').slice(0, 500);
-          if (/^[=+\-@\t\r]/.test(val)) val = `'${val}`;
-          row[h] = val;
-        });
-        return row;
+      const parseResult = Papa.parse<Record<string, string>>(text, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (h: string) => resolveHeader(h),
+        transform: (value: string) => {
+          let val = value.trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 500);
+          if (/^[=+\-@\t\r]/.test(val)) val = "'" + val;
+          return val;
+        },
       });
+      const rows = parseResult.data;
+
+      // Update batch with actual row count
+      await supabase.from('upload_batches').update({ total_rows: rows.length }).eq('id', batchId);
       
       setProcessingStep('Calculating discrepancies...');
       
