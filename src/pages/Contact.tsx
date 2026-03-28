@@ -77,7 +77,7 @@ export default function Contact() {
         if (error) throw error;
       }
 
-      // Migrated from n8n to Supabase — lead is already saved above
+      // Lead saved directly to Supabase
 
       toast({ title: 'Message sent!', description: 'We will get back to you within 24 hours.' });
       setFormData({ name: '', email: '', company: '', message: '' });

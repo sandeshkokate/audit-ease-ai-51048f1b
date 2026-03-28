@@ -113,25 +113,34 @@ export default function Team() {
       if (error) throw error;
       const inviteLink = `${window.location.origin}/invite/${token}`;
 
-      // Migrated from n8n to Supabase
-      try {
-        await supabase.functions.invoke('send-invite-email', {
-          body: {
-            to_email: normalizedEmail,
-            invite_link: inviteLink,
-            invited_by_name: user?.full_name || user?.email || 'Your administrator',
-            company_name: user?.tenant_id,
-            role: inviteRole,
-            expires_at: expiresAt.toISOString()
-          }
-        });
-      } catch {
-        // Don't block the UI if email fails — link is still usable
+      // Send invitation email via Resend API
+      const resendKey = import.meta.env.VITE_RESEND_API_KEY;
+      let emailSent = false;
+      if (resendKey) {
+        try {
+          const roleLabel = inviteRole === 'tenant_admin' ? 'Admin' : inviteRole === 'accountant' ? 'Accountant' : 'Viewer';
+          const inviterName = user?.full_name || user?.email || 'Your administrator';
+          const emailHtml = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb"><h2 style="color:#1a1a2e;margin:0 0 24px">Audit<span style="color:#6366f1">Ease</span> AI</h2><h3 style="color:#111;margin:0 0 16px">You have been invited!</h3><p style="color:#555;line-height:1.6;margin:0 0 12px">Hi,</p><p style="color:#555;line-height:1.6;margin:0 0 12px">${inviterName} has invited you to join their team on AuditEase AI as <strong>${roleLabel}</strong>.</p><p style="color:#555;line-height:1.6;margin:0 0 24px">Click the button below to accept the invitation and set your password.</p><a href="${inviteLink}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:600">Accept Invitation</a><p style="color:#888;font-size:13px;margin:24px 0 8px">This invitation expires in 7 days.</p><p style="color:#aaa;font-size:12px;margin:8px 0 0">Or copy this link: ${inviteLink}</p></div>`;
+
+          const emailResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'AuditEase <noreply@auditeasetechnologies.com>',
+              to: normalizedEmail,
+              subject: `You are invited to join AuditEase AI as ${roleLabel}`,
+              html: emailHtml,
+            }),
+          });
+          emailSent = emailResponse.ok;
+        } catch {
+          // Don't block the UI if email fails — link is still usable
+        }
       }
 
       toast({
         title: '✅ Invitation created',
-        description: 'Email sent. Invite link also copied to clipboard.',
+        description: emailSent ? `Email sent to ${normalizedEmail}. Invite link also copied to clipboard.` : 'Invite link copied to clipboard. Email delivery skipped (configure VITE_RESEND_API_KEY to enable).',
       });
       await navigator.clipboard.writeText(inviteLink).catch(() => {});
       setInviteModal(false);

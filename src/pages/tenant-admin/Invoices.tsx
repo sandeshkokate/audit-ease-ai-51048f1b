@@ -155,7 +155,7 @@ export default function Invoices() {
     if (!generateMonth) { toast({ variant: 'destructive', title: 'Select a month' }); return; }
     setGenerating(true);
     try {
-      // Migrated from n8n to Supabase
+      // Generate invoice via Supabase RPC
       const { data, error: rpcError } = await supabase.rpc('generate_monthly_invoice', {
         p_tenant_id: user?.tenant_id,
         p_billing_month: generateMonth,

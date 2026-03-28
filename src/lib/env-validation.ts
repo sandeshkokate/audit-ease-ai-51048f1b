@@ -6,9 +6,9 @@ const REQUIRED_VARS = [
   'VITE_SUPABASE_URL',
 ] as const;
 
-// Migrated from n8n to Supabase — webhook vars removed
 const OPTIONAL_VARS = [
   'VITE_SENTRY_DSN',
+  'VITE_RESEND_API_KEY',
 ] as const;
 
 export function validateEnv(): void {

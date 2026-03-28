@@ -88,21 +88,87 @@ export default function Recoveries() {
     }
     setProcessing(true);
     try {
-      // Migrated from n8n to Supabase
-      const { data: result, error: fnError } = await supabase.functions.invoke('process-recovery-matching', {
-        body: {
-          tenant_id: user?.tenant_id,
-          user_id: user?.id,
-          credit_notes: creditNotes,
-        },
-      });
+      let matched = 0, reviewCount = 0, unmatchedCount = 0;
 
-      if (fnError) throw fnError;
-      if (!result.success) throw new Error(result.error || 'Matching failed');
+      for (const cn of creditNotes as any[]) {
+        const awb = cn.awb || cn.awb_number || '';
+        const orderId = cn.order_id || '';
+        const amount = parseFloat(String(cn.amount)) || 0;
+        const creditNoteNumber = cn.credit_note_number || '';
+        const creditDate = cn.date || cn.credit_date || null;
+
+        let matchStatus = 'unmatched';
+        let matchedAuditLogId: string | null = null;
+
+        // Try matching by AWB
+        if (awb) {
+          const { data: auditLog } = await supabase
+            .from('audit_logs')
+            .select('id, discrepancy_amount')
+            .eq('tenant_id', user?.tenant_id)
+            .eq('awb', awb)
+            .gt('discrepancy_amount', 0)
+            .maybeSingle();
+
+          if (auditLog) {
+            matchedAuditLogId = auditLog.id;
+            const diff = Math.abs((auditLog.discrepancy_amount || 0) - amount);
+            matchStatus = diff < 1 ? 'matched' : 'review';
+          }
+        }
+
+        // Try matching by order_id if AWB didn't match
+        if (matchStatus === 'unmatched' && orderId) {
+          const { data: auditLog } = await supabase
+            .from('audit_logs')
+            .select('id, discrepancy_amount')
+            .eq('tenant_id', user?.tenant_id)
+            .eq('order_id', orderId)
+            .gt('discrepancy_amount', 0)
+            .maybeSingle();
+
+          if (auditLog) {
+            matchedAuditLogId = auditLog.id;
+            const diff = Math.abs((auditLog.discrepancy_amount || 0) - amount);
+            matchStatus = diff < 1 ? 'matched' : 'review';
+          }
+        }
+
+        await supabase.from('credit_notes').insert({
+          tenant_id: user?.tenant_id!,
+          credit_note_number: creditNoteNumber,
+          awb: awb || null,
+          order_id: orderId || null,
+          courier_name: cn.courier || cn.courier_name || null,
+          amount,
+          credit_date: creditDate,
+          match_status: matchStatus,
+          matched_audit_log_id: matchedAuditLogId,
+          matched_at: matchedAuditLogId ? new Date().toISOString() : null,
+          matched_by: matchedAuditLogId ? user?.id : null,
+          created_by: user?.id,
+        });
+
+        if (matchStatus === 'matched') {
+          matched++;
+          if (matchedAuditLogId) {
+            await supabase.from('audit_logs').update({
+              dispute_status: 'recovered',
+              recovery_amount: amount,
+              credit_note_number: creditNoteNumber,
+              credit_note_date: creditDate,
+            }).eq('id', matchedAuditLogId);
+          }
+        } else if (matchStatus === 'review') {
+          reviewCount++;
+        } else {
+          unmatchedCount++;
+        }
+      }
 
       toast({
         title: '✅ Matching complete!',
-        description: result.message || `${result.matched || 0} matched, ${result.review || 0} need review, ${result.unmatched || 0} unmatched`,
+        description: `${matched} matched, ${reviewCount} need review, ${unmatchedCount} unmatched`,
       });
       setFile(null);
       setCreditNotes([]);

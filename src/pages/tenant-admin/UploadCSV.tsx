@@ -162,7 +162,6 @@ export default function UploadCSV() {
         return row;
       });
       
-      // Migrated from n8n to Supabase
       setProcessingStep('Calculating discrepancies...');
       
       const { data, error: rpcError } = await supabase.rpc('process_csv_upload', {
