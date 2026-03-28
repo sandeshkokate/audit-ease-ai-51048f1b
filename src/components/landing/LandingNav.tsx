@@ -100,7 +100,7 @@ export default function LandingNav() {
             </Link>
             <div className="mt-2 flex flex-col gap-2 border-t border-border/50 pt-3">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="ghost" className="w-full">Log in</Button></Link>
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="hero" className="w-full">Start Free Audit</Button></Link>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="hero" className="w-full shimmer-btn">Start Free Audit</Button></Link>
             </div>
           </div>
         </div>
