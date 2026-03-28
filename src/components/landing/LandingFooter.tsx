@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, MessageCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function LandingFooter() {
