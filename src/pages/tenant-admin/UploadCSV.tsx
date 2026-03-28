@@ -136,8 +136,6 @@ export default function UploadCSV() {
       
       // Parse CSV to get actual row count
       const text = await file.text();
-      const lines = text.trim().split('\n');
-      const actualRowCount = lines.length - 1; // minus header row
       
       // Create batch record
       await supabase.from('upload_batches').insert({
