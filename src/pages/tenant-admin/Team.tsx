@@ -113,25 +113,20 @@ export default function Team() {
       if (error) throw error;
       const inviteLink = `${window.location.origin}/invite/${token}`;
 
-      // Send invite email via n8n
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_INVITE_EMAIL;
-      if (webhookUrl) {
-        try {
-          await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to_email: normalizedEmail,
-              invite_link: inviteLink,
-              invited_by_name: user?.full_name || user?.email || 'Your administrator',
-              company_name: user?.tenant_id,
-              role: inviteRole,
-              expires_at: expiresAt.toISOString()
-            })
-          });
-        } catch {
-          // Don't block the UI if email fails — link is still usable
-        }
+      // Migrated from n8n to Supabase
+      try {
+        await supabase.functions.invoke('send-invite-email', {
+          body: {
+            to_email: normalizedEmail,
+            invite_link: inviteLink,
+            invited_by_name: user?.full_name || user?.email || 'Your administrator',
+            company_name: user?.tenant_id,
+            role: inviteRole,
+            expires_at: expiresAt.toISOString()
+          }
+        });
+      } catch {
+        // Don't block the UI if email fails — link is still usable
       }
 
       toast({

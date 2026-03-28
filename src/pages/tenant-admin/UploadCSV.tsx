@@ -162,48 +162,23 @@ export default function UploadCSV() {
         return row;
       });
       
-      // Call n8n with timeout
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_CSV;
-      if (!webhookUrl) throw new Error('Webhook not configured');
+      // Migrated from n8n to Supabase
+      setProcessingStep('Calculating discrepancies...');
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const { data, error: rpcError } = await supabase.rpc('process_csv_upload', {
+        p_tenant_id: user.tenant_id,
+        p_uploaded_by: user.id,
+        p_shipments: rows as any
+      });
       
-      try {
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tenant_id: user.tenant_id,
-            user_id: user.id,
-            batch_id: batchId,
-            rows
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        
-        setProcessingStep('Calculating discrepancies...');
-        
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error);
-        
-        toast({
-          title: '✅ Upload complete!',
-          description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`
-        });
-      } catch (error: any) {
-        clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
-          toast({
-            title: '⏳ Processing in progress',
-            description: 'This is taking longer than expected. Your file has been queued — check Audit Logs in a few minutes.',
-          });
-          setFile(null); setPreview([]); setHeaders([]);
-          return;
-        }
-        throw error;
-      }
+      if (rpcError) throw rpcError;
+      const result = data as any;
+      if (!result.success) throw new Error(result.error);
+      
+      toast({
+        title: '✅ Upload complete!',
+        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`
+      });
       
       setFile(null);
       setPreview([]);

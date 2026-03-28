@@ -7,13 +7,8 @@ const REQUIRED_VARS = [
   'VITE_SUPABASE_ANON_KEY',
 ] as const;
 
+// Migrated from n8n to Supabase — webhook vars removed
 const OPTIONAL_VARS = [
-  'VITE_N8N_WEBHOOK_CSV',
-  'VITE_N8N_WEBHOOK_DISPUTES',
-  'VITE_N8N_WEBHOOK_CONTACT',
-  'VITE_N8N_WEBHOOK_RECOVERY',
-  'VITE_N8N_WEBHOOK_INVOICE',
-  'VITE_N8N_WEBHOOK_INVITE_EMAIL',
   'VITE_SENTRY_DSN',
 ] as const;
 
