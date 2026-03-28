@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
-  BarChart3, Upload, ScrollText, Mail, IndianRupee,
+  BarChart3, Upload, History, ClipboardList, Mail, IndianRupee,
   FileText, FileBarChart, Users, Settings, LogOut,
   Menu, Shield, ChevronLeft,
 } from 'lucide-react';
