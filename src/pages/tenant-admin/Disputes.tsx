@@ -317,10 +317,11 @@ export default function Disputes() {
     if (without.length === 0) { toast({ title: 'All disputes already have emails generated' }); return; }
     setGenerating(true);
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_DISPUTES || '';
-      if (!webhookUrl) { toast({ variant: 'destructive', title: 'Webhook not configured', description: 'Set VITE_N8N_WEBHOOK_DISPUTES in environment variables.' }); return; }
-      const response = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant_id: user?.tenant_id, user_id: user?.id }) });
-      const result = await response.json();
+      // Migrated from n8n to Supabase
+      const { data: result, error: fnError } = await supabase.functions.invoke('generate-dispute-email', {
+        body: { tenant_id: user?.tenant_id, user_id: user?.id }
+      });
+      if (fnError) throw fnError;
       if (!result.success) throw new Error(result.error);
       toast({ title: `${result.emails_generated} dispute emails generated` });
       refetch();
