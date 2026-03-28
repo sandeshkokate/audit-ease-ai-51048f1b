@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
-  BarChart3, Upload, ScrollText, Mail, IndianRupee,
+  BarChart3, Upload, History, ClipboardList, Mail, IndianRupee,
   FileText, FileBarChart, Users, Settings, LogOut,
   Menu, Shield, ChevronLeft,
 } from 'lucide-react';
@@ -17,8 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 const NAV_ITEMS = [
   { title: 'Dashboard', url: '/tenant-admin/dashboard', icon: BarChart3 },
   { title: 'Upload CSV', url: '/tenant-admin/upload', icon: Upload },
-  { title: 'Upload History', url: '/tenant-admin/upload-history', icon: ScrollText },
-  { title: 'Audit Logs', url: '/tenant-admin/audit-logs', icon: ScrollText },
+  { title: 'Upload History', url: '/tenant-admin/upload-history', icon: History },
+  { title: 'Audit Logs', url: '/tenant-admin/audit-logs', icon: ClipboardList },
   { title: 'Disputes', url: '/tenant-admin/disputes', icon: Mail },
   { title: 'Recoveries', url: '/tenant-admin/recoveries', icon: IndianRupee },
   { title: 'Invoices', url: '/tenant-admin/invoices', icon: FileText },

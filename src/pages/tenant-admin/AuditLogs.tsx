@@ -66,7 +66,7 @@ const STATUS_DEFINITIONS = `Status Definitions:
 
 Trigger Points:
 - No Issue / Detected: Set automatically on CSV upload and processing
-- Draft: Set when n8n generates a dispute email
+- Draft: Set when dispute email is generated via Supabase Edge Function
 - Email Copied: Set when user clicks Copy Email in Disputes
 - Raised: Set when user clicks Mark as Sent in Disputes
 - Recovered: Set manually in Disputes → Mark as Recovered

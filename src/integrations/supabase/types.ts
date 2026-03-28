@@ -1387,8 +1387,27 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_team_invitation: {
+        Args: {
+          p_email: string
+          p_first_name?: string
+          p_invited_by: string
+          p_last_name?: string
+          p_role: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       expire_old_invitations: { Args: never; Returns: number }
+      generate_monthly_invoice: {
+        Args: {
+          p_billing_month: string
+          p_generated_by: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       get_my_claim: { Args: { claim: string }; Returns: string }
       get_my_profile: {
         Args: never
@@ -1444,6 +1463,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      process_csv_upload: {
+        Args: { p_shipments: Json; p_tenant_id: string; p_uploaded_by: string }
+        Returns: Json
+      }
       resolve_zone_mapping: {
         Args: {
           p_courier_id: string
@@ -1457,6 +1480,25 @@ export type Database = {
           source_circle: string
           zone_code: string
         }[]
+      }
+      resolve_zone_mapping_batch: {
+        Args: { p_courier_id: string; p_pairs: Json; p_tenant_id: string }
+        Returns: {
+          dst: string
+          src: string
+          zone_code: string
+        }[]
+      }
+      update_dispute_status: {
+        Args: {
+          p_dispute_id: string
+          p_follow_up_date?: string
+          p_new_status: string
+          p_notes?: string
+          p_recovered_amount?: number
+          p_updated_by: string
+        }
+        Returns: Json
       }
       update_last_login: {
         Args: { lookup_user_id: string }

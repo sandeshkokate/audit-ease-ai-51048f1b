@@ -7,7 +7,7 @@ import {
 
 export default function LandingHero() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24 md:py-36">
+    <section className="relative overflow-hidden pt-24 pb-20 sm:pt-28 sm:pb-24 md:pt-36 md:pb-36">
       <div className="pointer-events-none absolute inset-0 gradient-mesh" />
       <div className="pointer-events-none absolute inset-0 bg-dot-pattern opacity-40" />
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

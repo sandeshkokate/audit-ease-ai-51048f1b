@@ -1,48 +1,78 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Shield, ArrowRight } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Shield } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function LandingFooter() {
-  return (
-    <>
-      {/* CTA */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 gradient-mesh" />
-        <div className="container relative mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-            Ready to Stop Losing Money on Courier Billing?
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-muted-foreground md:text-lg">
-            Join Indian e-commerce brands who are already recovering thousands every month
-          </p>
-          <Link to="/contact">
-            <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-base font-semibold shadow-button">
-              Get Your Free Audit <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+  const location = useLocation();
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-muted/30 py-10">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const el = document.querySelector(href);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else if (location.pathname !== '/') {
+      window.location.href = '/' + href;
+    }
+  };
+
+  return (
+    <footer className="section-dark">
+      <div className="container mx-auto px-4 py-14">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Column 1 – Brand */}
+          <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-bold text-foreground">AuditEase <span className="text-gradient">AI</span></span>
+              <span className="text-lg font-bold text-white">
+                AuditEase <span className="text-primary">AI</span>
+              </span>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-              <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-              <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
-              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            </div>
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} AuditEase AI</p>
+            <p className="text-sm leading-relaxed opacity-60">
+              Automated courier billing audit platform for Indian e-commerce. Recover overcharges. Save money. Scale faster.
+            </p>
+          </div>
+
+          {/* Column 2 – Product */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider">Product</h4>
+            <ul className="space-y-2.5 text-sm opacity-70">
+              <li><a href="#features" onClick={(e) => handleAnchorClick(e, '#features')} className="hover:opacity-100 transition-opacity">Features</a></li>
+              <li><a href="#pricing" onClick={(e) => handleAnchorClick(e, '#pricing')} className="hover:opacity-100 transition-opacity">Pricing</a></li>
+              <li><a href="#how-it-works" onClick={(e) => handleAnchorClick(e, '#how-it-works')} className="hover:opacity-100 transition-opacity">How It Works</a></li>
+              <li><a href="#calculator" onClick={(e) => handleAnchorClick(e, '#calculator')} className="hover:opacity-100 transition-opacity">Savings Calculator</a></li>
+            </ul>
+          </div>
+
+          {/* Column 3 – Resources */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider">Resources</h4>
+            <ul className="space-y-2.5 text-sm opacity-70">
+              <li><Link to="/blog" className="hover:opacity-100 transition-opacity">Blog</Link></li>
+              <li><Link to="/case-studies" className="hover:opacity-100 transition-opacity">Case Studies</Link></li>
+              <li><Link to="/about" className="hover:opacity-100 transition-opacity">About</Link></li>
+              <li><Link to="/contact" className="hover:opacity-100 transition-opacity">Contact</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4 – Legal */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider">Legal</h4>
+            <ul className="space-y-2.5 text-sm opacity-70">
+              <li><Link to="/privacy-policy" className="hover:opacity-100 transition-opacity">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="hover:opacity-100 transition-opacity">Terms of Service</Link></li>
+            </ul>
           </div>
         </div>
-      </footer>
-    </>
+
+        <Separator className="my-8 opacity-20" />
+
+        <div className="flex flex-col items-center justify-between gap-3 text-xs opacity-50 sm:flex-row">
+          <p>© 2026 AuditEase AI. All rights reserved.</p>
+          <p>Made in India 🇮🇳 for Indian e-commerce</p>
+        </div>
+      </div>
+    </footer>
   );
 }

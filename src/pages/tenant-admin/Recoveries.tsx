@@ -88,20 +88,16 @@ export default function Recoveries() {
     }
     setProcessing(true);
     try {
-      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_RECOVERY || '';
-      if (!webhookUrl) throw new Error('Recovery webhook not configured');
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Migrated from n8n to Supabase
+      const { data: result, error: fnError } = await supabase.functions.invoke('process-recovery-matching', {
+        body: {
           tenant_id: user?.tenant_id,
           user_id: user?.id,
           credit_notes: creditNotes,
-        }),
+        },
       });
 
-      const result = await response.json();
+      if (fnError) throw fnError;
       if (!result.success) throw new Error(result.error || 'Matching failed');
 
       toast({
