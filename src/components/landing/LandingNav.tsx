@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, Menu, X } from 'lucide-react';
+import { Shield, Menu, X, MessageCircle } from 'lucide-react';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function LandingNav() {
