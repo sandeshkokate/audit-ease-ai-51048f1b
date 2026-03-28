@@ -68,6 +68,11 @@ export default function LandingNav() {
         {/* Right side — desktop */}
         <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
+          <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950 gap-1.5">
+              <MessageCircle className="h-4 w-4" /> WhatsApp
+            </Button>
+          </a>
           <Link to="/login"><Button variant="ghost" size="sm" className="font-medium">Log in</Button></Link>
           <Link to="/login"><Button variant="hero" size="sm" className="shadow-button shimmer-btn">Start Free Audit</Button></Link>
         </div>
