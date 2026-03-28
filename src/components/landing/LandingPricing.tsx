@@ -3,34 +3,45 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight, IndianRupee, Upload, Search, BadgePercent } from "lucide-react";
 
 const setupFeatures = [
-  "Platform onboarding & configuration",
-  "Rate card setup assistance",
-  "Courier format mapping (up to 6 couriers)",
-  "1 month free support",
+  "Complete platform onboarding & configuration",
+  "Rate card setup for up to 6 couriers",
+  "Courier CSV format mapping",
+  "1 month free support via WhatsApp",
+  "Sample dispute email templates",
 ];
 
 const commissionTiers = [
-  { tier: "Starter", rate: "10%", volume: "Up to ₹1L/month recovered", description: "Perfect for small D2C brands" },
+  {
+    tier: "Starter",
+    setup: "₹2,999",
+    rate: "15%",
+    volume: "Perfect for small D2C brands",
+    description: "Up to 5,000 orders/month",
+    featured: false,
+  },
   {
     tier: "Growth",
-    rate: "8%",
-    volume: "₹1L – ₹10L/month recovered",
-    description: "For scaling e-commerce businesses",
+    setup: "₹6,999",
+    rate: "10%",
+    volume: "For scaling e-commerce businesses",
+    description: "5,000 – 50,000 orders/month",
     featured: true,
   },
   {
     tier: "Enterprise",
-    rate: "Custom",
-    volume: "₹10L+/month recovered",
-    description: "Tailored for high-volume shippers",
+    setup: "Custom",
+    rate: "Flat annual fee",
+    volume: "For high-volume operations",
+    description: "50,000+ orders/month",
+    featured: false,
   },
 ];
 
 const billingSteps = [
   {
     step: "1",
-    title: "Pay ₹6,999 Setup Fee",
-    description: "One-time onboarding to configure your account",
+    title: "Pay One-Time Setup Fee",
+    description: "Starting from ₹2,999",
     icon: IndianRupee,
     color: "text-primary",
     bg: "bg-primary/10",
@@ -38,15 +49,15 @@ const billingSteps = [
   {
     step: "2",
     title: "Upload Courier Bills",
-    description: "We audit every shipment against your rate cards",
+    description: "We audit every shipment",
     icon: Upload,
     color: "text-secondary",
     bg: "bg-secondary/10",
   },
   {
     step: "3",
-    title: "We Find Overcharges",
-    description: "You pay % only on the recovered amount",
+    title: "Pay Only on Recovery",
+    description: "Commission on recovered amount only",
     icon: Search,
     color: "text-success",
     bg: "bg-success/10",
@@ -61,32 +72,28 @@ export default function LandingPricing() {
         {/* Header */}
         <div className="mb-14 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-1.5 text-sm font-semibold text-success">
-            <BadgePercent className="h-3.5 w-3.5" /> No Monthly Fee. Ever.
+            <BadgePercent className="h-3.5 w-3.5" /> Performance-Based
           </div>
           <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">
-            Pay Nothing Until We Recover Your Money
+            Simple, Performance-Based Pricing
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            One small setup fee. Zero subscription. We earn only when you earn.
+            Low one-time setup. We earn only when you recover.
           </p>
         </div>
 
-        {/* Setup Fee Card + Commission Table */}
+        {/* Setup Features + Commission Tiers */}
         <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-5">
-          {/* Setup Fee Card */}
+          {/* What's Included Card */}
           <div className="lg:col-span-2 flex flex-col rounded-2xl border border-primary/30 bg-card p-6 shadow-card relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground whitespace-nowrap">
-              One-Time Setup
+              Included in All Plans
             </div>
             <div className="mb-2 mt-2">
-              <h3 className="text-lg font-bold text-foreground">Setup Fee</h3>
-              <p className="text-xs text-muted-foreground">Everything you need to get started</p>
+              <h3 className="text-lg font-bold text-foreground">What's Included</h3>
+              <p className="text-xs text-muted-foreground">Every plan comes with full onboarding</p>
             </div>
-            <div className="mb-6">
-              <span className="text-4xl font-extrabold text-gradient">₹6,999</span>
-              <span className="ml-1 text-sm text-muted-foreground">one-time</span>
-            </div>
-            <ul className="mb-6 flex-1 space-y-2.5">
+            <ul className="mb-6 mt-4 flex-1 space-y-3">
               {setupFeatures.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="h-4 w-4 text-success shrink-0" />
@@ -96,45 +103,53 @@ export default function LandingPricing() {
             </ul>
             <Link to="/contact">
               <Button variant="hero" className="w-full gap-2">
-                Get Started — ₹6,999 One-Time Setup <ArrowRight className="h-3.5 w-3.5" />
+                Get Started — Choose Your Plan <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
 
-          {/* Recovery Commission Table */}
+          {/* Pricing Tiers */}
           <div className="lg:col-span-3 flex flex-col rounded-2xl border border-border bg-card shadow-card overflow-hidden">
             <div className="border-b border-border bg-muted/40 px-6 py-4">
-              <h3 className="text-lg font-bold text-foreground">Recovery Commission</h3>
-              <p className="text-xs text-muted-foreground">Pay-as-you-go — no monthly fees, no minimums</p>
+              <h3 className="text-lg font-bold text-foreground">Choose Your Plan</h3>
+              <p className="text-xs text-muted-foreground">One-time setup + pay-as-you-recover commission</p>
             </div>
             <div className="flex-1 p-6 space-y-3">
               {commissionTiers.map((tier) => (
                 <div
                   key={tier.tier}
-                  className={`flex items-center justify-between rounded-xl border p-4 transition-all ${
+                  className={`rounded-xl border p-4 transition-all ${
                     tier.featured ? "border-primary/30 bg-primary/5 shadow-sm" : "border-border bg-muted/20"
                   }`}
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground">{tier.tier}</span>
-                      {tier.featured && (
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                          Most Popular
-                        </span>
-                      )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-foreground">{tier.tier}</span>
+                        {tier.featured && (
+                          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                            Most Popular
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{tier.description}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{tier.description}</div>
+                    <div className="text-right ml-4">
+                      <div className="text-2xl font-extrabold text-gradient">{tier.setup}</div>
+                      <div className="text-[11px] text-muted-foreground">one-time setup</div>
+                    </div>
                   </div>
-                  <div className="text-right ml-4">
-                    <div className="text-2xl font-extrabold text-gradient">{tier.rate}</div>
-                    <div className="text-[11px] text-muted-foreground">{tier.volume}</div>
+                  <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2">
+                    <span className="text-xs text-muted-foreground">{tier.volume}</span>
+                    <span className="text-sm font-bold text-foreground">
+                      {tier.rate} <span className="text-xs font-normal text-muted-foreground">of recovered amount</span>
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
             <div className="border-t border-border bg-muted/30 px-6 py-3 text-center text-xs text-muted-foreground">
-              No recovery = No charge. It's that simple.
+              No recovery = No commission. It's that simple.
             </div>
           </div>
         </div>
