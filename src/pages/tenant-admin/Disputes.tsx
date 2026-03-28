@@ -312,18 +312,73 @@ export default function Disputes() {
     }
   };
 
+  const generateEmailForDispute = async (log: any): Promise<{ subject: string; body: string; courier_email: string } | null> => {
+    const courierName = log.courier_name || log.courier || 'Courier';
+    const { data: courier } = await supabase.from('courier_master').select('dispute_email').ilike('courier_name', `%${courierName}%`).maybeSingle();
+    const courierEmail = courier?.dispute_email || `billing@${courierName.toLowerCase().replace(/\s+/g, '')}.com`;
+
+    const discrepancies: string[] = [];
+    if (log.has_weight_discrepancy) discrepancies.push('Weight Discrepancy');
+    if (log.has_zone_discrepancy) discrepancies.push('Zone Discrepancy');
+    if (log.has_rto_overcharge) discrepancies.push('RTO Overcharge');
+    if (log.has_damage_misclassification) discrepancies.push('Damage Misclassification');
+    const typeLabel = discrepancies.length > 0 ? discrepancies.join(', ') : 'Billing Discrepancy';
+
+    const subject = `Billing Dispute — AWB ${log.awb || 'N/A'} | Order ${log.order_id} | ${typeLabel}`;
+    const body = [
+      `Dear ${courierName} Billing Team,`,
+      '',
+      `We have identified a billing discrepancy on the following shipment and request an immediate review and correction:`,
+      '',
+      `AWB Number: ${log.awb || 'N/A'}`,
+      `Order ID: ${log.order_id}`,
+      `Courier: ${courierName}`,
+      `Discrepancy Type: ${typeLabel}`,
+      `Billed Amount: ₹${log.billed_amount ?? 0}`,
+      `Expected Amount: ₹${log.expected_amount ?? 0}`,
+      `Discrepancy Amount: ₹${log.discrepancy_amount ?? 0}`,
+      log.charged_weight ? `Charged Weight: ${log.charged_weight} kg` : '',
+      log.dead_weight ? `Actual/Dead Weight: ${log.dead_weight} kg` : '',
+      log.charged_zone ? `Charged Zone: ${log.charged_zone}` : '',
+      log.expected_zone ? `Expected Zone: ${log.expected_zone}` : '',
+      '',
+      `We request you to review this shipment and issue a credit note for the overcharged amount of ₹${log.discrepancy_amount ?? 0}.`,
+      '',
+      `Please revert within 7 working days. If we do not hear back, we will escalate this matter.`,
+      '',
+      `Regards,`,
+      `AuditEase AI — Automated Billing Audit`,
+    ].filter(Boolean).join('\n');
+
+    return { subject, body, courier_email: courierEmail };
+  };
+
   const handleGenerateAll = async () => {
     const without = paginated.filter(d => !d.email_body);
     if (without.length === 0) { toast({ title: 'All disputes already have emails generated' }); return; }
     setGenerating(true);
     try {
-      // Migrated from n8n to Supabase
-      const { data: result, error: fnError } = await supabase.functions.invoke('generate-dispute-email', {
-        body: { tenant_id: user?.tenant_id, user_id: user?.id }
-      });
-      if (fnError) throw fnError;
-      if (!result.success) throw new Error(result.error);
-      toast({ title: `${result.emails_generated} dispute emails generated` });
+      let generated = 0;
+      for (const dispute of without) {
+        const { data: log } = await supabase.from('audit_logs').select('*').eq('id', dispute.id).single();
+        if (!log) continue;
+        const email = await generateEmailForDispute(log);
+        if (!email) continue;
+
+        await supabase.from('dispute_emails').insert({
+          tenant_id: dispute.tenant_id,
+          audit_log_id: dispute.id,
+          courier_name: log.courier_name,
+          courier_email: email.courier_email,
+          subject: email.subject,
+          body: email.body,
+          created_by: user?.id,
+        });
+
+        await supabase.from('audit_logs').update({ dispute_status: 'draft', dispute_email_id: dispute.id }).eq('id', dispute.id);
+        generated++;
+      }
+      toast({ title: `${generated} dispute emails generated` });
       refetch();
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Generation failed', description: err.message });
