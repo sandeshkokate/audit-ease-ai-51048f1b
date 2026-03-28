@@ -271,6 +271,48 @@
   100% { background-position: 200% 0; }
 }
 
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+/* Shimmer sweep effect for buttons */
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(0 0% 100% / 0.25),
+    transparent
+  );
+  animation: shimmer-sweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Logo icon pulse-glow */
+.logo-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+  box-shadow: 0 0 20px 4px hsl(245 58% 51% / 0.3);
+}
+.logo-glow:hover {
+  box-shadow: 0 0 30px 8px hsl(245 58% 51% / 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
 @keyframes scroll-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(6px); }
