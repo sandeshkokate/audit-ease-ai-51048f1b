@@ -37,7 +37,7 @@ export default function LandingNav() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105 logo-glow">
             <Shield className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground">
