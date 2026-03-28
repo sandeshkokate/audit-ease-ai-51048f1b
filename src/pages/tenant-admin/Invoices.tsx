@@ -156,13 +156,14 @@ export default function Invoices() {
     setGenerating(true);
     try {
       // Migrated from n8n to Supabase
-      const { data: result, error: rpcError } = await supabase.rpc('generate_monthly_invoice', {
+      const { data, error: rpcError } = await supabase.rpc('generate_monthly_invoice', {
         p_tenant_id: user?.tenant_id,
         p_billing_month: generateMonth,
         p_generated_by: user?.id
       });
 
       if (rpcError) throw rpcError;
+      const result = data as any;
       if (!result.success) throw new Error(result.error || 'Invoice generation failed');
 
       toast({

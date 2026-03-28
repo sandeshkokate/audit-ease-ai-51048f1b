@@ -165,13 +165,14 @@ export default function UploadCSV() {
       // Migrated from n8n to Supabase
       setProcessingStep('Calculating discrepancies...');
       
-      const { data: result, error: rpcError } = await supabase.rpc('process_csv_upload', {
+      const { data, error: rpcError } = await supabase.rpc('process_csv_upload', {
         p_tenant_id: user.tenant_id,
         p_uploaded_by: user.id,
         p_shipments: rows as any
       });
       
       if (rpcError) throw rpcError;
+      const result = data as any;
       if (!result.success) throw new Error(result.error);
       
       toast({
