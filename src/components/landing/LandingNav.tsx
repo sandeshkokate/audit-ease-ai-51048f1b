@@ -69,7 +69,7 @@ export default function LandingNav() {
         <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
           <Link to="/login"><Button variant="ghost" size="sm" className="font-medium">Log in</Button></Link>
-          <Link to="/login"><Button variant="hero" size="sm" className="shadow-button">Start Free Audit</Button></Link>
+          <Link to="/login"><Button variant="hero" size="sm" className="shadow-button shimmer-btn">Start Free Audit</Button></Link>
         </div>
 
         {/* Hamburger — mobile */}
