@@ -51,31 +51,15 @@ export default function Contact() {
         return;
       }
 
-      // Save to Supabase
-      const leadPayload = {
+      // Insert lead directly (RLS allows public inserts on leads table)
+      const { error } = await supabase.from('leads').insert({
         name: formData.name.trim(),
         email: formData.email.trim(),
         company: formData.company.trim() || null,
         message: formData.message.trim(),
         source: 'contact_form',
-      };
-
-      const { data: existingLead } = await supabase
-        .from('leads')
-        .select('id')
-        .ilike('email', formData.email.trim())
-        .maybeSingle();
-
-      if (existingLead) {
-        const { error } = await supabase
-          .from('leads')
-          .update({ name: leadPayload.name, company: leadPayload.company, message: leadPayload.message })
-          .eq('id', existingLead.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('leads').insert(leadPayload);
-        if (error) throw error;
-      }
+      });
+      if (error) throw error;
 
       // Lead saved directly to Supabase
 
