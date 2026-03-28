@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { startOfMonth, endOfMonth, subMonths, subDays, format, formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import MetricCard from '@/components/dashboard/MetricCard';
+import OnboardingChecklist from '@/components/dashboard/OnboardingChecklist';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
