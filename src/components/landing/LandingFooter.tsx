@@ -56,13 +56,24 @@ export default function LandingFooter() {
             </ul>
           </div>
 
-          {/* Column 4 – Legal */}
+          {/* Column 4 – Legal & Contact */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-wider">Legal</h4>
             <ul className="space-y-2.5 text-sm opacity-70">
               <li><Link to="/privacy-policy" className="hover:opacity-100 transition-opacity">Privacy Policy</Link></li>
               <li><Link to="/terms-of-service" className="hover:opacity-100 transition-opacity">Terms of Service</Link></li>
             </ul>
+            <div className="pt-2">
+              <a
+                href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-green-400 hover:text-green-300 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp: +91 XXXXXXXXXX
+              </a>
+            </div>
           </div>
         </div>
 

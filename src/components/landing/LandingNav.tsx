@@ -104,6 +104,11 @@ export default function LandingNav() {
               Contact
             </Link>
             <div className="mt-2 flex flex-col gap-2 border-t border-border/50 pt-3">
+              <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950 gap-1.5">
+                  <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+                </Button>
+              </a>
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="ghost" className="w-full">Log in</Button></Link>
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}><Button variant="hero" className="w-full shimmer-btn">Start Free Audit</Button></Link>
             </div>
