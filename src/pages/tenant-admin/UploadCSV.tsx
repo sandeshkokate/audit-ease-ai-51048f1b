@@ -151,18 +151,20 @@ export default function UploadCSV() {
       
       setProcessingStep('Analysing shipments...');
       
-      const hdrs = lines[0].split(',').map(h => resolveHeader(h));
-      const rows = lines.slice(1).map(line => {
-        const values = line.split(',');
-        const row: Record<string, string> = {};
-        hdrs.forEach((h, i) => {
-          // Sanitize: strip control chars, limit length, escape formula injection
-          let val = (values[i]?.trim() || '').replace(/[\x00-\x1F\x7F]/g, '').slice(0, 500);
-          if (/^[=+\-@\t\r]/.test(val)) val = `'${val}`;
-          row[h] = val;
-        });
-        return row;
+      const parseResult = Papa.parse<Record<string, string>>(text, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (h: string) => resolveHeader(h),
+        transform: (value: string) => {
+          let val = value.trim().replace(/[\x00-\x1F\x7F]/g, '').slice(0, 500);
+          if (/^[=+\-@\t\r]/.test(val)) val = "'" + val;
+          return val;
+        },
       });
+      const rows = parseResult.data;
+
+      // Update batch with actual row count
+      await supabase.from('upload_batches').update({ total_rows: rows.length }).eq('id', batchId);
       
       setProcessingStep('Calculating discrepancies...');
       
