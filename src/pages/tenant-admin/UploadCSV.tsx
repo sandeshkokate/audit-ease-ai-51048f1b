@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Papa from 'papaparse';
 
 /** Aliases: CSV column name (normalized) → internal column name */
 const COLUMN_ALIASES: Record<string, string> = {
