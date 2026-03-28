@@ -740,14 +740,19 @@ export default function Disputes() {
              <Button variant="outline" className="gap-2" onClick={handleCopyEmail}><Copy className="h-4 w-4" /> Copy Email</Button>
              <Button variant="outline" className="gap-2" onClick={handleCopyAndGmail}><ExternalLink className="h-4 w-4" /> Copy & Open Gmail</Button>
              <Button variant="default" className="gap-2" onClick={() => handleMarkSent()}><Send className="h-4 w-4" /> Mark as Raised</Button>
-             {/* Migrated from n8n to Supabase */}
              <Button variant="ghost" className="gap-2" onClick={async () => {
                try {
-                 const { data: res, error: fnErr } = await supabase.functions.invoke('generate-dispute-email', {
-                   body: { tenant_id: selectedDispute?.tenant_id, user_id: user?.id, audit_log_id: selectedDispute?.id, regenerate: true }
-                 });
-                 if (fnErr) throw fnErr;
-                 if (!res.success) throw new Error(res.error);
+                 if (!selectedDispute) return;
+                 const { data: log } = await supabase.from('audit_logs').select('*').eq('id', selectedDispute.id).single();
+                 if (!log) throw new Error('Audit log not found');
+                 const email = await generateEmailForDispute(log);
+                 if (!email) throw new Error('Could not generate email');
+
+                 if (selectedDispute.dispute_email?.id) {
+                   await supabase.from('dispute_emails').update({ subject: email.subject, body: email.body, courier_email: email.courier_email, updated_by: user?.id }).eq('id', selectedDispute.dispute_email.id);
+                 } else {
+                   await supabase.from('dispute_emails').insert({ tenant_id: selectedDispute.tenant_id, audit_log_id: selectedDispute.id, courier_name: log.courier_name, courier_email: email.courier_email, subject: email.subject, body: email.body, created_by: user?.id });
+                 }
                  toast({ title: 'Email regenerated' });
                  setSelectedDispute(null);
                  refetch();
