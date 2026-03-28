@@ -283,6 +283,7 @@ export default function TenantDashboard() {
 
   return (
     <div className="space-y-6">
+      {user?.tenant_id && <OnboardingChecklist tenantId={user.tenant_id} />}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
