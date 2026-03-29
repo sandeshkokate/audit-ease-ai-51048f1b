@@ -183,10 +183,11 @@ export default function AcceptInvite() {
 
   const getPasswordStrength = (pw: string) => {
     if (pw.length < 8) return { label: 'Too short', color: 'text-destructive' };
+    const hasUpper = /[A-Z]/.test(pw);
+    const hasLower = /[a-z]/.test(pw);
     const hasNum = /\d/.test(pw);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pw);
-    if (hasNum && hasSpecial) return { label: 'Strong ✓', color: 'text-success' };
-    if (hasNum || hasSpecial) return { label: 'Fair', color: 'text-warning' };
+    if (hasUpper && hasLower && hasNum) return { label: 'Strong ✓', color: 'text-success' };
+    if ((hasUpper || hasLower) && hasNum) return { label: 'Fair', color: 'text-warning' };
     return { label: 'Weak', color: 'text-destructive' };
   };
 

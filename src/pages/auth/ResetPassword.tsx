@@ -144,6 +144,7 @@ export default function ResetPassword() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <p className="text-xs text-muted-foreground">Minimum 8 characters with at least one uppercase letter, one lowercase letter, and one number.</p>
               </div>
 
               <div className="space-y-2">
