@@ -462,16 +462,18 @@ export default function Disputes() {
     }
   };
 
+  // FIX 2: Route through update_dispute_status RPC — no more client-side activity_log insert
   const handleMarkRecovered = async () => {
     const result = creditNoteSchema.safeParse(creditNote);
     if (!result.success) {
       toast({ variant: "destructive", title: "Validation error", description: result.error.errors[0]?.message });
       return;
     }
+    if (!recoveryModal.dispute) return;
     setActionLoading(true);
     try {
-      // Route through RPC — handles audit_log update + activity logging server-side
-      const { data, error: rpcError } = await supabase.rpc("update_dispute_status", {
+      // Call RPC — handles status update, credit_note creation, and activity logging server-side
+      const { data: rpcData, error: rpcError } = await supabase.rpc("update_dispute_status", {
         p_dispute_id: recoveryModal.dispute.id,
         p_new_status: "recovered",
         p_updated_by: user?.id,
@@ -479,13 +481,18 @@ export default function Disputes() {
         p_notes: `Credit note ${creditNote.number}${creditNote.date ? ", date " + creditNote.date : ""}`,
       });
       if (rpcError) throw rpcError;
-      const result2 = data as any;
-      if (!result2?.success) throw new Error(result2?.error || "Failed to update status");
-      // Also store the credit note number on the audit_log record for display
+      const rpcResult = rpcData as any;
+      if (!rpcResult?.success) throw new Error(rpcResult?.error || "Failed to update status");
+
+      // Also store credit note fields on the audit_log row for display purposes
       await supabase
         .from("audit_logs")
-        .update({ credit_note_number: creditNote.number, credit_note_date: creditNote.date || null })
+        .update({
+          credit_note_number: creditNote.number,
+          credit_note_date: creditNote.date || null,
+        })
         .eq("id", recoveryModal.dispute.id);
+
       toast({ title: "Marked as recovered" });
       setRecoveryModal({ open: false, dispute: null });
       setCreditNote({ number: "", amount: "", date: "" });
@@ -494,6 +501,38 @@ export default function Disputes() {
       toast({ variant: "destructive", title: "Error", description: err.message });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleBulkRecover = async () => {
+    if (!bulkCreditNote.number_prefix.trim()) {
+      toast({ variant: "destructive", title: "Please enter a credit note number prefix" });
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const updates = ids.map((id, i) =>
+        supabase
+          .from("audit_logs")
+          .update({
+            dispute_status: "recovered",
+            credit_note_number: `${bulkCreditNote.number_prefix}-${i + 1}`,
+            credit_note_date: bulkCreditNote.date || null,
+            recovery_amount: paginated.find((d) => d.id === id)?.amount || 0,
+          })
+          .eq("id", id),
+      );
+      await Promise.all(updates);
+      toast({ title: `${ids.length} disputes marked as recovered` });
+      setSelectedIds(new Set());
+      setBulkRecoverModal(false);
+      setBulkCreditNote({ number_prefix: "", date: "" });
+      refetch();
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Bulk update failed", description: err.message });
+    } finally {
+      setBulkLoading(false);
     }
   };
 
