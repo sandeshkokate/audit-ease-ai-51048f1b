@@ -110,7 +110,7 @@ export default function LandingHowItWorks() {
                     <div className="mt-1 text-xs text-muted-foreground">Dear Support Team, We have identified a billing discrepancy on the above shipment. The charged weight (2.5 kg) exceeds the actual volumetric weight (1.8 kg)...</div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="hero" className="flex-1 gap-1.5">
+                    <Button size="sm" variant="hero" className="flex-1 gap-1.5 shimmer-btn">
                       <Mail className="h-3.5 w-3.5" /> Ready to Send
                     </Button>
                     <Button size="sm" variant="outline" className="flex-1">Edit Draft</Button>
