@@ -83,16 +83,9 @@ export default function AcceptInvite() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      toast({ variant: 'destructive', title: 'Password must be at least 8 characters' });
-      return;
-    }
-    if (!/\d/.test(formData.password)) {
-      toast({ variant: 'destructive', title: 'Password must contain at least one number' });
-      return;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-      toast({ variant: 'destructive', title: 'Password must contain at least one special character' });
+    const pwResult = passwordSchema.safeParse(formData.password);
+    if (!pwResult.success) {
+      toast({ variant: 'destructive', title: pwResult.error.errors[0].message });
       return;
     }
 
