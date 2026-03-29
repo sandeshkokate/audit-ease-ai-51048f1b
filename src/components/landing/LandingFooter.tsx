@@ -21,12 +21,12 @@ export default function LandingFooter() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Column 1 – Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button shrink-0">
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold text-white">
-                AuditEase <span className="text-primary">AI</span>
+              <span className="text-lg font-bold tracking-tight text-white">
+                AuditEase <span className="text-gradient">AI</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed opacity-60">
