@@ -220,7 +220,13 @@ export default function AcceptInvite() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4">
+      <div className="absolute top-6 left-6 z-10">
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
       <Card className="w-full max-w-md shadow-card-hover">
         <CardHeader className="text-center pb-2">
           <div className="flex items-center justify-center gap-2.5 mb-4 group">
