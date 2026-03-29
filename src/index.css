@@ -241,7 +241,7 @@
 
   /* Section dark */
   .section-dark {
-    background-color: hsl(225 25% 6%);
+    background: linear-gradient(170deg, hsl(235 35% 12%) 0%, hsl(245 40% 8%) 100%);
     color: hsl(220 20% 95%);
   }
 }
