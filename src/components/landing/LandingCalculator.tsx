@@ -50,9 +50,10 @@ export default function LandingCalculator() {
               <div className="rounded-xl bg-muted/50 border border-border p-4 text-xs text-muted-foreground">
                 <div className="mb-1 font-semibold text-foreground">How this is calculated:</div>
                 <ul className="space-y-0.5">
-                  <li>• Industry avg. error rate: ~12%</li>
-                  <li>• Avg. overcharge per error: ~15%</li>
-                  <li>• These figures are industry estimates, not our guarantees</li>
+                  <li>• Industry avg. error rate: ~12% (varies by courier and order mix)</li>
+                  <li>• Avg. overcharge per error: ~15% (based on weight and zone discrepancy data)</li>
+                  <li>• Estimates only — actual recovery depends on your shipment data</li>
+                  <li>• Past recovery amounts are not a guarantee of future results</li>
                 </ul>
               </div>
             </div>
