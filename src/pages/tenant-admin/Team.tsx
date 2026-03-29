@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { inviteSchema } from '@/lib/validation-schemas';
 
 export default function Team() {
   useDocumentTitle('Team');
@@ -66,8 +67,9 @@ export default function Team() {
 
   // Send invitation
   const handleInvite = async () => {
-    if (!inviteEmail.trim()) {
-      toast({ variant: 'destructive', title: 'Please enter an email' });
+    const validation = inviteSchema.safeParse({ email: inviteEmail.trim(), role: inviteRole });
+    if (!validation.success) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: validation.error.errors.map(e => e.message).join(', ') });
       return;
     }
     setInviting(true);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { BarChart3, FileText, FileBarChart, LogOut, Menu, Shield, ChevronLeft } from 'lucide-react';
+import { BarChart3, FileText, FileBarChart, LogOut, Menu, Shield, ChevronLeft, Info } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
 import HeaderActions from '@/components/shared/HeaderActions';
@@ -73,7 +73,13 @@ export default function AccountantLayout() {
           </div>
           <HeaderActions />
         </header>
-        <main className="flex-1 overflow-auto p-3 md:p-4 lg:p-6"><Outlet /></main>
+        <main className="flex-1 overflow-auto p-3 md:p-4 lg:p-6">
+          <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5 mb-4 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 text-primary shrink-0" />
+            You have view-only access. Contact your admin to request additional permissions.
+          </div>
+          <Outlet />
+        </main>
       </div>
     </div>
   );

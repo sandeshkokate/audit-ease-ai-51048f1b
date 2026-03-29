@@ -14,6 +14,7 @@ import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus, RefreshCw, AlertTrian
 import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { tenantSchema } from '@/lib/validation-schemas';
 import type { Tables } from '@/integrations/supabase/types';
 
 type TenantRow = Tables<'tenants'>;
@@ -115,8 +116,14 @@ export default function Tenants() {
   };
 
   const handleAdd = async () => {
-    if (!addForm.company_name.trim() || !addForm.contact_email.trim()) {
-      toast({ variant: 'destructive', title: 'Required fields missing', description: 'Company Name and Contact Email are required.' });
+    const validation = tenantSchema.safeParse({
+      company_name: addForm.company_name,
+      contact_email: addForm.contact_email,
+      contact_phone: addForm.contact_phone,
+      gstin: addForm.gstin,
+    });
+    if (!validation.success) {
+      toast({ variant: 'destructive', title: 'Validation Error', description: validation.error.errors.map(e => e.message).join(', ') });
       return;
     }
     setAdding(true);

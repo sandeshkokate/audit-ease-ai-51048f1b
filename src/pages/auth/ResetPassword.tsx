@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { passwordSchema } from '@/lib/validation-schemas';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -29,16 +30,9 @@ export default function ResetPassword() {
     e.preventDefault();
     setError('');
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
-      return;
-    }
-    if (!/\d/.test(password)) {
-      setError('Password must contain at least one number.');
-      return;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      setError('Password must contain at least one special character.');
+    const pwResult = passwordSchema.safeParse(password);
+    if (!pwResult.success) {
+      setError(pwResult.error.errors[0].message);
       return;
     }
     if (password !== confirmPassword) {
@@ -150,6 +144,7 @@ export default function ResetPassword() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <p className="text-xs text-muted-foreground">Minimum 8 characters with at least one uppercase letter, one lowercase letter, and one number.</p>
               </div>
 
               <div className="space-y-2">

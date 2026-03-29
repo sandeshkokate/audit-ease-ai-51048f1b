@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -247,7 +248,7 @@ export default function AuditLogs() {
         Status: STATUS_LABELS[getStatus(l)], Date: l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy') : '',
       })), 'audit_logs');
     } catch (err: any) {
-      console.error('Export failed:', err);
+      logger.error('Export failed:', err);
     } finally {
       setExporting(false);
     }
@@ -418,8 +419,15 @@ export default function AuditLogs() {
         </div>
       </div>
 
+      {/* Mobile scroll hint */}
+      <p className="text-xs text-muted-foreground sm:hidden mb-1">← Scroll horizontally to see all columns →</p>
+
       {/* Data table — no internal pagination/search since we handle it server-side */}
-      <DataTable columns={columns} data={auditLogs} pageSize={AUDIT_PAGE_SIZE + 1} />
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="min-w-[800px]">
+          <DataTable columns={columns} data={auditLogs} pageSize={AUDIT_PAGE_SIZE + 1} />
+        </div>
+      </div>
 
       {/* Server-side pagination controls */}
       {totalPages > 0 && (

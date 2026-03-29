@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { passwordSchema } from '@/lib/validation-schemas';
 
 export default function AcceptInvite() {
   const { token } = useParams<{ token: string }>();
@@ -82,16 +83,9 @@ export default function AcceptInvite() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      toast({ variant: 'destructive', title: 'Password must be at least 8 characters' });
-      return;
-    }
-    if (!/\d/.test(formData.password)) {
-      toast({ variant: 'destructive', title: 'Password must contain at least one number' });
-      return;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-      toast({ variant: 'destructive', title: 'Password must contain at least one special character' });
+    const pwResult = passwordSchema.safeParse(formData.password);
+    if (!pwResult.success) {
+      toast({ variant: 'destructive', title: pwResult.error.errors[0].message });
       return;
     }
 
@@ -189,10 +183,11 @@ export default function AcceptInvite() {
 
   const getPasswordStrength = (pw: string) => {
     if (pw.length < 8) return { label: 'Too short', color: 'text-destructive' };
+    const hasUpper = /[A-Z]/.test(pw);
+    const hasLower = /[a-z]/.test(pw);
     const hasNum = /\d/.test(pw);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pw);
-    if (hasNum && hasSpecial) return { label: 'Strong ✓', color: 'text-success' };
-    if (hasNum || hasSpecial) return { label: 'Fair', color: 'text-warning' };
+    if (hasUpper && hasLower && hasNum) return { label: 'Strong ✓', color: 'text-success' };
+    if ((hasUpper || hasLower) && hasNum) return { label: 'Fair', color: 'text-warning' };
     return { label: 'Weak', color: 'text-destructive' };
   };
 
@@ -279,6 +274,7 @@ export default function AcceptInvite() {
                   Strength: {getPasswordStrength(formData.password).label}
                 </p>
               )}
+              <p className="text-xs text-muted-foreground">Minimum 8 characters with at least one uppercase letter, one lowercase letter, and one number.</p>
             </div>
 
             <div className="space-y-1.5">
