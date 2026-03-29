@@ -120,8 +120,8 @@ export default function Login() {
       <Card className="relative w-full max-w-md shadow-elevated border-border/50 bg-card/95 backdrop-blur-sm">
         <CardHeader className="items-center space-y-4 pb-2">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105">
-              <Shield className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button transition-transform group-hover:scale-105 shrink-0">
+              <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-foreground">
               AuditEase <span className="text-gradient">AI</span>

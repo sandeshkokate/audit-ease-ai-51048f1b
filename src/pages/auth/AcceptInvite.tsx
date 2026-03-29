@@ -223,9 +223,13 @@ export default function AcceptInvite() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4">
       <Card className="w-full max-w-md shadow-card-hover">
         <CardHeader className="text-center pb-2">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">AuditEase AI</span>
+          <div className="flex items-center justify-center gap-2.5 mb-4 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button shrink-0">
+              <Shield className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              AuditEase <span className="text-gradient">AI</span>
+            </span>
           </div>
         </CardHeader>
         <CardContent>
