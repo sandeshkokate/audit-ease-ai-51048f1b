@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { passwordSchema } from '@/lib/validation-schemas';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
