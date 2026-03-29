@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { inviteSchema } from '@/lib/validation-schemas';
 
 export default function Team() {
   useDocumentTitle('Team');
