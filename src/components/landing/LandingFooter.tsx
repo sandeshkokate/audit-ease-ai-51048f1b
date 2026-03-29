@@ -18,7 +18,7 @@ export default function LandingFooter() {
   return (
     <footer className="section-dark">
       <div className="container mx-auto px-4 py-14">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Column 1 – Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -56,32 +56,51 @@ export default function LandingFooter() {
             </ul>
           </div>
 
-          {/* Column 4 – Legal & Contact */}
+          {/* Column 4 – Contact */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider">Contact</h4>
+            <ul className="space-y-2.5 text-sm opacity-70">
+              <li>
+                <Link to="/contact" className="hover:opacity-100 transition-opacity">
+                  Get a Demo
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-100 transition-opacity"
+                >
+                  WhatsApp Support
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:hello@auditeasetechnologies.com"
+                  className="hover:opacity-100 transition-opacity"
+                >
+                  hello@auditeasetechnologies.com
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 5 – Legal */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-wider">Legal</h4>
             <ul className="space-y-2.5 text-sm opacity-70">
               <li><Link to="/privacy-policy" className="hover:opacity-100 transition-opacity">Privacy Policy</Link></li>
               <li><Link to="/terms-of-service" className="hover:opacity-100 transition-opacity">Terms of Service</Link></li>
             </ul>
-            <div className="pt-2">
-              <a
-                href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-green-400 hover:text-green-300 transition-colors"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp: +91 XXXXXXXXXX
-              </a>
-            </div>
           </div>
         </div>
 
         <Separator className="my-8 opacity-20" />
 
         <div className="flex flex-col items-center justify-between gap-3 text-xs opacity-50 sm:flex-row">
-          <p>© 2026 AuditEase AI. All rights reserved.</p>
-          <p>Made in India 🇮🇳 for Indian e-commerce</p>
+          <p>© {new Date().getFullYear()} AuditEase AI. All rights reserved.</p>
+          <p>Made with ♥ in India for Indian e-commerce</p>
         </div>
       </div>
     </footer>
