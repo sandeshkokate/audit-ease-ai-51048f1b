@@ -273,6 +273,7 @@ export default function AcceptInvite() {
                   Strength: {getPasswordStrength(formData.password).label}
                 </p>
               )}
+              <p className="text-xs text-muted-foreground">Minimum 8 characters with at least one uppercase letter, one lowercase letter, and one number.</p>
             </div>
 
             <div className="space-y-1.5">
