@@ -30,7 +30,7 @@ export default function AccountantLayout() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary shadow-button shrink-0">
           <Shield className="h-4 w-4 text-primary-foreground" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap tracking-tight">Audit<span className="text-sidebar-primary">Ease</span></span>}
+        {!collapsed && <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap tracking-tight">AuditEase <span className="text-sidebar-primary">AI</span></span>}
       </button>
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {NAV_ITEMS.map((item) => (
