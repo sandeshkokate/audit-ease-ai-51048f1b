@@ -75,9 +75,11 @@ export default function ResetPassword() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 px-4 py-12">
       <Card className="w-full max-w-md shadow-card-hover border-border/50">
         <CardHeader className="items-center space-y-4 pb-2">
-          <Link to="/" className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button shrink-0">
+              <Shield className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-foreground">
               AuditEase <span className="text-gradient">AI</span>
             </span>
           </Link>
