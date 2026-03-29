@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { passwordSchema } from '@/lib/validation-schemas';
 
 export default function AcceptInvite() {
   const { token } = useParams<{ token: string }>();
