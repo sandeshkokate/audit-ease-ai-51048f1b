@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { BarChart3, FileText, FileBarChart, LogOut, Menu, Shield, ChevronLeft } from 'lucide-react';
+import { BarChart3, FileText, FileBarChart, LogOut, Menu, Shield, ChevronLeft, Info } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
 import HeaderActions from '@/components/shared/HeaderActions';
