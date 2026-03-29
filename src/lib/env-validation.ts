@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Validates required environment variables at app startup.
  * Throws descriptive errors for missing config.
