@@ -22,7 +22,7 @@ export default function LandingFooter() {
           {/* Column 1 – Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-button shrink-0 logo-glow">
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="text-lg font-bold tracking-tight text-white">

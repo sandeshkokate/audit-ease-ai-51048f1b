@@ -80,7 +80,7 @@ export default function LandingCalculator() {
                 </div>
               </div>
               <Link to="/contact">
-                <Button variant="hero" className="w-full gap-2 shadow-button">
+                <Button variant="hero" className="w-full gap-2 shadow-button shimmer-btn">
                   Get Detailed Analysis <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>

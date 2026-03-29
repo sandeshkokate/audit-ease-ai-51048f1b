@@ -40,7 +40,7 @@ export default function LandingHero() {
                 </Button>
               </Link>
               <a href="#how-it-works">
-                <Button variant="hero-outline" size="lg" className="px-8 py-6 text-base font-semibold hover:bg-primary/5 transition-colors">
+                <Button variant="hero-outline" size="lg" className="px-8 py-6 text-base font-semibold hover:bg-primary/5 transition-colors shimmer-btn">
                   See How It Works
                 </Button>
               </a>
