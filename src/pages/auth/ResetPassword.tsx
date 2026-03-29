@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Loader2, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Shield, Loader2, CheckCircle, AlertTriangle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -72,7 +72,13 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 px-4 py-12">
+    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 px-4 py-12">
+      <div className="absolute top-6 left-6 z-10">
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
       <Card className="w-full max-w-md shadow-card-hover border-border/50">
         <CardHeader className="items-center space-y-4 pb-2">
           <Link to="/" className="flex items-center gap-2.5 group">
