@@ -14,6 +14,7 @@ import { Pencil, CheckCircle2, Ban, Search, Loader2, Plus, RefreshCw, AlertTrian
 import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { tenantSchema } from '@/lib/validation-schemas';
 import type { Tables } from '@/integrations/supabase/types';
 
 type TenantRow = Tables<'tenants'>;
