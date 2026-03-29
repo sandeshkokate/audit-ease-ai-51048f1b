@@ -260,6 +260,45 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          monthly_shipments: string | null
+          name: string
+          phone: string | null
+          source: string | null
+          status: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          monthly_shipments?: string | null
+          name: string
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          monthly_shipments?: string | null
+          name?: string
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       courier_master: {
         Row: {
           api_available: boolean | null
@@ -1449,17 +1488,27 @@ export type Database = {
           tenant_id: string
         }[]
       }
-      log_activity: {
-        Args: {
-          p_action: string
-          p_details?: string
-          p_entity_id?: string
-          p_entity_type?: string
-          p_new_values?: Json
-          p_old_values?: Json
-        }
-        Returns: undefined
-      }
+      log_activity:
+        | {
+            Args: {
+              p_action: string
+              p_details?: Json
+              p_entity_id?: string
+              p_entity_type?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_action: string
+              p_details?: string
+              p_entity_id?: string
+              p_entity_type?: string
+              p_new_values?: Json
+              p_old_values?: Json
+            }
+            Returns: undefined
+          }
       notify_tenant_users: {
         Args: {
           p_link?: string
