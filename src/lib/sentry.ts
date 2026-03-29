@@ -4,7 +4,7 @@ export function initSentry(): void {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   if (!dsn) {
     if (import.meta.env.DEV) {
-      console.warn('[sentry] VITE_SENTRY_DSN not set — error monitoring disabled');
+      logger.warn('[sentry] VITE_SENTRY_DSN not set — error monitoring disabled');
     }
     return;
   }

@@ -247,7 +247,7 @@ export default function AuditLogs() {
         Status: STATUS_LABELS[getStatus(l)], Date: l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy') : '',
       })), 'audit_logs');
     } catch (err: any) {
-      console.error('Export failed:', err);
+      logger.error('Export failed:', err);
     } finally {
       setExporting(false);
     }
