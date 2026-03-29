@@ -28,7 +28,7 @@ export function validateEnv(): void {
       (key) => !import.meta.env[key]
     );
     if (missingOptional.length > 0) {
-      console.warn(
+      logger.warn(
         `[env] Optional variables not set: ${missingOptional.join(', ')}`
       );
     }
