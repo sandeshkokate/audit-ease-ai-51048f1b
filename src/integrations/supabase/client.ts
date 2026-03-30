@@ -3,7 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const ENV_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const FALLBACK_PUBLISHABLE_KEY = 'sb_publishable_2ZLmLr_Fk_1x9ubAgJAN2w_fvG054AH';
+const SUPABASE_PUBLISHABLE_KEY = ENV_PUBLISHABLE_KEY?.startsWith('sb_publishable_')
+  ? ENV_PUBLISHABLE_KEY
+  : FALLBACK_PUBLISHABLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.');
