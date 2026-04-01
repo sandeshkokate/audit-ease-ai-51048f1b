@@ -5,9 +5,8 @@ import { logger } from '@/lib/logger';
  */
 const REQUIRED_VAR_GROUPS = [
   ['SUPABASE_URL', 'VITE_SUPABASE_URL'],
+  ['SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY'],
 ] as const;
-
-const PUBLISHABLE_KEY_GROUP = ['SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY'] as const;
 
 const OPTIONAL_VARS = [
   'VITE_SENTRY_DSN',
@@ -34,22 +33,5 @@ export function validateEnv(): void {
         `[env] Optional variables not set: ${missingOptional.join(', ')}`
       );
     }
-  }
-
-  const publishableKey = PUBLISHABLE_KEY_GROUP
-    .map((key) => import.meta.env[key])
-    .find(Boolean);
-
-  if (!publishableKey) {
-    logger.warn(
-      '[env] No build-time Supabase publishable key found; falling back to the public-config edge function.'
-    );
-    return;
-  }
-
-  if (publishableKey.startsWith('eyJ')) {
-    logger.warn(
-      '[env] Disabled legacy Supabase API key detected; falling back to the public-config edge function.'
-    );
   }
 }
