@@ -3,8 +3,9 @@ import { logger } from '@/lib/logger';
  * Validates required environment variables at app startup.
  * Throws descriptive errors for missing config.
  */
-const REQUIRED_VARS = [
-  'VITE_SUPABASE_URL',
+const REQUIRED_VAR_GROUPS = [
+  ['SUPABASE_URL', 'VITE_SUPABASE_URL'],
+  ['SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY'],
 ] as const;
 
 const OPTIONAL_VARS = [
@@ -13,9 +14,9 @@ const OPTIONAL_VARS = [
 ] as const;
 
 export function validateEnv(): void {
-  const missing = REQUIRED_VARS.filter(
-    (key) => !import.meta.env[key]
-  );
+  const missing = REQUIRED_VAR_GROUPS.filter(
+    (keys) => !keys.some((key) => import.meta.env[key])
+  ).map((keys) => keys.join(' or '));
 
   if (missing.length > 0) {
     throw new Error(
