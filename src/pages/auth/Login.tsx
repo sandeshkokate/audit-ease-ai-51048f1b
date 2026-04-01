@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import type { UserRole } from '@/types';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { UserRole } from "@/types";
 
 const ROLE_REDIRECTS: Record<UserRole, string> = {
-  platform_admin: '/platform-admin/dashboard',
-  tenant_admin: '/tenant-admin/dashboard',
-  accountant: '/accountant/dashboard',
+  platform_admin: "/platform-admin/dashboard",
+  tenant_admin: "/tenant-admin/dashboard",
+  accountant: "/accountant/dashboard",
 };
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function Login() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const emailParam = searchParams.get('email');
+    const emailParam = searchParams.get("email");
     if (emailParam) setEmail(decodeURIComponent(emailParam));
   }, [searchParams]);
 
@@ -36,17 +36,17 @@ export default function Login() {
     setLoading(true);
     try {
       // Rate limit check (5 attempts per 15 minutes per email)
-      const { data: allowed } = await supabase.rpc('check_rate_limit', {
+      const { data: allowed } = await supabase.rpc("check_rate_limit", {
         p_identifier: email.trim().toLowerCase(),
-        p_action: 'login',
+        p_action: "login",
         p_max_attempts: 5,
         p_window_minutes: 15,
       });
       if (allowed === false) {
         toast({
-          variant: 'destructive',
-          title: 'Too many attempts',
-          description: 'Please wait 15 minutes before trying again.',
+          variant: "destructive",
+          title: "Too many attempts",
+          description: "Please wait 15 minutes before trying again.",
         });
         setLoading(false);
         return;
@@ -74,38 +74,35 @@ export default function Login() {
       if (lastAuthError) throw lastAuthError;
 
       const userId = authData.user?.id;
-      if (!userId) throw new Error('No user returned from auth');
+      if (!userId) throw new Error("No user returned from auth");
 
-      const { data: rows, error: profileError } = await supabase
-        .rpc('get_user_profile_for_login', { lookup_user_id: userId });
+      const { data: rows, error: profileError } = await supabase.rpc("get_user_profile_for_login", {
+        lookup_user_id: userId,
+      });
 
       if (profileError) {
         await supabase.auth.signOut();
-        throw new Error('Invalid email or password.');
+        throw new Error("Invalid email or password.");
       }
 
       const profile = rows?.[0] ?? null;
 
       if (!profile || profile.is_active === false) {
         await supabase.auth.signOut();
-        throw new Error('Invalid email or password.');
+        throw new Error("Invalid email or password.");
       }
 
-      supabase.rpc('update_last_login', { lookup_user_id: userId }).then(() => {});
+      supabase.rpc("update_last_login", { lookup_user_id: userId }).then(() => {});
 
-      localStorage.setItem('session_start', Date.now().toString());
+      localStorage.setItem("session_start", Date.now().toString());
 
       const role = profile.role as UserRole;
-      navigate(ROLE_REDIRECTS[role] || '/');
-
-    } catch {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: 'Invalid email or password.',
-      });
-    } finally {
-      setLoading(false);
+      navigate(ROLE_REDIRECTS[role] || "/");
+    } catch (err: any) {
+      const message = err?.message || "Invalid email or password.";
+      // In development, log the actual error
+      if (import.meta.env.DEV) console.error("[Login]", err);
+      toast({ variant: "destructive", title: "Login Failed", description: "Invalid email or password." });
     }
   };
 
@@ -148,7 +145,7 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -177,11 +174,11 @@ export default function Login() {
             </div>
 
             <Button type="submit" variant="hero" className="w-full shadow-button" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link to="/contact" className="font-medium text-primary hover:text-primary/80 transition-colors">
                 Contact Us
               </Link>
