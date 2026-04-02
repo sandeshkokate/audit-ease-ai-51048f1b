@@ -77,7 +77,7 @@ export default function AuditLogs() {
       const rows = data || [];
       return {
         total: rows.length,
-        detected: rows.filter(r => (r.discrepancy_amount ?? 0) > 0 && (!r.dispute_status || r.dispute_status === 'detected')).length,
+        detected: rows.filter(r => r.dispute_status && ['detected', 'pending'].includes(r.dispute_status)).length,
         disputed: rows.filter(r => ['raised', 'disputed', 'email_copied', 'draft'].includes(r.dispute_status || '')).length,
         resolved: rows.filter(r => r.dispute_status === 'recovered').length,
         totalAmount: rows.reduce((s, r) => s + (r.discrepancy_amount || 0), 0),
