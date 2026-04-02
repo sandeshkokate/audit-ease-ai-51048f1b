@@ -143,7 +143,7 @@ export default function TenantDashboard() {
         .from('audit_logs')
         .select('has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, discrepancy_amount')
         .eq('tenant_id', tenantId)
-        .gt('discrepancy_amount', 0);
+        .neq('dispute_status', 'no_issue');
 
       const counts = { Weight: 0, Zone: 0, RTO: 0, Damage: 0, Other: 0 };
       data?.forEach(r => {
