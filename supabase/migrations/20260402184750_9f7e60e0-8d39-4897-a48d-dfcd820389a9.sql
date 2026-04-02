@@ -1,0 +1,1 @@
+UPDATE upload_batches SET status = 'failed', error_log = '{"message": "Stuck in processing state - marked as failed retroactively", "timestamp": "2026-04-02T19:00:00Z"}'::jsonb, completed_at = now() WHERE id = 'fec995b7-ac47-4b39-9151-182a2645e010' AND status = 'processing';
