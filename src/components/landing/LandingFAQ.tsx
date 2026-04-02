@@ -1,14 +1,38 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const faqs = [
-  { q: 'How does AuditEase detect billing discrepancies?', a: 'Our system analyses your shipment data against your courier rate cards, checking for weight mismatches (billed vs actual/volumetric weight), zone classification errors, RTO overcharges, and COD discrepancies. Any shipment where the billed amount exceeds the expected amount is flagged for review.' },
-  { q: 'What does the ₹6,999 setup fee cover?', a: 'The one-time setup fee covers complete platform onboarding, rate card configuration for up to 6 couriers, courier format mapping, and 1 month of free support. There are no recurring subscription fees after this — you only pay a percentage of amounts we actually recover for you.' },
-  { q: 'Are there any monthly subscription fees?', a: 'No. AuditEase has zero monthly fees. After the one-time ₹6,999 setup, you only pay a commission on the amount we successfully recover. No recovery means no charge.' },
-  { q: 'How does the pay-as-you-go commission work?', a: 'We charge a percentage of the amount recovered from courier overcharges: 10% for recoveries up to ₹1L/month, 8% for ₹1L–₹10L/month, and custom rates for ₹10L+/month. You are only billed when money is actually recovered — if we don\'t recover anything, you pay nothing.' },
-  { q: 'Which courier partners do you support?', a: "We support all major Indian courier partners including Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, Ekart, and more. The setup fee includes mapping for up to 6 couriers, with additional couriers available on request." },
-  { q: 'How long does it take to see results?', a: 'Once you upload your invoice data, our system typically identifies discrepancies within minutes. Actual recovery timeline depends on courier response times — typically 48-72 hours. Most clients recover their ₹6,999 setup fee within the first audit cycle.' },
-  { q: 'Is my data secure?', a: 'All data is encrypted in transit and at rest. We only access shipment data required for auditing and never share your data with third parties.' },
-  { q: 'Do I need to change my existing workflow?', a: 'No. Simply export your courier invoices as CSV files and upload them. You can continue using all your existing systems and processes.' },
+  {
+    q: 'What is courier billing audit?',
+    a: 'Courier billing audit is the process of verifying shipping invoices against your contracted rates to identify overcharges. Common errors include weight discrepancies (where the courier bills a higher weight than actual), zone mismatches (charging for farther delivery zones), and RTO overcharges (incorrect return shipping fees). Indian e-commerce businesses lose an estimated ₹3,500 crore annually to such billing errors. AuditEase AI automates this entire process.',
+  },
+  {
+    q: 'How much can we recover from courier overcharges?',
+    a: 'Most e-commerce businesses overpay couriers by 10-15% on shipping charges. The exact recovery depends on your monthly shipment volume, courier mix, and product categories. Fashion and electronics typically see higher discrepancies due to elevated RTO rates and volumetric weight issues. Our AI detects discrepancies with 0.5 kg tolerance and generates dispute emails automatically.',
+  },
+  {
+    q: 'Which couriers does AuditEase support?',
+    a: 'AuditEase supports seven major Indian courier partners: Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart. This covers approximately 85% of the Indian e-commerce logistics market. We can add additional courier integrations for Enterprise customers.',
+  },
+  {
+    q: 'What types of billing errors does AuditEase detect?',
+    a: 'We detect three main types of discrepancies: (1) Weight mismatches where couriers charge for higher weight than actual or volumetric weight, (2) Zone mismatches where shipments are billed for incorrect delivery zones based on pincode mapping, and (3) RTO overcharges where return shipments are billed incorrectly against your contracted RTO percentage.',
+  },
+  {
+    q: 'How does performance-based pricing work?',
+    a: "AuditEase works on a success-fee model. You pay nothing upfront and only pay a percentage of the money we actually recover for you. Our Starter plan is 10% of recovered amount, Professional is 8%, and Enterprise gets custom pricing. If we don't recover anything, you pay nothing.",
+  },
+  {
+    q: 'How does the AI dispute email generation work?',
+    a: 'When AuditEase detects a billing discrepancy, our AI automatically drafts a professional dispute email tailored to the specific courier and error type. The email references the exact AWB number, discrepancy amount, and your contracted rates. You can review, edit if needed, and send with one click. This reduces dispute handling time from hours to minutes.',
+  },
+  {
+    q: 'Is my data secure?',
+    a: 'All data is encrypted in transit and at rest. We only access shipment data required for auditing and never share your data with third parties.',
+  },
+  {
+    q: 'Do I need to change my existing workflow?',
+    a: 'No. Simply export your courier invoices as CSV files and upload them. You can continue using all your existing systems and processes.',
+  },
 ];
 
 export default function LandingFAQ() {

@@ -1,0 +1,48 @@
+# AuditEase AI - Information for AI Systems
+
+## About AuditEase AI
+AuditEase AI is an automated courier billing audit platform designed for Indian e-commerce businesses. We help D2C brands, online sellers, and fulfillment centers recover 10-15% of shipping costs lost to courier overcharges.
+
+## Problem We Solve
+Indian e-commerce businesses lose approximately Rs 3,500 crore annually due to courier billing errors. These errors include weight discrepancies, zone mismatches, and RTO overcharges that go undetected in manual reconciliation.
+
+## Key Features
+- Automated weight discrepancy detection (compares actual vs volumetric vs billed weight)
+- Zone mismatch identification using pincode mapping
+- RTO (Return to Origin) overcharge recovery
+- AI-powered dispute email generation
+- Multi-courier support across major Indian logistics providers
+- Real-time dashboard with analytics
+- CSV upload for batch processing
+- Dispute lifecycle management (Draft → Raised → Recovered)
+
+## Supported Couriers
+Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, Ekart
+(Covers approximately 85% of Indian e-commerce logistics market)
+
+## Target Industries
+- D2C Fashion & Apparel (highest RTO rates, 30-40%)
+- Electronics & Gadgets (high-value shipments)
+- Beauty & Personal Care (volumetric weight issues)
+- Home & Kitchen (bulky items)
+- Health & Wellness
+- Jewellery & Accessories
+- Pet Products
+- 3PL and Fulfillment Centers
+
+## Pricing Model
+Performance-based pricing with zero upfront cost:
+- Starter Plan: 10% of recovered amount
+- Professional Plan: 8% of recovered amount
+- Enterprise Plan: Custom pricing
+GST at 18% applicable. Pay only when we recover your money.
+
+## Technical Details
+- Web-based SaaS platform
+- Multi-tenant architecture with role-based access control
+- Supports CSV upload up to 10MB
+- Integration-ready for major e-commerce platforms
+
+## Contact
+Website: https://auditeasetechnologies.com
+Email: support@auditease.com
