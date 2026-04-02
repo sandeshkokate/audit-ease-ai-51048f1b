@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -111,6 +112,7 @@ export default function UploadCSV() {
   const [processingStep, setProcessingStep] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
@@ -270,6 +272,13 @@ export default function UploadCSV() {
         title: "✅ Upload complete!",
         description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.${result.duplicates_skipped ? ` ${result.duplicates_skipped} duplicates skipped.` : ''}`,
       });
+
+      // Invalidate related caches so Audit Logs, Disputes, Upload History refresh
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-couriers'] });
+      queryClient.invalidateQueries({ queryKey: ['disputes'] });
+      queryClient.invalidateQueries({ queryKey: ['upload-batches'] });
 
       setFile(null);
       setPreview([]);
