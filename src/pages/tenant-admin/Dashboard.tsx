@@ -18,6 +18,7 @@ import { DashboardSkeleton } from '@/components/shared/LoadingSkeleton';
 import { formatCurrency } from '@/lib/utils';
 
 import { DISPUTE_STATUS_COLORS as STATUS_COLORS } from '@/lib/display-labels';
+import { hasActionableDiscrepancy } from '@/lib/actionable-discrepancy';
 
 const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
 
@@ -55,7 +56,7 @@ export default function TenantDashboard() {
       if (e2) throw e2;
 
       const currentOrders = currentPeriod?.length || 0;
-      const currentDiscrepancies = currentPeriod?.filter(l => l.dispute_status && l.dispute_status !== 'no_issue') || [];
+      const currentDiscrepancies = currentPeriod?.filter(l => hasActionableDiscrepancy(l)) || [];
       const currentRecovered = currentPeriod?.filter(l => l.dispute_status === 'recovered') || [];
       const currentRecoveredAmount = currentRecovered.reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
       const currentDiscrepancyAmount = currentDiscrepancies.reduce((sum, l) => sum + (l.discrepancy_amount ?? 0), 0);
@@ -143,7 +144,7 @@ export default function TenantDashboard() {
         .from('audit_logs')
         .select('has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, discrepancy_amount')
         .eq('tenant_id', tenantId)
-        .neq('dispute_status', 'no_issue');
+        .gt('discrepancy_amount', 0);
 
       const counts = { Weight: 0, Zone: 0, RTO: 0, Damage: 0, Other: 0 };
       data?.forEach(r => {
@@ -171,7 +172,7 @@ export default function TenantDashboard() {
         .from('audit_logs')
         .select('id, awb, courier_name, discrepancy_amount, dispute_status, created_at')
         .eq('tenant_id', tenantId)
-        .neq('dispute_status', 'no_issue')
+        .gt('discrepancy_amount', 0)
         .order('created_at', { ascending: false })
         .limit(20);
       return data || [];

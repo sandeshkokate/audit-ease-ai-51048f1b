@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { downloadCSV, formatCurrency } from '@/lib/utils';
 import { subDays, subMonths, startOfMonth, startOfQuarter, startOfYear, format } from 'date-fns';
+import { hasActionableDiscrepancy } from '@/lib/actionable-discrepancy';
 
 const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
 
@@ -81,11 +82,11 @@ export default function TenantReports() {
       const c = log.courier_name || 'Unknown';
       if (!grouped[c]) grouped[c] = { courier: c, shipments: 0, discrepancies: 0, total_overcharge: 0, weight_errors: 0, zone_errors: 0, rto_errors: 0 };
       grouped[c].shipments += 1;
-      if (log.has_weight_discrepancy || log.has_zone_discrepancy || log.has_rto_overcharge || log.has_damage_misclassification || (log.discrepancy_amount ?? 0) > 0) grouped[c].discrepancies += 1;
+      if (hasActionableDiscrepancy(log)) grouped[c].discrepancies += 1;
       grouped[c].total_overcharge += log.discrepancy_amount ?? 0;
-      if (log.has_weight_discrepancy) grouped[c].weight_errors++;
-      if (log.has_zone_discrepancy) grouped[c].zone_errors++;
-      if (log.has_rto_overcharge) grouped[c].rto_errors++;
+      if (hasActionableDiscrepancy(log) && log.has_weight_discrepancy) grouped[c].weight_errors++;
+      if (hasActionableDiscrepancy(log) && log.has_zone_discrepancy) grouped[c].zone_errors++;
+      if (hasActionableDiscrepancy(log) && log.has_rto_overcharge) grouped[c].rto_errors++;
     });
     return Object.values(grouped).map(g => ({
       ...g,
@@ -105,11 +106,12 @@ export default function TenantReports() {
     };
     auditLogs.forEach(log => {
       const amt = log.discrepancy_amount ?? 0;
+      if (!hasActionableDiscrepancy(log)) return;
       if (log.has_weight_discrepancy) { map.Weight.count++; map.Weight.amount += amt; }
       else if (log.has_zone_discrepancy) { map.Zone.count++; map.Zone.amount += amt; }
       else if (log.has_rto_overcharge) { map.RTO.count++; map.RTO.amount += amt; }
       else if (log.has_damage_misclassification) { map.Damage.count++; map.Damage.amount += amt; }
-      else if (amt > 0) { map.Other.count++; map.Other.amount += amt; }
+      else { map.Other.count++; map.Other.amount += amt; }
     });
     const all = Object.values(map).filter(d => d.count > 0);
     const totalCount = all.reduce((s, d) => s + d.count, 0);
@@ -132,7 +134,7 @@ export default function TenantReports() {
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, orders: 0, discrepancies: 0, total_overcharge: 0 };
       byMonth[key].orders += 1;
-      if (log.has_weight_discrepancy || log.has_zone_discrepancy || log.has_rto_overcharge || log.has_damage_misclassification || (log.discrepancy_amount ?? 0) > 0) {
+      if (hasActionableDiscrepancy(log)) {
         byMonth[key].discrepancies += 1;
         byMonth[key].total_overcharge += log.discrepancy_amount ?? 0;
       }
@@ -150,7 +152,7 @@ export default function TenantReports() {
   const monthlyRecovery = useMemo(() => {
     const byMonth: Record<string, { month: string; sortKey: string; disputes: number; resolved: number; recovered: number; disputed_amount: number }> = {};
     auditLogs.forEach(log => {
-      if (!log.dispute_status || log.dispute_status === 'no_issue') return;
+      if (!hasActionableDiscrepancy(log)) return;
       const d = new Date(log.created_at ?? '');
       const key = format(d, 'yyyy-MM');
       const label = format(d, 'MMM yyyy');
@@ -174,7 +176,7 @@ export default function TenantReports() {
 
   // Recovery summary metrics
   const recoverySummary = useMemo(() => {
-    const disputed = auditLogs.filter(l => l.dispute_status && l.dispute_status !== 'no_issue');
+    const disputed = auditLogs.filter(l => hasActionableDiscrepancy(l));
     const resolved = disputed.filter(l => l.dispute_status === 'recovered');
     const totalRecovered = resolved.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
     return {
@@ -207,7 +209,7 @@ export default function TenantReports() {
   }, [auditLogs, commissionRate]);
 
   const totalOrders = auditLogs.length;
-  const totalDiscrepancies = auditLogs.filter(l => (l.discrepancy_amount ?? 0) > 0).length;
+  const totalDiscrepancies = auditLogs.filter(l => hasActionableDiscrepancy(l)).length;
   const detectionRate = totalOrders ? ((totalDiscrepancies / totalOrders) * 100).toFixed(1) : '0';
   const totalGross = auditLogs.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
   const totalCommission = totalGross * commissionRate;
@@ -359,6 +361,7 @@ export default function TenantReports() {
                     { key: 'dispute_status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.dispute_status || 'detected'}</Badge> },
                   ] as any}
                   data={auditLogs.filter(l => {
+                    if (!hasActionableDiscrepancy(l)) return false;
                     if (selectedType === 'Weight') return l.has_weight_discrepancy;
                     if (selectedType === 'Zone') return l.has_zone_discrepancy;
                     if (selectedType === 'RTO') return l.has_rto_overcharge;

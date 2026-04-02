@@ -56,6 +56,7 @@ import {
   DISPUTE_TAB_STATUSES as TAB_STATUSES,
   DISPUTE_TYPE_OPTIONS,
 } from "@/lib/display-labels";
+import { hasActionableDiscrepancy } from "@/lib/actionable-discrepancy";
 
 type AuditLog = Tables<"audit_logs">;
 
@@ -136,9 +137,9 @@ export default function Disputes() {
       if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 };
       const { data, error } = await supabase
         .from("audit_logs")
-        .select("dispute_status")
+        .select("dispute_status, discrepancy_amount")
         .eq("tenant_id", user.tenant_id)
-        .neq("dispute_status", "no_issue");
+        .gt("discrepancy_amount", 0);
       if (error) throw error;
       const rows = data || [];
       return {
@@ -163,7 +164,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("courier_name")
         .eq("tenant_id", user.tenant_id)
-        .neq("dispute_status", "no_issue")
+        .gt("discrepancy_amount", 0)
         .not("courier_name", "is", null);
       return [...new Set((data || []).map((r) => r.courier_name as string))].filter(Boolean).sort();
     },
@@ -185,7 +186,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("*, dispute_emails(*), dispute_notes(*)", { count: "exact" })
         .eq("tenant_id", user.tenant_id)
-        .neq("dispute_status", "no_issue") as any;
+        .gt("discrepancy_amount", 0) as any;
 
       // Tab filter
       const statuses = TAB_STATUSES[activeTab];
@@ -353,6 +354,8 @@ export default function Disputes() {
   const generateEmailForDispute = async (
     log: any,
   ): Promise<{ subject: string; body: string; courier_email: string } | null> => {
+    if (!hasActionableDiscrepancy(log)) return null;
+
     const courierName = log.courier_name || log.courier || "Courier";
     const { data: courier } = await supabase
       .from("courier_master")
