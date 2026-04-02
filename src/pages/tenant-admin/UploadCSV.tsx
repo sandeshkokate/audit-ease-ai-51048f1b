@@ -273,6 +273,13 @@ export default function UploadCSV() {
         description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.${result.duplicates_skipped ? ` ${result.duplicates_skipped} duplicates skipped.` : ''}`,
       });
 
+      // Invalidate related caches so Audit Logs, Disputes, Upload History refresh
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-couriers'] });
+      queryClient.invalidateQueries({ queryKey: ['disputes'] });
+      queryClient.invalidateQueries({ queryKey: ['upload-batches'] });
+
       setFile(null);
       setPreview([]);
       setHeaders([]);
