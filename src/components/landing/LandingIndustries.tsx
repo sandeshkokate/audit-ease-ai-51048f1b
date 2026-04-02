@@ -100,7 +100,7 @@ export default function LandingIndustries() {
               <card.icon className="mb-3 h-8 w-8 text-primary" aria-hidden="true" />
               <h3 className="text-lg font-semibold text-foreground">{card.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{card.painPoint}</p>
-              <p className="mt-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="mt-2 text-sm font-medium text-primary">
                 {card.stat}
               </p>
             </div>
