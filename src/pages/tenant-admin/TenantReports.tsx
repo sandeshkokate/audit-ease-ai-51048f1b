@@ -132,7 +132,7 @@ export default function TenantReports() {
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, orders: 0, discrepancies: 0, total_overcharge: 0 };
       byMonth[key].orders += 1;
-      if ((log.discrepancy_amount ?? 0) > 0) {
+      if (log.has_weight_discrepancy || log.has_zone_discrepancy || log.has_rto_overcharge || log.has_damage_misclassification || (log.discrepancy_amount ?? 0) > 0) {
         byMonth[key].discrepancies += 1;
         byMonth[key].total_overcharge += log.discrepancy_amount ?? 0;
       }

@@ -171,7 +171,7 @@ export default function TenantDashboard() {
         .from('audit_logs')
         .select('id, awb, courier_name, discrepancy_amount, dispute_status, created_at')
         .eq('tenant_id', tenantId)
-        .gt('discrepancy_amount', 0)
+        .neq('dispute_status', 'no_issue')
         .order('created_at', { ascending: false })
         .limit(20);
       return data || [];
