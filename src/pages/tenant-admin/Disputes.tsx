@@ -163,7 +163,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("courier_name")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0)
+        .neq("dispute_status", "no_issue")
         .not("courier_name", "is", null);
       return [...new Set((data || []).map((r) => r.courier_name as string))].filter(Boolean).sort();
     },
