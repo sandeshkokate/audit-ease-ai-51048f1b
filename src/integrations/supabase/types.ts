@@ -1520,23 +1520,10 @@ export type Database = {
         }
         Returns: undefined
       }
-      process_csv_upload:
-        | {
-            Args: {
-              p_shipments: Json
-              p_tenant_id: string
-              p_uploaded_by: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_shipments: Json
-              p_tenant_id: string
-              p_uploaded_by: string
-            }
-            Returns: Json
-          }
+      process_csv_upload: {
+        Args: { p_shipments: Json; p_tenant_id: string; p_uploaded_by: string }
+        Returns: Json
+      }
       resolve_zone_mapping: {
         Args: {
           p_courier_id: string

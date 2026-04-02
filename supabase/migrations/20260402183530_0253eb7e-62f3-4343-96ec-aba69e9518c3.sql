@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.process_csv_upload(uuid, uuid, jsonb);
