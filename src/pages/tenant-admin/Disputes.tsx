@@ -138,7 +138,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("dispute_status")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0);
+        .neq("dispute_status", "no_issue");
       if (error) throw error;
       const rows = data || [];
       return {
