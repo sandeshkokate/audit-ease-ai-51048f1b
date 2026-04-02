@@ -795,6 +795,12 @@ export default function Disputes() {
                 {counts.rejected}
               </Badge>
             </TabsTrigger>
+            <TabsTrigger value="cancelled">
+              Cancelled{" "}
+              <Badge variant="secondary" className="ml-1.5 text-xs">
+                {counts.cancelled}
+              </Badge>
+            </TabsTrigger>
             <TabsTrigger value="all">
               All{" "}
               <Badge variant="secondary" className="ml-1.5 text-xs">
@@ -803,7 +809,7 @@ export default function Disputes() {
             </TabsTrigger>
           </TabsList>
 
-          {["draft", "raised", "recovered", "rejected", "all"].map((tab) => (
+          {["draft", "raised", "recovered", "rejected", "cancelled", "all"].map((tab) => (
             <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
               {/* Select all for raised tab */}
               {(tab === "raised" || tab === "all") &&
