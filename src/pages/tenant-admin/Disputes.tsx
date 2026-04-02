@@ -138,7 +138,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("dispute_status")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0);
+        .neq("dispute_status", "no_issue");
       if (error) throw error;
       const rows = data || [];
       return {
@@ -163,7 +163,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("courier_name")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0)
+        .neq("dispute_status", "no_issue")
         .not("courier_name", "is", null);
       return [...new Set((data || []).map((r) => r.courier_name as string))].filter(Boolean).sort();
     },
@@ -185,7 +185,7 @@ export default function Disputes() {
         .from("audit_logs")
         .select("*, dispute_emails(*), dispute_notes(*)", { count: "exact" })
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0) as any;
+        .neq("dispute_status", "no_issue") as any;
 
       // Tab filter
       const statuses = TAB_STATUSES[activeTab];
