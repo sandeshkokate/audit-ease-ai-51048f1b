@@ -324,13 +324,7 @@ export default function AuditLogs() {
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="no_issue">No Issue</SelectItem>
-            <SelectItem value="detected">Detected</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="raised">Raised</SelectItem>
-            <SelectItem value="recovered">Recovered</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
+            {AUDIT_STATUS_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={courierFilter} onValueChange={(v) => { setCourierFilter(v); setPage(0); }}>
