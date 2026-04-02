@@ -104,7 +104,7 @@ export default function AuditLogs() {
     if (statusFilter === 'no_issue') {
       query = query.or('discrepancy_amount.is.null,discrepancy_amount.eq.0');
     } else if (statusFilter === 'detected') {
-      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected');
+      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected,dispute_status.eq.pending');
     } else if (statusFilter !== 'all') {
       query = query.eq('dispute_status', statusFilter);
     }
