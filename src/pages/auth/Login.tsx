@@ -36,19 +36,23 @@ export default function Login() {
     setLoading(true);
     try {
       // Rate limit check (5 attempts per 15 minutes per email)
-      const { data: allowed } = await supabase.rpc("check_rate_limit", {
+      const { data: allowed, error: rateLimitError } = await supabase.rpc("check_rate_limit", {
         p_identifier: email.trim().toLowerCase(),
         p_action: "login",
         p_max_attempts: 5,
         p_window_minutes: 15,
       });
+
+      if (rateLimitError) {
+        throw rateLimitError;
+      }
+
       if (allowed === false) {
         toast({
           variant: "destructive",
           title: "Too many attempts",
           description: "Please wait 15 minutes before trying again.",
         });
-        setLoading(false);
         return;
       }
 
@@ -100,9 +104,14 @@ export default function Login() {
       navigate(ROLE_REDIRECTS[role] || "/");
     } catch (err: any) {
       const message = err?.message || "Invalid email or password.";
+      const description = message.includes("Legacy API keys are disabled")
+        ? "Login is temporarily unavailable because the Supabase public key is outdated."
+        : "Invalid email or password.";
       // In development, log the actual error
       if (import.meta.env.DEV) console.error("[Login]", err);
-      toast({ variant: "destructive", title: "Login Failed", description: "Invalid email or password." });
+      toast({ variant: "destructive", title: "Login Failed", description });
+    } finally {
+      setLoading(false);
     }
   };
 
