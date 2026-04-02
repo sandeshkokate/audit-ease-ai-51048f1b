@@ -10,13 +10,11 @@ import LandingPricing from '@/components/landing/LandingPricing';
 import LandingFAQ from '@/components/landing/LandingFAQ';
 import LandingFooter from '@/components/landing/LandingFooter';
 import SEOHead from '@/components/shared/SEOHead';
-import SchemaMarkup from '@/components/landing/SchemaMarkup';
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead />
-      <SchemaMarkup />
       <LandingNav />
       <LandingHero />
       <LandingProblem />
