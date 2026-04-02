@@ -26,27 +26,15 @@ import {
   STATUS_DEFINITIONS,
   TYPE_DEFINITIONS,
 } from '@/lib/display-labels';
+import {
+  getActionableDiscrepancyStatus as getStatus,
+  getActionableDiscrepancyType as getType,
+  hasActionableDiscrepancy,
+} from '@/lib/actionable-discrepancy';
 
 type AuditLog = Tables<'audit_logs'>;
 
 const AUDIT_PAGE_SIZE = 20;
-
-const hasDiscrepancyFlag = (r: AuditLog) =>
-  r.has_weight_discrepancy || r.has_zone_discrepancy || r.has_rto_overcharge || r.has_damage_misclassification;
-
-const getType = (r: AuditLog) => {
-  if (r.has_weight_discrepancy) return 'weight';
-  if (r.has_zone_discrepancy) return 'zone';
-  if (r.has_rto_overcharge) return 'rto';
-  if (r.has_damage_misclassification) return 'damage';
-  if ((r.discrepancy_amount ?? 0) > 0) return 'unclassified';
-  return 'no_issue';
-};
-
-const getStatus = (r: AuditLog) => {
-  if (!hasDiscrepancyFlag(r) && (r.discrepancy_amount ?? 0) === 0) return 'no_issue';
-  return r.dispute_status || 'detected';
-};
 
 export default function AuditLogs() {
   useDocumentTitle('Audit Logs');
@@ -77,9 +65,9 @@ export default function AuditLogs() {
       const rows = data || [];
       return {
         total: rows.length,
-        detected: rows.filter(r => r.dispute_status && ['detected', 'pending'].includes(r.dispute_status)).length,
-        disputed: rows.filter(r => ['raised', 'disputed', 'email_copied', 'draft'].includes(r.dispute_status || '')).length,
-        resolved: rows.filter(r => r.dispute_status === 'recovered').length,
+        detected: rows.filter(r => ['detected', 'pending'].includes(getStatus(r))).length,
+        disputed: rows.filter(r => hasActionableDiscrepancy(r) && ['raised', 'disputed', 'email_copied', 'draft'].includes(r.dispute_status || '')).length,
+        resolved: rows.filter(r => hasActionableDiscrepancy(r) && r.dispute_status === 'recovered').length,
         totalAmount: rows.reduce((s, r) => s + (r.discrepancy_amount || 0), 0),
       };
     },
@@ -107,9 +95,9 @@ export default function AuditLogs() {
     if (statusFilter === 'no_issue') {
       query = query.eq('dispute_status', 'no_issue');
     } else if (statusFilter === 'detected') {
-      query = query.neq('dispute_status', 'no_issue').or('dispute_status.is.null,dispute_status.eq.detected,dispute_status.eq.pending');
+      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected,dispute_status.eq.pending');
     } else if (statusFilter !== 'all') {
-      query = query.eq('dispute_status', statusFilter);
+      query = query.eq('dispute_status', statusFilter).gt('discrepancy_amount', 0);
     }
 
     // Courier filter
@@ -118,14 +106,14 @@ export default function AuditLogs() {
     }
 
     // Type filter
-    if (typeFilter === 'weight') query = query.eq('has_weight_discrepancy', true);
-    else if (typeFilter === 'zone') query = query.eq('has_zone_discrepancy', true);
-    else if (typeFilter === 'rto') query = query.eq('has_rto_overcharge', true);
-    else if (typeFilter === 'damage') query = query.eq('has_damage_misclassification', true);
+    if (typeFilter === 'weight') query = query.eq('has_weight_discrepancy', true).gt('discrepancy_amount', 0);
+    else if (typeFilter === 'zone') query = query.eq('has_zone_discrepancy', true).gt('discrepancy_amount', 0);
+    else if (typeFilter === 'rto') query = query.eq('has_rto_overcharge', true).gt('discrepancy_amount', 0);
+    else if (typeFilter === 'damage') query = query.eq('has_damage_misclassification', true).gt('discrepancy_amount', 0);
     else if (typeFilter === 'no_issue') query = query.eq('dispute_status', 'no_issue');
     else if (typeFilter === 'unclassified') {
       query = query
-        .neq('dispute_status', 'no_issue')
+        .gt('discrepancy_amount', 0)
         .eq('has_weight_discrepancy', false)
         .eq('has_zone_discrepancy', false)
         .eq('has_rto_overcharge', false)
