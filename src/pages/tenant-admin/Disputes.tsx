@@ -50,6 +50,12 @@ import {
 import { format } from "date-fns";
 import { creditNoteSchema } from "@/lib/validation-schemas";
 import type { Tables, Json } from "@/integrations/supabase/types";
+import {
+  DISPUTE_STATUS_LABELS as STATUS_LABELS,
+  DISPUTE_STATUS_COLORS as STATUS_COLORS,
+  DISPUTE_TAB_STATUSES as TAB_STATUSES,
+  DISPUTE_TYPE_OPTIONS,
+} from "@/lib/display-labels";
 
 type AuditLog = Tables<"audit_logs">;
 
@@ -75,37 +81,7 @@ interface DisputeViewModel {
   tenant_id: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground border-border",
-  detected: "bg-muted text-muted-foreground border-border",
-  email_copied: "bg-primary/10 text-primary border-primary/20",
-  raised: "bg-warning/10 text-warning border-warning/20",
-  disputed: "bg-warning/10 text-warning border-warning/20",
-  recovered: "bg-success/10 text-success border-success/20",
-  rejected: "bg-destructive/10 text-destructive border-destructive/20",
-  cancelled: "bg-muted text-muted-foreground border-border",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  detected: "Draft",
-  email_copied: "Email Copied",
-  raised: "Raised",
-  disputed: "Raised",
-  recovered: "Recovered",
-  rejected: "Rejected",
-  cancelled: "Cancelled",
-};
-
 const PAGE_SIZE = 25;
-
-const TAB_STATUSES: Record<string, string[]> = {
-  draft: ["draft", "detected", "email_copied"],
-  raised: ["raised", "disputed"],
-  recovered: ["recovered"],
-  rejected: ["rejected"],
-  all: [],
-};
 
 export default function Disputes() {
   useDocumentTitle("Disputes");
