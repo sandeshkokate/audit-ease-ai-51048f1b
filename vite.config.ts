@@ -3,8 +3,6 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-const isLegacySupabaseKey = (value: string) => value.startsWith("eyJ");
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -16,9 +14,7 @@ export default defineConfig(({ mode }) => {
     env.SUPABASE_PUBLISHABLE_KEY ||
     env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     "";
-  const supabasePublishableKey = isLegacySupabaseKey(rawSupabasePublishableKey)
-    ? ""
-    : rawSupabasePublishableKey;
+  const supabasePublishableKey = rawSupabasePublishableKey;
 
   return {
     envPrefix: ["VITE_", "SUPABASE_"],
