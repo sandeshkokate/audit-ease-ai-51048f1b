@@ -19,6 +19,8 @@ import { formatCurrency } from '@/lib/utils';
 
 import { DISPUTE_STATUS_COLORS as STATUS_COLORS } from '@/lib/display-labels';
 
+const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
+
 export default function TenantDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
