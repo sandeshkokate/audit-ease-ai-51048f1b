@@ -316,7 +316,7 @@ export default function Recoveries() {
                     <TableCell>{r.order_id || '—'}</TableCell>
                     <TableCell className="font-medium">{formatCurrency(r.amount)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{r.date}</TableCell>
-                    <TableCell><Badge variant="outline" className={MATCH_COLORS[r.status]}>{r.status}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={MATCH_COLORS[r.status]}>{RECOVERY_STATUS_LABELS[r.status] || r.status}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
