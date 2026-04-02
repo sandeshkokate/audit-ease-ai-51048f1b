@@ -104,9 +104,7 @@ export default function Login() {
       navigate(ROLE_REDIRECTS[role] || "/");
     } catch (err: any) {
       const message = err?.message || "Invalid email or password.";
-      const description = message.includes("Legacy API keys are disabled")
-        ? "Login is temporarily unavailable because the Supabase public key is outdated."
-        : "Invalid email or password.";
+      const description = "Invalid email or password.";
       // In development, log the actual error
       if (import.meta.env.DEV) console.error("[Login]", err);
       toast({ variant: "destructive", title: "Login Failed", description });
