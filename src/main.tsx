@@ -1,13 +1,21 @@
 import { createRoot } from "react-dom/client";
 import { validateEnv } from "./lib/env-validation";
+import { primeSupabasePublicConfig } from "./lib/supabase-public-config";
 import { initSentry } from "./lib/sentry";
-import App from "./App.tsx";
 import "./index.css";
 
-// Validate environment before anything else
-validateEnv();
+async function bootstrap() {
+  // Validate environment before anything else
+  validateEnv();
 
-// Initialize error monitoring
-initSentry();
+  await primeSupabasePublicConfig();
 
-createRoot(document.getElementById("root")!).render(<App />);
+  // Initialize error monitoring
+  initSentry();
+
+  const { default: App } = await import("./App.tsx");
+
+  createRoot(document.getElementById("root")!).render(<App />);
+}
+
+void bootstrap();
