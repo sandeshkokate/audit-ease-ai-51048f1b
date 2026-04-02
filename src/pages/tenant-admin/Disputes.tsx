@@ -130,10 +130,10 @@ export default function Disputes() {
   const [bulkLoading, setBulkLoading] = useState(false);
 
   // Lightweight counts query (single column, no joins)
-  const { data: counts = { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 } } = useQuery({
+  const { data: counts = { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 } } = useQuery({
     queryKey: ["dispute-counts", user?.tenant_id],
     queryFn: async () => {
-      if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 };
+      if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 };
       const { data, error } = await supabase
         .from("audit_logs")
         .select("dispute_status")
@@ -142,11 +142,12 @@ export default function Disputes() {
       if (error) throw error;
       const rows = data || [];
       return {
-        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "email_copied"].includes(r.dispute_status))
+        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "pending", "email_copied"].includes(r.dispute_status))
           .length,
         raised: rows.filter((r) => ["raised", "disputed"].includes(r.dispute_status || "")).length,
         recovered: rows.filter((r) => r.dispute_status === "recovered").length,
         rejected: rows.filter((r) => r.dispute_status === "rejected").length,
+        cancelled: rows.filter((r) => r.dispute_status === "cancelled").length,
         all: rows.length,
       };
     },
