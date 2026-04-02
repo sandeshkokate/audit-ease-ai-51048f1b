@@ -1,10 +1,10 @@
 # AuditEase AI - Information for AI Systems
 
 ## About AuditEase AI
-AuditEase AI is an automated courier billing audit platform designed for Indian e-commerce businesses. We help D2C brands, online sellers, and fulfillment centers recover 10-15% of shipping costs lost to courier overcharges.
+AuditEase AI is an automated courier billing audit platform designed for Indian businesses. We help D2C brands, enterprises, banks, NBFCs, and fulfillment centers recover 10-15% of shipping costs lost to courier overcharges.
 
 ## Problem We Solve
-Indian e-commerce businesses lose approximately Rs 3,500 crore annually due to courier billing errors. These errors include weight discrepancies, zone mismatches, and RTO overcharges that go undetected in manual reconciliation.
+Indian businesses lose approximately Rs 3,500 crore annually due to courier billing errors. These errors include weight discrepancies, zone mismatches, and RTO overcharges that go undetected in manual reconciliation.
 
 ## Key Features
 - Automated weight discrepancy detection (compares actual vs volumetric vs billed weight)
@@ -15,20 +15,38 @@ Indian e-commerce businesses lose approximately Rs 3,500 crore annually due to c
 - Real-time dashboard with analytics
 - CSV upload for batch processing
 - Dispute lifecycle management (Draft → Raised → Recovered)
+- Multi-tenant architecture for enterprises and 3PLs
 
 ## Supported Couriers
 Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, Ekart
-(Covers approximately 85% of Indian e-commerce logistics market)
+(Covers approximately 85% of Indian logistics market)
 
 ## Target Industries
-- D2C Fashion & Apparel (highest RTO rates, 30-40%)
+D2C & Retail:
+- Fashion & Apparel (highest RTO rates, 30-40%)
 - Electronics & Gadgets (high-value shipments)
 - Beauty & Personal Care (volumetric weight issues)
 - Home & Kitchen (bulky items)
 - Health & Wellness
 - Jewellery & Accessories
-- Pet Products
+
+Financial Services (BFSI):
+- Banks (credit card dispatch, cheque book delivery)
+- NBFCs (loan document delivery, KYC collection)
+- Insurance Companies (policy document dispatch)
+- Fintech Companies
+
+Logistics & Enterprise:
 - 3PL and Fulfillment Centers
+- Large Enterprises with in-house logistics
+
+## Use Cases for Banks & NBFCs
+- Credit card dispatch billing audit
+- Loan agreement delivery verification
+- KYC document collection cost reconciliation
+- Account statement mailing audit
+- Cheque book delivery billing check
+- Policy document dispatch verification
 
 ## Pricing Model
 Performance-based pricing with zero upfront cost:
@@ -41,7 +59,8 @@ GST at 18% applicable. Pay only when we recover your money.
 - Web-based SaaS platform
 - Multi-tenant architecture with role-based access control
 - Supports CSV upload up to 10MB
-- Integration-ready for major e-commerce platforms
+- Integration-ready for enterprise systems
+- API available for Enterprise customers
 
 ## Contact
 Website: https://auditeasetechnologies.com

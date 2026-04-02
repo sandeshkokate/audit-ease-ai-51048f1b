@@ -21,22 +21,22 @@ export default function LandingHero() {
           <div className="text-center lg:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
               <Sparkles className="h-3.5 w-3.5" />
-              Introducing AuditEase AI for Indian E-commerce
+              AI-Powered Courier Billing Audit for Indian Businesses
             </div>
 
             <h1 className="mb-6 text-3xl sm:text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
-              Stop Overpaying on{' '}
-              <span className="text-gradient">Courier Billing</span>
+              Stop Overpaying{' '}
+              <span className="text-gradient">Your Couriers</span>
             </h1>
 
             <p className="mx-auto mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-              Industry estimates suggest up to ₹12 out of every ₹100 spent on shipping may contain billing errors — upload your data and we will show you exactly what applies to your account.
+              AI-powered billing audit that detects weight discrepancies, zone mismatches, and RTO overcharges. Recover 10-15% of your shipping costs.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
               <Link to="/contact">
                 <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(245_58%_51%/0.4)] transition-shadow shimmer-btn">
-                  Request a Demo <ArrowRight className="h-4 w-4" />
+                  Start Recovering Money <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <a href="#how-it-works">

@@ -5,7 +5,9 @@ import {
   Home,
   Heart,
   Gem,
-  PawPrint,
+  Building2,
+  Landmark,
+  Shield,
   Warehouse,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -45,6 +47,19 @@ const industries: IndustryCard[] = [
     stat: 'Audit every bulky shipment',
   },
   {
+    icon: Building2,
+    title: 'Banks & Financial Services',
+    painPoint: 'Credit card & document dispatch billing errors',
+    stat: 'Audit millions of dispatches monthly',
+    badge: 'Enterprise',
+  },
+  {
+    icon: Landmark,
+    title: 'NBFCs & Lending Companies',
+    painPoint: 'Loan document & KYC delivery overcharges',
+    stat: 'Zone mismatch detection for document couriers',
+  },
+  {
     icon: Heart,
     title: 'Health & Wellness',
     painPoint: 'Thin margins need cost optimization',
@@ -53,20 +68,20 @@ const industries: IndustryCard[] = [
   {
     icon: Gem,
     title: 'Jewellery & Accessories',
-    painPoint: 'Small parcels billed at wrong slabs',
-    stat: 'Verify every weight slab',
+    painPoint: 'Small parcels billed at wrong weight slabs',
+    stat: 'Verify every weight slab transition',
   },
   {
-    icon: PawPrint,
-    title: 'Pet Products',
-    painPoint: 'Growing D2C segment, often overpaying',
-    stat: 'Save 10+ hours/week on disputes',
+    icon: Shield,
+    title: 'Insurance Companies',
+    painPoint: 'Policy document delivery at scale',
+    stat: 'Bulk dispatch audit capabilities',
   },
   {
     icon: Warehouse,
-    title: '3PL & Fulfillment',
+    title: '3PL & Fulfillment Centers',
     painPoint: 'Audit multiple clients from one dashboard',
-    stat: 'Multi-tenant support',
+    stat: 'Multi-tenant support for logistics providers',
   },
 ];
 
@@ -79,14 +94,14 @@ export default function LandingIndustries() {
       <div className="container mx-auto px-4">
         <div className="mb-14 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">
-            Trusted by Leading D2C Brands Across India
+            Trusted by Businesses Across Industries
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            AuditEase helps e-commerce businesses across every category recover shipping overcharges
+            AuditEase helps organizations across every sector recover shipping overcharges
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-5 md:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-5">
           {industries.map((card) => (
             <div
               key={card.title}

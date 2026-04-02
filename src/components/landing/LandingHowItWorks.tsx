@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
-  { icon: Upload, title: 'Upload Invoice Data', description: 'Export your courier invoices and upload as CSV', color: 'text-primary', bg: 'bg-primary/10' },
-  { icon: Search, title: 'System Audits Every Shipment', description: 'Each shipment is checked against your contracted rate cards', color: 'text-secondary', bg: 'bg-secondary/10' },
-  { icon: AlertTriangle, title: 'Discrepancies Flagged', description: 'Weight errors, zone mismatches and RTO overcharges identified', color: 'text-warning', bg: 'bg-warning/10' },
-  { icon: Mail, title: 'Dispute & Track Recovery', description: 'Ready-made dispute emails and a recovery tracker', color: 'text-success', bg: 'bg-success/10' },
+  { icon: Upload, title: 'Upload Your Data', description: 'Upload your courier invoices and shipment data via CSV. We support all major Indian couriers.', color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Search, title: 'AI Detects Discrepancies', description: 'Our AI compares billed amounts against your contracted rates and identifies weight, zone, and RTO overcharges.', color: 'text-secondary', bg: 'bg-secondary/10' },
+  { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click AI-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: Mail, title: 'Recover Your Money', description: 'Track disputes through resolution and watch recovered amounts flow back to your business.', color: 'text-success', bg: 'bg-success/10' },
 ];
 
 export default function LandingHowItWorks() {
@@ -34,6 +34,7 @@ export default function LandingHowItWorks() {
               <button
                 key={step.title}
                 onClick={() => setActiveStep(i)}
+                aria-label={`Step ${i + 1}: ${step.title}`}
                 className={`flex items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-200 ${
                   activeStep === i ? 'border-primary/30 bg-primary/5 shadow-card-hover' : 'border-border bg-card hover:border-primary/20 hover:bg-muted/30'
                 }`}
