@@ -1,0 +1,8 @@
+DELETE FROM upload_batches
+WHERE id NOT IN (
+  'fec995b7-ac47-4b39-9151-182a2645e010',
+  'd82d2880-a4c6-4d91-aef8-8c844dccdc86',
+  '97ebc6b7-2f19-43b5-9508-f7d685a269be',
+  '9d1534e2-00f2-409c-9bb8-28f4a52d4539',
+  '70139e57-ae86-4406-bc63-197655109386'
+);
