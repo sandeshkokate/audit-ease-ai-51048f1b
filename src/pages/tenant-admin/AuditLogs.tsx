@@ -17,69 +17,17 @@ import { format } from 'date-fns';
 import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Tables } from '@/integrations/supabase/types';
+import {
+  DISPUTE_STATUS_LABELS as STATUS_LABELS,
+  DISPUTE_STATUS_COLORS as STATUS_COLORS,
+  DISCREPANCY_TYPE_LABELS as TYPE_LABELS,
+  AUDIT_STATUS_OPTIONS,
+  AUDIT_TYPE_OPTIONS,
+  STATUS_DEFINITIONS,
+  TYPE_DEFINITIONS,
+} from '@/lib/display-labels';
 
 type AuditLog = Tables<'audit_logs'>;
-
-const STATUS_COLORS: Record<string, string> = {
-  no_issue: 'bg-success/10 text-success border-success/20',
-  detected: 'bg-warning/10 text-warning border-warning/20',
-  draft: 'bg-muted text-muted-foreground border-border',
-  disputed: 'bg-primary/10 text-primary border-primary/20',
-  raised: 'bg-primary/10 text-primary border-primary/20',
-  email_copied: 'bg-primary/10 text-primary border-primary/20',
-  resolved: 'bg-success/10 text-success border-success/20',
-  recovered: 'bg-success/10 text-success border-success/20',
-  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
-  cancelled: 'bg-muted text-muted-foreground border-border',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  no_issue: 'No Issue',
-  detected: 'Detected',
-  draft: 'Draft',
-  disputed: 'Disputed',
-  raised: 'Raised',
-  email_copied: 'Email Copied',
-  resolved: 'Resolved',
-  recovered: 'Recovered',
-  rejected: 'Rejected',
-  cancelled: 'Cancelled',
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  weight: 'Weight',
-  zone: 'Zone',
-  rto: 'RTO',
-  damage: 'Damage',
-  unclassified: 'Unclassified',
-  no_issue: 'No Issue',
-};
-
-const STATUS_DEFINITIONS = `Status Definitions:
-- No Issue — Shipment checked, no billing error found
-- Detected — Billing discrepancy found, not yet actioned
-- Draft — Dispute email generated, not yet sent
-- Email Copied — Dispute email copied, ready to send
-- Raised — Dispute email sent to courier
-- Recovered — Courier issued credit note, amount recovered
-- Rejected — Courier rejected the dispute claim
-- Cancelled — Dispute withdrawn
-
-Trigger Points:
-- No Issue / Detected: Set automatically on CSV upload and processing
-- Draft: Set when dispute email is generated via Supabase Edge Function
-- Email Copied: Set when user clicks Copy Email in Disputes
-- Raised: Set when user clicks Mark as Sent in Disputes
-- Recovered: Set manually in Disputes → Mark as Recovered
-- Rejected: Set manually in Disputes → Mark as Rejected`;
-
-const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
-- Weight — Courier charged more than the actual/volumetric weight
-- Zone — Courier applied a higher delivery zone than the correct pincode zone
-- RTO — Return-to-origin charges applied incorrectly or at wrong rate
-- Damage — Shipment classified as damaged to inflate charges
-- Unclassified — Billing difference detected but type not yet categorised
-- No Issue — No billing error found for this shipment`;
 
 const AUDIT_PAGE_SIZE = 20;
 
@@ -156,7 +104,7 @@ export default function AuditLogs() {
     if (statusFilter === 'no_issue') {
       query = query.or('discrepancy_amount.is.null,discrepancy_amount.eq.0');
     } else if (statusFilter === 'detected') {
-      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected');
+      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected,dispute_status.eq.pending');
     } else if (statusFilter !== 'all') {
       query = query.eq('dispute_status', statusFilter);
     }
@@ -376,13 +324,7 @@ export default function AuditLogs() {
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0); }}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="no_issue">No Issue</SelectItem>
-            <SelectItem value="detected">Detected</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="raised">Raised</SelectItem>
-            <SelectItem value="recovered">Recovered</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
+            {AUDIT_STATUS_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={courierFilter} onValueChange={(v) => { setCourierFilter(v); setPage(0); }}>
@@ -395,13 +337,7 @@ export default function AuditLogs() {
         <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(0); }}>
           <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="weight">Weight</SelectItem>
-            <SelectItem value="zone">Zone</SelectItem>
-            <SelectItem value="rto">RTO</SelectItem>
-            <SelectItem value="damage">Damage</SelectItem>
-            <SelectItem value="unclassified">Unclassified</SelectItem>
-            <SelectItem value="no_issue">No Issue</SelectItem>
+            {AUDIT_TYPE_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(0); }} className="w-36 text-sm" placeholder="From date" />

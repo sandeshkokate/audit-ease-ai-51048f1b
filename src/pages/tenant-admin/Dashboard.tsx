@@ -17,15 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeleton';
 import { formatCurrency } from '@/lib/utils';
 
+import { DISPUTE_STATUS_COLORS as STATUS_COLORS } from '@/lib/display-labels';
+
 const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
-const STATUS_COLORS: Record<string, string> = {
-  no_issue: 'bg-muted/50 text-muted-foreground border-muted',
-  pending: 'bg-warning/10 text-warning border-warning/20',
-  raised: 'bg-primary/10 text-primary border-primary/20',
-  recovered: 'bg-success/10 text-success border-success/20',
-  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
-  cancelled: 'bg-muted/50 text-muted-foreground border-muted',
-};
 
 export default function TenantDashboard() {
   const { user } = useAuth();

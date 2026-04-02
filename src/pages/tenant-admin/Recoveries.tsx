@@ -16,12 +16,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type CreditNote = Tables<'credit_notes'>;
 
-const MATCH_COLORS: Record<string, string> = {
-  matched: 'bg-success/10 text-success border-success/20',
-  review: 'bg-warning/10 text-warning border-warning/20',
-  unmatched: 'bg-destructive/10 text-destructive border-destructive/20',
-  recovered: 'bg-success/10 text-success border-success/20',
-};
+import { RECOVERY_STATUS_COLORS as MATCH_COLORS, RECOVERY_STATUS_LABELS } from '@/lib/display-labels';
 
 export default function Recoveries() {
   useDocumentTitle('Recoveries');
@@ -321,7 +316,7 @@ export default function Recoveries() {
                     <TableCell>{r.order_id || '—'}</TableCell>
                     <TableCell className="font-medium">{formatCurrency(r.amount)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{r.date}</TableCell>
-                    <TableCell><Badge variant="outline" className={MATCH_COLORS[r.status]}>{r.status}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={MATCH_COLORS[r.status]}>{RECOVERY_STATUS_LABELS[r.status] || r.status}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

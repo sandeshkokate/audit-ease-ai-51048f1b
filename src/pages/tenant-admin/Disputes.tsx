@@ -50,6 +50,12 @@ import {
 import { format } from "date-fns";
 import { creditNoteSchema } from "@/lib/validation-schemas";
 import type { Tables, Json } from "@/integrations/supabase/types";
+import {
+  DISPUTE_STATUS_LABELS as STATUS_LABELS,
+  DISPUTE_STATUS_COLORS as STATUS_COLORS,
+  DISPUTE_TAB_STATUSES as TAB_STATUSES,
+  DISPUTE_TYPE_OPTIONS,
+} from "@/lib/display-labels";
 
 type AuditLog = Tables<"audit_logs">;
 
@@ -75,37 +81,7 @@ interface DisputeViewModel {
   tenant_id: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground border-border",
-  detected: "bg-muted text-muted-foreground border-border",
-  email_copied: "bg-primary/10 text-primary border-primary/20",
-  raised: "bg-warning/10 text-warning border-warning/20",
-  disputed: "bg-warning/10 text-warning border-warning/20",
-  recovered: "bg-success/10 text-success border-success/20",
-  rejected: "bg-destructive/10 text-destructive border-destructive/20",
-  cancelled: "bg-muted text-muted-foreground border-border",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  detected: "Draft",
-  email_copied: "Email Copied",
-  raised: "Raised",
-  disputed: "Raised",
-  recovered: "Recovered",
-  rejected: "Rejected",
-  cancelled: "Cancelled",
-};
-
 const PAGE_SIZE = 25;
-
-const TAB_STATUSES: Record<string, string[]> = {
-  draft: ["draft", "detected", "email_copied"],
-  raised: ["raised", "disputed"],
-  recovered: ["recovered"],
-  rejected: ["rejected"],
-  all: [],
-};
 
 export default function Disputes() {
   useDocumentTitle("Disputes");
@@ -154,10 +130,10 @@ export default function Disputes() {
   const [bulkLoading, setBulkLoading] = useState(false);
 
   // Lightweight counts query (single column, no joins)
-  const { data: counts = { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 } } = useQuery({
+  const { data: counts = { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 } } = useQuery({
     queryKey: ["dispute-counts", user?.tenant_id],
     queryFn: async () => {
-      if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, all: 0 };
+      if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 };
       const { data, error } = await supabase
         .from("audit_logs")
         .select("dispute_status")
@@ -166,11 +142,12 @@ export default function Disputes() {
       if (error) throw error;
       const rows = data || [];
       return {
-        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "email_copied"].includes(r.dispute_status))
+        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "pending", "email_copied"].includes(r.dispute_status))
           .length,
         raised: rows.filter((r) => ["raised", "disputed"].includes(r.dispute_status || "")).length,
         recovered: rows.filter((r) => r.dispute_status === "recovered").length,
         rejected: rows.filter((r) => r.dispute_status === "rejected").length,
+        cancelled: rows.filter((r) => r.dispute_status === "cancelled").length,
         all: rows.length,
       };
     },
@@ -765,11 +742,7 @@ export default function Disputes() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="weight">Weight</SelectItem>
-              <SelectItem value="zone">Zone</SelectItem>
-              <SelectItem value="rto">RTO</SelectItem>
-              <SelectItem value="unclassified">Unclassified</SelectItem>
+              {DISPUTE_TYPE_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-36 text-sm" />
@@ -822,6 +795,12 @@ export default function Disputes() {
                 {counts.rejected}
               </Badge>
             </TabsTrigger>
+            <TabsTrigger value="cancelled">
+              Cancelled{" "}
+              <Badge variant="secondary" className="ml-1.5 text-xs">
+                {counts.cancelled}
+              </Badge>
+            </TabsTrigger>
             <TabsTrigger value="all">
               All{" "}
               <Badge variant="secondary" className="ml-1.5 text-xs">
@@ -830,7 +809,7 @@ export default function Disputes() {
             </TabsTrigger>
           </TabsList>
 
-          {["draft", "raised", "recovered", "rejected", "all"].map((tab) => (
+          {["draft", "raised", "recovered", "rejected", "cancelled", "all"].map((tab) => (
             <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
               {/* Select all for raised tab */}
               {(tab === "raised" || tab === "all") &&
