@@ -17,69 +17,17 @@ import { format } from 'date-fns';
 import { Download, Package, AlertTriangle, CheckCircle2, XCircle, Loader2, Weight, MapPin, RotateCcw, Info, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Tables } from '@/integrations/supabase/types';
+import {
+  DISPUTE_STATUS_LABELS as STATUS_LABELS,
+  DISPUTE_STATUS_COLORS as STATUS_COLORS,
+  DISCREPANCY_TYPE_LABELS as TYPE_LABELS,
+  AUDIT_STATUS_OPTIONS,
+  AUDIT_TYPE_OPTIONS,
+  STATUS_DEFINITIONS,
+  TYPE_DEFINITIONS,
+} from '@/lib/display-labels';
 
 type AuditLog = Tables<'audit_logs'>;
-
-const STATUS_COLORS: Record<string, string> = {
-  no_issue: 'bg-success/10 text-success border-success/20',
-  detected: 'bg-warning/10 text-warning border-warning/20',
-  draft: 'bg-muted text-muted-foreground border-border',
-  disputed: 'bg-primary/10 text-primary border-primary/20',
-  raised: 'bg-primary/10 text-primary border-primary/20',
-  email_copied: 'bg-primary/10 text-primary border-primary/20',
-  resolved: 'bg-success/10 text-success border-success/20',
-  recovered: 'bg-success/10 text-success border-success/20',
-  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
-  cancelled: 'bg-muted text-muted-foreground border-border',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  no_issue: 'No Issue',
-  detected: 'Detected',
-  draft: 'Draft',
-  disputed: 'Disputed',
-  raised: 'Raised',
-  email_copied: 'Email Copied',
-  resolved: 'Resolved',
-  recovered: 'Recovered',
-  rejected: 'Rejected',
-  cancelled: 'Cancelled',
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  weight: 'Weight',
-  zone: 'Zone',
-  rto: 'RTO',
-  damage: 'Damage',
-  unclassified: 'Unclassified',
-  no_issue: 'No Issue',
-};
-
-const STATUS_DEFINITIONS = `Status Definitions:
-- No Issue — Shipment checked, no billing error found
-- Detected — Billing discrepancy found, not yet actioned
-- Draft — Dispute email generated, not yet sent
-- Email Copied — Dispute email copied, ready to send
-- Raised — Dispute email sent to courier
-- Recovered — Courier issued credit note, amount recovered
-- Rejected — Courier rejected the dispute claim
-- Cancelled — Dispute withdrawn
-
-Trigger Points:
-- No Issue / Detected: Set automatically on CSV upload and processing
-- Draft: Set when dispute email is generated via Supabase Edge Function
-- Email Copied: Set when user clicks Copy Email in Disputes
-- Raised: Set when user clicks Mark as Sent in Disputes
-- Recovered: Set manually in Disputes → Mark as Recovered
-- Rejected: Set manually in Disputes → Mark as Rejected`;
-
-const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
-- Weight — Courier charged more than the actual/volumetric weight
-- Zone — Courier applied a higher delivery zone than the correct pincode zone
-- RTO — Return-to-origin charges applied incorrectly or at wrong rate
-- Damage — Shipment classified as damaged to inflate charges
-- Unclassified — Billing difference detected but type not yet categorised
-- No Issue — No billing error found for this shipment`;
 
 const AUDIT_PAGE_SIZE = 20;
 
