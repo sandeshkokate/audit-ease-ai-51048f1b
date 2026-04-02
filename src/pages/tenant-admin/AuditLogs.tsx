@@ -31,17 +31,20 @@ type AuditLog = Tables<'audit_logs'>;
 
 const AUDIT_PAGE_SIZE = 20;
 
+const hasDiscrepancyFlag = (r: AuditLog) =>
+  r.has_weight_discrepancy || r.has_zone_discrepancy || r.has_rto_overcharge || r.has_damage_misclassification;
+
 const getType = (r: AuditLog) => {
-  if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   if (r.has_weight_discrepancy) return 'weight';
   if (r.has_zone_discrepancy) return 'zone';
   if (r.has_rto_overcharge) return 'rto';
   if (r.has_damage_misclassification) return 'damage';
-  return 'unclassified';
+  if ((r.discrepancy_amount ?? 0) > 0) return 'unclassified';
+  return 'no_issue';
 };
 
 const getStatus = (r: AuditLog) => {
-  if ((r.discrepancy_amount ?? 0) === 0) return 'no_issue';
+  if (!hasDiscrepancyFlag(r) && (r.discrepancy_amount ?? 0) === 0) return 'no_issue';
   return r.dispute_status || 'detected';
 };
 
