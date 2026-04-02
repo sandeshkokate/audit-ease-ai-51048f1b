@@ -55,7 +55,7 @@ export default function TenantDashboard() {
       if (e2) throw e2;
 
       const currentOrders = currentPeriod?.length || 0;
-      const currentDiscrepancies = currentPeriod?.filter(l => (l.discrepancy_amount ?? 0) > 0) || [];
+      const currentDiscrepancies = currentPeriod?.filter(l => l.dispute_status && l.dispute_status !== 'no_issue') || [];
       const currentRecovered = currentPeriod?.filter(l => l.dispute_status === 'recovered') || [];
       const currentRecoveredAmount = currentRecovered.reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
       const currentDiscrepancyAmount = currentDiscrepancies.reduce((sum, l) => sum + (l.discrepancy_amount ?? 0), 0);
