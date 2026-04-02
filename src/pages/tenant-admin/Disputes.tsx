@@ -299,6 +299,50 @@ export default function Disputes() {
     setEditTo(dispute.courier_email);
     setEditSubject(dispute.email_subject);
     setEditBody(dispute.email_body);
+
+    // Auto-generate email if none exists yet
+    if (!dispute.email_body) {
+      (async () => {
+        try {
+          const { data: log } = await supabase
+            .from("audit_logs")
+            .select("*")
+            .eq("id", dispute.id)
+            .single();
+          if (!log) return;
+          const email = await generateEmailForDispute(log);
+          if (!email) return;
+
+          // Save to DB
+          const { data: inserted } = await supabase
+            .from("dispute_emails")
+            .insert({
+              tenant_id: dispute.tenant_id,
+              audit_log_id: dispute.id,
+              courier_name: log.courier_name,
+              courier_email: email.courier_email,
+              subject: email.subject,
+              body: email.body,
+              created_by: user?.id,
+            })
+            .select()
+            .single();
+
+          if (inserted) {
+            await supabase
+              .from("audit_logs")
+              .update({ dispute_status: "draft" })
+              .eq("id", dispute.id);
+          }
+
+          setEditTo(email.courier_email);
+          setEditSubject(email.subject);
+          setEditBody(email.body);
+        } catch (err) {
+          console.error("Auto-generate email failed:", err);
+        }
+      })();
+    }
   };
 
   const handleCopyEmail = async () => {
