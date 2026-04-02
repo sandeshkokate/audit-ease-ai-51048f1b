@@ -252,6 +252,20 @@ export default function UploadCSV() {
       const result = data as any;
       if (!result.success) throw new Error(result.error);
 
+      // Update batch status to completed
+      if (batchId) {
+        await supabase
+          .from("upload_batches")
+          .update({
+            status: "completed",
+            processed_rows: result.processed ?? 0,
+            discrepancy_rows: result.discrepancies_found ?? 0,
+            failed_rows: result.failed ?? 0,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", batchId);
+      }
+
       toast({
         title: "✅ Upload complete!",
         description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`,
