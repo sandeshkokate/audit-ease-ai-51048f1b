@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
