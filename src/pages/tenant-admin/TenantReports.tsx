@@ -81,7 +81,7 @@ export default function TenantReports() {
       const c = log.courier_name || 'Unknown';
       if (!grouped[c]) grouped[c] = { courier: c, shipments: 0, discrepancies: 0, total_overcharge: 0, weight_errors: 0, zone_errors: 0, rto_errors: 0 };
       grouped[c].shipments += 1;
-      if ((log.discrepancy_amount ?? 0) > 0) grouped[c].discrepancies += 1;
+      if (log.has_weight_discrepancy || log.has_zone_discrepancy || log.has_rto_overcharge || log.has_damage_misclassification || (log.discrepancy_amount ?? 0) > 0) grouped[c].discrepancies += 1;
       grouped[c].total_overcharge += log.discrepancy_amount ?? 0;
       if (log.has_weight_discrepancy) grouped[c].weight_errors++;
       if (log.has_zone_discrepancy) grouped[c].zone_errors++;
