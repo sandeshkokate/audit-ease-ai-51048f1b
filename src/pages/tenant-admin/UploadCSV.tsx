@@ -256,21 +256,28 @@ export default function UploadCSV() {
 
       // Update batch status to completed
       if (batchId) {
+        const batchUpdate: Record<string, any> = {
+          status: "completed",
+          processed_rows: result.processed ?? 0,
+          discrepancy_rows: result.discrepancies_found ?? 0,
+          failed_rows: result.failed ?? 0,
+          completed_at: new Date().toISOString(),
+        };
+        // Store per-row errors from the RPC if any rows failed
+        if (result.errors && Array.isArray(result.errors) && result.errors.length > 0) {
+          batchUpdate.error_log = result.errors;
+        }
         await supabase
           .from("upload_batches")
-          .update({
-            status: "completed",
-            processed_rows: result.processed ?? 0,
-            discrepancy_rows: result.discrepancies_found ?? 0,
-            failed_rows: result.failed ?? 0,
-            completed_at: new Date().toISOString(),
-          })
+          .update(batchUpdate)
           .eq("id", batchId);
       }
 
+      const failedMsg = result.failed > 0 ? ` ${result.failed} rows failed.` : '';
       toast({
-        title: "✅ Upload complete!",
-        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.${result.duplicates_skipped ? ` ${result.duplicates_skipped} duplicates skipped.` : ''}`,
+        title: result.failed > 0 ? "⚠️ Upload completed with errors" : "✅ Upload complete!",
+        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.${result.duplicates_skipped ? ` ${result.duplicates_skipped} duplicates skipped.` : ''}${failedMsg}`,
+        variant: result.failed > 0 ? "destructive" : "default",
       });
 
       // Invalidate related caches so Audit Logs, Disputes, Upload History refresh
