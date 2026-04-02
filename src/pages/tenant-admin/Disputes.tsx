@@ -742,11 +742,7 @@ export default function Disputes() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="weight">Weight</SelectItem>
-              <SelectItem value="zone">Zone</SelectItem>
-              <SelectItem value="rto">RTO</SelectItem>
-              <SelectItem value="unclassified">Unclassified</SelectItem>
+              {DISPUTE_TYPE_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-36 text-sm" />
