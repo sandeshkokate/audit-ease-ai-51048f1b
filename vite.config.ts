@@ -10,9 +10,13 @@ export default defineConfig(({ mode }) => {
   const supabaseUrl =
     process.env.SUPABASE_URL || env.SUPABASE_URL || env.VITE_SUPABASE_URL || "";
   const rawSupabasePublishableKey =
+    process.env.SBPUBLISHABLE_KEY ||
     process.env.SUPABASE_PUBLISHABLE_KEY ||
+    env.SBPUBLISHABLE_KEY ||
     env.SUPABASE_PUBLISHABLE_KEY ||
     env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    env.SUPABASE_ANON_KEY ||
+    env.VITE_SUPABASE_ANON_KEY ||
     "";
   const supabasePublishableKey = rawSupabasePublishableKey;
 

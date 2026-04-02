@@ -15,25 +15,33 @@ const jsonResponse = (body: Record<string, unknown>, status: number) =>
     status,
   });
 
+const isModernPublishableKey = (value: string | undefined): value is string =>
+  typeof value === 'string' && value.startsWith('sb_publishable_');
+
+const readPublishableKey = (): string | null => {
+  const candidates = [
+    Deno.env.get('SUPABASE_PUBLISHABLE_KEY')?.trim(),
+    Deno.env.get('SBPUBLISHABLE_KEY')?.trim(),
+  ];
+
+  return candidates.find(isModernPublishableKey) ?? null;
+};
+
 serve((req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   const url = Deno.env.get('SUPABASE_URL')?.trim();
-  const publishableKey = Deno.env.get('SUPABASE_PUBLISHABLE_KEY')?.trim();
+  const publishableKey = readPublishableKey();
 
   if (!url) {
     return jsonResponse({ error: 'SUPABASE_URL is not configured.' }, 500);
   }
 
   if (!publishableKey) {
-    return jsonResponse({ error: 'SUPABASE_PUBLISHABLE_KEY is not configured.' }, 500);
-  }
-
-  if (!publishableKey.startsWith('sb_publishable_')) {
     return jsonResponse(
-      { error: 'SUPABASE_PUBLISHABLE_KEY must use the new sb_publishable_ format.' },
+      { error: 'No modern Supabase publishable key is configured. Set SUPABASE_PUBLISHABLE_KEY or SBPUBLISHABLE_KEY.' },
       500
     );
   }
