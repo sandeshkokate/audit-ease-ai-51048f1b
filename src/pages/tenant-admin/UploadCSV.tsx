@@ -268,7 +268,7 @@ export default function UploadCSV() {
 
       toast({
         title: "✅ Upload complete!",
-        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.`,
+        description: `${result.processed} orders processed, ${result.discrepancies_found} discrepancies found.${result.duplicates_skipped ? ` ${result.duplicates_skipped} duplicates skipped.` : ''}`,
       });
 
       setFile(null);
