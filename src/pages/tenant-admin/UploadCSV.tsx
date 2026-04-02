@@ -112,6 +112,7 @@ export default function UploadCSV() {
   const [processingStep, setProcessingStep] = useState("");
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
