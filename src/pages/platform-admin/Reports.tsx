@@ -11,7 +11,7 @@ import MetricCard from '@/components/dashboard/MetricCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
 import { Download, FileBarChart, TrendingUp, IndianRupee, Building2, Loader2, Target, ArrowLeft } from 'lucide-react';
-import { TENANT_STATUS_LABELS, getLabel } from '@/lib/display-labels';
+import { TENANT_STATUS_LABELS, TENANT_STATUS_COLORS as STATUS_COLORS, getLabel } from '@/lib/display-labels';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -21,13 +21,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { subDays, subMonths, startOfMonth, endOfMonth, startOfQuarter, startOfYear, format } from 'date-fns';
 
 const CHART_COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 72%, 48%)', 'hsl(243, 75%, 59%)', 'hsl(38, 92%, 50%)', 'hsl(160, 84%, 39%)'];
-
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-success/10 text-success border-success/20',
-  pending: 'bg-warning/10 text-warning border-warning/20',
-  suspended: 'bg-destructive/10 text-destructive border-destructive/20',
-  cancelled: 'bg-muted text-muted-foreground border-border',
-};
 
 function getDateRange(key: string): { from: Date; to: Date } {
   const now = new Date();
