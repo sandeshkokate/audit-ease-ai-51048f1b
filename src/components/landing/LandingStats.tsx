@@ -4,14 +4,14 @@ const stats = [
   {
     icon: IndianRupee,
     number: '₹3,500 Cr',
-    label: 'Annual losses to Indian e-commerce',
+    label: 'Annual losses to Indian businesses',
     context: 'from courier billing errors',
   },
   {
     icon: Percent,
     number: '10-15%',
     label: 'Average shipping overcharge',
-    context: 'across D2C brands',
+    context: 'across industries',
   },
   {
     icon: RefreshCw,
@@ -39,7 +39,7 @@ export default function LandingStats() {
             The Courier Billing Problem
           </h2>
           <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-            Indian e-commerce is leaking money through shipping overcharges
+            Indian businesses are leaking money through shipping overcharges
           </p>
         </div>
 

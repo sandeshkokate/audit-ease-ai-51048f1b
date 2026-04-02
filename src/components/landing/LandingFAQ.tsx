@@ -3,15 +3,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 const faqs = [
   {
     q: 'What is courier billing audit?',
-    a: 'Courier billing audit is the process of verifying shipping invoices against your contracted rates to identify overcharges. Common errors include weight discrepancies (where the courier bills a higher weight than actual), zone mismatches (charging for farther delivery zones), and RTO overcharges (incorrect return shipping fees). Indian e-commerce businesses lose an estimated ₹3,500 crore annually to such billing errors. AuditEase AI automates this entire process.',
+    a: 'Courier billing audit is the process of verifying shipping invoices against your contracted rates to identify overcharges. Common errors include weight discrepancies (where the courier bills a higher weight than actual), zone mismatches (charging for farther delivery zones), and RTO overcharges (incorrect return shipping fees). Indian businesses lose an estimated ₹3,500 crore annually to such billing errors. AuditEase AI automates this entire process.',
   },
   {
     q: 'How much can we recover from courier overcharges?',
-    a: 'Most e-commerce businesses overpay couriers by 10-15% on shipping charges. The exact recovery depends on your monthly shipment volume, courier mix, and product categories. Fashion and electronics typically see higher discrepancies due to elevated RTO rates and volumetric weight issues. Our AI detects discrepancies with 0.5 kg tolerance and generates dispute emails automatically.',
+    a: 'Most businesses overpay couriers by 10-15% on shipping charges. The exact recovery depends on your monthly shipment volume, courier mix, and shipment types. D2C brands with fashion products see higher discrepancies due to elevated RTO rates, while banks and NBFCs face zone billing issues on high-volume document dispatches. Our AI detects discrepancies with 0.5 kg tolerance and generates dispute emails automatically.',
   },
   {
     q: 'Which couriers does AuditEase support?',
-    a: 'AuditEase supports seven major Indian courier partners: Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart. This covers approximately 85% of the Indian e-commerce logistics market. We can add additional courier integrations for Enterprise customers.',
+    a: 'AuditEase supports seven major Indian courier partners: Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart. This covers approximately 85% of the Indian logistics market. We can add additional courier integrations for Enterprise customers.',
   },
   {
     q: 'What types of billing errors does AuditEase detect?',
@@ -22,16 +22,12 @@ const faqs = [
     a: "AuditEase works on a success-fee model. You pay nothing upfront and only pay a percentage of the money we actually recover for you. Our Starter plan is 10% of recovered amount, Professional is 8%, and Enterprise gets custom pricing. If we don't recover anything, you pay nothing.",
   },
   {
+    q: 'Can banks and NBFCs use AuditEase?',
+    a: 'Absolutely. Banks and NBFCs are among our key target segments. Financial institutions dispatch millions of documents monthly — credit cards, loan agreements, KYC documents, account statements, cheque books, and policy documents. Each of these shipments can have weight or zone billing errors. AuditEase audits all dispatches and recovers overcharges just like we do for product shipments.',
+  },
+  {
     q: 'How does the AI dispute email generation work?',
     a: 'When AuditEase detects a billing discrepancy, our AI automatically drafts a professional dispute email tailored to the specific courier and error type. The email references the exact AWB number, discrepancy amount, and your contracted rates. You can review, edit if needed, and send with one click. This reduces dispute handling time from hours to minutes.',
-  },
-  {
-    q: 'Is my data secure?',
-    a: 'All data is encrypted in transit and at rest. We only access shipment data required for auditing and never share your data with third parties.',
-  },
-  {
-    q: 'Do I need to change my existing workflow?',
-    a: 'No. Simply export your courier invoices as CSV files and upload them. You can continue using all your existing systems and processes.',
   },
 ];
 

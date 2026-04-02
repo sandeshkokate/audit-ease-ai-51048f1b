@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, MessageCircle } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export default function LandingFooter() {
@@ -30,7 +30,7 @@ export default function LandingFooter() {
               </span>
             </div>
             <p className="text-sm leading-relaxed opacity-60">
-              Automated courier billing audit platform for Indian e-commerce. Recover overcharges. Save money. Scale faster.
+              Automated courier billing audit platform for Indian businesses. Recover overcharges. Save money. Scale faster.
             </p>
           </div>
 
@@ -77,10 +77,10 @@ export default function LandingFooter() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@auditeasetechnologies.com"
+                  href="mailto:support@auditease.com"
                   className="hover:opacity-100 transition-opacity"
                 >
-                  hello@auditeasetechnologies.com
+                  support@auditease.com
                 </a>
               </li>
             </ul>
@@ -99,8 +99,8 @@ export default function LandingFooter() {
         <Separator className="my-8 opacity-20" />
 
         <div className="flex flex-col items-center justify-between gap-3 text-xs opacity-50 sm:flex-row">
-          <p>© {new Date().getFullYear()} AuditEase AI. All rights reserved.</p>
-          <p>Made with ♥ in India for Indian e-commerce</p>
+          <p>© {new Date().getFullYear()} AuditEase Technologies. All rights reserved.</p>
+          <p>Built for D2C brands, enterprises, banks, and NBFCs</p>
         </div>
       </div>
     </footer>
