@@ -24,7 +24,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using the AuditEase AI platform, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.
+              By accessing or using the AuditEase platform, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.
             </p>
           </section>
 
