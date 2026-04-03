@@ -7,8 +7,8 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Privacy Policy – AuditEase AI"
-        description="Learn how AuditEase AI collects, uses, and protects your shipment data. We never sell or share your courier billing data."
+        title="Privacy Policy – AuditEase"
+        description="Learn how AuditEase collects, uses, and protects your shipment data. We never sell or share your courier billing data."
         path="/privacy-policy"
       />
       <LandingNav />
