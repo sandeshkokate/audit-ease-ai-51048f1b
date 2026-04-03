@@ -5,7 +5,6 @@ import BuiltForSection from '@/components/landing/BuiltForSection';
 import LandingStats from '@/components/landing/LandingStats';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingFeatures from '@/components/landing/LandingFeatures';
-import LandingIndustries from '@/components/landing/LandingIndustries';
 import LandingCalculator from '@/components/landing/LandingCalculator';
 import LandingPricing from '@/components/landing/LandingPricing';
 import LandingFAQ from '@/components/landing/LandingFAQ';
