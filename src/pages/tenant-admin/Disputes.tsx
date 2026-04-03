@@ -501,26 +501,20 @@ export default function Disputes() {
     if (!recoveryModal.dispute) return;
     setActionLoading(true);
     try {
-      // Call RPC — handles status update, credit_note creation, and activity logging server-side
-      const { data: rpcData, error: rpcError } = await supabase.rpc("update_dispute_status", {
-        p_dispute_id: recoveryModal.dispute.id,
-        p_new_status: "recovered",
-        p_updated_by: user?.id,
-        p_recovered_amount: parseFloat(creditNote.amount),
-        p_notes: `Credit note ${creditNote.number}${creditNote.date ? ", date " + creditNote.date : ""}`,
-      });
-      if (rpcError) throw rpcError;
-      const rpcResult = rpcData as any;
-      if (!rpcResult?.success) throw new Error(rpcResult?.error || "Failed to update status");
+      const recoveredAmount = parseFloat(creditNote.amount);
 
-      // Also store credit note fields on the audit_log row for display purposes
-      await supabase
+      // Update audit_logs directly — no RPC needed
+      const { error: updateError } = await supabase
         .from("audit_logs")
         .update({
+          dispute_status: "recovered",
+          recovery_amount: recoveredAmount,
+          recovery_date: creditNote.date || new Date().toISOString().split("T")[0],
           credit_note_number: creditNote.number,
           credit_note_date: creditNote.date || null,
         })
         .eq("id", recoveryModal.dispute.id);
+      if (updateError) throw updateError;
 
       toast({ title: "Marked as recovered" });
       setRecoveryModal({ open: false, dispute: null });
