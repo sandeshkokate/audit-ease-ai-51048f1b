@@ -32,7 +32,7 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title={`${post.title} – AuditEase AI`} description={post.description} path={`/blog/${post.slug}`} />
+      <SEOHead title={`${post.title} – AuditEase`} description={post.description} path={`/blog/${post.slug}`} />
       <LandingNav />
 
       <main className="flex-1 pt-24 pb-16">
