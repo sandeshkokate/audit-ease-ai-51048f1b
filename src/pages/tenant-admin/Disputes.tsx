@@ -33,7 +33,7 @@ import {
   Edit3,
   X,
   Loader2,
-  Sparkles,
+  
   ChevronDown,
   Send,
   MoreHorizontal,
@@ -100,7 +100,7 @@ export default function Disputes() {
   const [editTo, setEditTo] = useState("");
   const [editSubject, setEditSubject] = useState("");
   const [editBody, setEditBody] = useState("");
-  const [generating, setGenerating] = useState(false);
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -455,45 +455,6 @@ export default function Disputes() {
     return { subject, body, courier_email: courierEmail };
   };
 
-  const handleGenerateAll = async () => {
-    const without = paginated.filter((d) => !d.email_body);
-    if (without.length === 0) {
-      toast({ title: "All disputes already have emails generated" });
-      return;
-    }
-    setGenerating(true);
-    try {
-      let generated = 0;
-      for (const dispute of without) {
-        const { data: log } = await supabase.from("audit_logs").select("*").eq("id", dispute.id).single();
-        if (!log) continue;
-        const email = await generateEmailForDispute(log);
-        if (!email) continue;
-
-        await supabase.from("dispute_emails").insert({
-          tenant_id: dispute.tenant_id,
-          audit_log_id: dispute.id,
-          courier_name: log.courier_name,
-          courier_email: email.courier_email,
-          subject: email.subject,
-          body: email.body,
-          created_by: user?.id,
-        });
-
-        await supabase
-          .from("audit_logs")
-          .update({ dispute_status: "draft", dispute_email_id: dispute.id })
-          .eq("id", dispute.id);
-        generated++;
-      }
-      toast({ title: `${generated} dispute emails generated` });
-      refetch();
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Generation failed", description: err.message });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   // FIX 2: Route through update_dispute_status RPC — no more client-side activity_log insert
   const handleMarkRecovered = async () => {
@@ -721,28 +682,6 @@ export default function Disputes() {
                 <CheckCircle className="h-4 w-4" /> Recover {selectedIds.size} selected
               </Button>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-                  {generating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" /> Generate All Dispute Emails
-                    </>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>
-                  Sends all your unprocessed audit log discrepancies to our system, which generates ready-to-send
-                  dispute emails for each one based on your courier's billing error. Emails appear as drafts for your
-                  review before sending.
-                </p>
-              </TooltipContent>
-            </Tooltip>
           </div>
         </div>
 
@@ -890,7 +829,7 @@ export default function Disputes() {
                     {search || courierFilter !== "all"
                       ? "Try adjusting your filters."
                       : activeTab === "draft"
-                        ? 'Click "Generate all dispute emails" to create drafts.'
+                        ? "Upload invoices and review individual disputes to create drafts."
                         : "Nothing in this category yet."}
                   </p>
                 </div>
