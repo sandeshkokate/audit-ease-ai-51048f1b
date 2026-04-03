@@ -970,11 +970,11 @@ export default function Disputes() {
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Add Note
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setFollowUpModal({ open: true, dispute }); }}>
                                 <Calendar className="h-4 w-4 mr-2" />
                                 Set Follow-Up
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEscalate(dispute)}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleEscalate(dispute); }}>
                                 <AlertTriangle className="h-4 w-4 mr-2" />
                                 Escalate
                               </DropdownMenuItem>
