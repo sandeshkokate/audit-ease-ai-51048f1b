@@ -892,18 +892,21 @@ export type Database = {
           prefix_end: number
           prefix_start: number
           region_label: string | null
+          state: string | null
         }
         Insert: {
           circle: string
           prefix_end: number
           prefix_start: number
           region_label?: string | null
+          state?: string | null
         }
         Update: {
           circle?: string
           prefix_end?: number
           prefix_start?: number
           region_label?: string | null
+          state?: string | null
         }
         Relationships: []
       }
