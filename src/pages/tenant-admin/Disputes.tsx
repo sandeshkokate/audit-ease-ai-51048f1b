@@ -1036,7 +1036,7 @@ export default function Disputes() {
             <DialogHeader>
               <DialogTitle>Review Dispute Email</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 pr-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">To</Label>
