@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: 'How do I get started?',
-    a: 'Upload your courier invoice (CSV or Excel). Our AI audits it in minutes. You\'ll see exactly how much you can recover before paying anything.',
+    a: 'Upload your courier invoice (CSV or Excel). Our platform audits it in minutes. You\'ll see exactly how much you can recover before paying anything.',
   },
   {
     q: 'What if you don\'t find any overcharges?',
