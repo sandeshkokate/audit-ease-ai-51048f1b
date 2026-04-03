@@ -25,7 +25,7 @@ serve(async (req) => {
         <h3 style="color:#111;margin:0 0 16px">You have been invited!</h3>
         <p style="color:#555;line-height:1.6;margin:0 0 12px">Hi,</p>
         <p style="color:#555;line-height:1.6;margin:0 0 12px">
-          ${inviterName} has invited you to join their team on AuditEase AI 
+          ${inviterName} has invited you to join their team on AuditEase 
           as <strong>${roleLabel}</strong>.
         </p>
         <p style="color:#555;line-height:1.6;margin:0 0 24px">
