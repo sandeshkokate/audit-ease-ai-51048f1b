@@ -32,7 +32,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">2. Service Description</h2>
             <p>
-              AuditEase AI is an automated courier billing audit platform that identifies discrepancies in shipping charges billed by courier partners. The platform processes shipment data uploaded by clients, detects overcharges related to weight, zone, RTO, and other parameters, generates dispute communications, and tracks recoveries.
+              AuditEase is an automated courier billing audit platform that identifies discrepancies in shipping charges billed by courier partners. The platform processes shipment data uploaded by clients, detects overcharges related to weight, zone, RTO, and other parameters, generates dispute communications, and tracks recoveries.
             </p>
           </section>
 
