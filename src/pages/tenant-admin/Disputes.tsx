@@ -682,28 +682,6 @@ export default function Disputes() {
                 <CheckCircle className="h-4 w-4" /> Recover {selectedIds.size} selected
               </Button>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="default" className="gap-2" onClick={handleGenerateAll} disabled={generating}>
-                  {generating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" /> Generate All Dispute Emails
-                    </>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>
-                  Sends all your unprocessed audit log discrepancies to our system, which generates ready-to-send
-                  dispute emails for each one based on your courier's billing error. Emails appear as drafts for your
-                  review before sending.
-                </p>
-              </TooltipContent>
-            </Tooltip>
           </div>
         </div>
 
