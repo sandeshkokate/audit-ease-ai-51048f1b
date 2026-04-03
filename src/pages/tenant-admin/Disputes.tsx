@@ -33,7 +33,7 @@ import {
   Edit3,
   X,
   Loader2,
-  Sparkles,
+  
   ChevronDown,
   Send,
   MoreHorizontal,
