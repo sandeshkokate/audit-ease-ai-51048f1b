@@ -11,7 +11,7 @@ export default function LandingProblem() {
     { emoji: '⚖️', title: 'Weight Discrepancy', desc: 'Billed weight higher than actual or volumetric weight' },
     { emoji: '📍', title: 'Zone Mismatch', desc: 'Incorrect zone classification for the delivery location' },
     { emoji: '↩️', title: 'RTO Overcharge', desc: 'Return shipments billed at incorrect rates' },
-    { emoji: '💵', title: 'COD Errors', desc: 'Incorrect cash-on-delivery handling fees charged' },
+    { emoji: '📦', title: 'Dimension Errors', desc: 'Volumetric weight miscalculated leading to inflated charges' },
   ];
 
   return (
