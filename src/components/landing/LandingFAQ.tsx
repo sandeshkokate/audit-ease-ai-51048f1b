@@ -2,32 +2,28 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const faqs = [
   {
-    q: 'What is courier billing audit?',
-    a: 'Courier billing audit is the process of verifying shipping invoices against your contracted rates to identify overcharges. Common errors include weight discrepancies (where the courier bills a higher weight than actual), zone mismatches (charging for farther delivery zones), and RTO overcharges (incorrect return shipping fees). Indian businesses lose an estimated ₹3,500 crore annually to such billing errors. AuditEase AI automates this entire process.',
+    q: 'How do couriers overcharge?',
+    a: 'Three main ways: (1) They weigh your package higher than actual, (2) They bill a farther delivery zone than correct, (3) They charge incorrect return-to-origin fees. These add up to 10-15% of your shipping spend.',
   },
   {
-    q: 'How much can we recover from courier overcharges?',
-    a: 'Most businesses overpay couriers by 10-15% on shipping charges. The exact recovery depends on your monthly shipment volume, courier mix, and shipment types. D2C brands with fashion products see higher discrepancies due to elevated RTO rates, while banks and NBFCs face zone billing issues on high-volume document dispatches. Our AI detects discrepancies with 0.5 kg tolerance and generates dispute emails automatically.',
+    q: 'Which couriers do you support?',
+    a: 'Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart — covering 90%+ of Indian logistics.',
   },
   {
-    q: 'Which couriers does AuditEase support?',
-    a: 'AuditEase supports seven major Indian courier partners: Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart. This covers approximately 85% of the Indian logistics market. We can add additional courier integrations for Enterprise customers.',
+    q: 'How do I get started?',
+    a: 'Upload your courier invoice (CSV or Excel). Our AI audits it in minutes. You\'ll see exactly how much you can recover before paying anything.',
   },
   {
-    q: 'What types of billing errors does AuditEase detect?',
-    a: 'We detect three main types of discrepancies: (1) Weight mismatches where couriers charge for higher weight than actual or volumetric weight, (2) Zone mismatches where shipments are billed for incorrect delivery zones based on pincode mapping, and (3) RTO overcharges where return shipments are billed incorrectly against your contracted RTO percentage.',
+    q: 'What if you don\'t find any overcharges?',
+    a: 'Then you pay nothing. Our model is simple — we only earn when you recover money.',
   },
   {
-    q: 'How does performance-based pricing work?',
-    a: "AuditEase works on a success-fee model. You pay nothing upfront and only pay a percentage of the money we actually recover for you. Our Starter plan is 10% of recovered amount, Professional is 8%, and Enterprise gets custom pricing. If we don't recover anything, you pay nothing.",
+    q: 'How long does recovery take?',
+    a: 'Disputes are typically resolved in 15-30 days. We provide ready-to-send emails and track the entire process for you.',
   },
   {
-    q: 'Can banks and NBFCs use AuditEase?',
-    a: 'Absolutely. Banks and NBFCs are among our key target segments. Financial institutions dispatch millions of documents monthly — credit cards, loan agreements, KYC documents, account statements, cheque books, and policy documents. Each of these shipments can have weight or zone billing errors. AuditEase audits all dispatches and recovers overcharges just like we do for product shipments.',
-  },
-  {
-    q: 'How does the AI dispute email generation work?',
-    a: 'When AuditEase detects a billing discrepancy, our AI automatically drafts a professional dispute email tailored to the specific courier and error type. The email references the exact AWB number, discrepancy amount, and your contracted rates. You can review, edit if needed, and send with one click. This reduces dispute handling time from hours to minutes.',
+    q: 'Is my data secure?',
+    a: 'Yes. Bank-grade encryption, SOC 2 compliant infrastructure, and your data is never shared with third parties.',
   },
 ];
 
