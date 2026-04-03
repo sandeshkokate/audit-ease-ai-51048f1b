@@ -105,8 +105,7 @@ export default function Login() {
     } catch (err: any) {
       const message = err?.message || "Invalid email or password.";
       const description = "Invalid email or password.";
-      // In development, log the actual error
-      if (import.meta.env.DEV) console.error("[Login]", err);
+      logger.error("[Login]", err);
       toast({ variant: "destructive", title: "Login Failed", description });
     } finally {
       setLoading(false);

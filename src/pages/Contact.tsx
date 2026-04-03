@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Send, MessageCircle } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,7 +35,6 @@ export default function Contact() {
 
     setLoading(true);
     try {
-      // Rate limit check
       const { data: allowed } = await supabase.rpc('check_rate_limit', {
         p_identifier: formData.email.trim().toLowerCase(),
         p_action: 'contact_form',
@@ -52,7 +51,6 @@ export default function Contact() {
         return;
       }
 
-      // Insert lead directly (RLS allows public inserts on leads table)
       const { error } = await supabase.from('leads').insert({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -80,7 +78,7 @@ export default function Contact() {
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
         title="Contact Us – AuditEase AI | Get a Free Courier Audit"
-        description="Have questions about courier billing audits? Contact AuditEase AI. We respond within 2 hours on WhatsApp."
+        description="Have questions about courier billing audits? Contact AuditEase AI. We respond within 24 hours."
         path="/contact"
       />
       <LandingNav />
@@ -89,28 +87,8 @@ export default function Contact() {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground md:text-4xl">Get in Touch</h1>
           <p className="mt-2 text-muted-foreground">
-            We respond within 2 hours on WhatsApp, and within 24 hours by email.
+            We respond within 24 hours by email.
           </p>
-        </div>
-
-        {/* WhatsApp card */}
-        <div className="mb-8 rounded-xl border border-green-500/30 bg-green-50/50 dark:bg-green-950/20 p-5 flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-500/15">
-            <MessageCircle className="h-6 w-6 text-green-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-foreground">Chat with us on WhatsApp</h3>
-            <p className="text-xs text-muted-foreground">Get a response within 2 hours on working days</p>
-          </div>
-          <a
-            href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline" size="sm" className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950 gap-1.5 shrink-0">
-              <MessageCircle className="h-4 w-4" /> Open WhatsApp
-            </Button>
-          </a>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
@@ -138,7 +116,7 @@ export default function Contact() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="phone">WhatsApp Number (optional)</Label>
+            <Label htmlFor="phone">Phone (optional)</Label>
             <Input
               id="phone"
               type="tel"

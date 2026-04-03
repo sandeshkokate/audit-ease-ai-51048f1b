@@ -339,7 +339,7 @@ export default function Disputes() {
           setEditSubject(email.subject);
           setEditBody(email.body);
         } catch (err) {
-          console.error("Auto-generate email failed:", err);
+          logger.error("Auto-generate email failed:", err);
         }
       })();
     }
