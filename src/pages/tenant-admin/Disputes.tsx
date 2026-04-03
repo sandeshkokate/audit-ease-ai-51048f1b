@@ -946,27 +946,27 @@ export default function Disputes() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48 bg-popover">
-                              <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleMarkSent(dispute.id); }}>
                                 <Send className="h-4 w-4 mr-2" />
                                 Mark as Raised
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => setRecoveryModal({ open: true, dispute })}
+                                onSelect={(e) => { e.preventDefault(); setRecoveryModal({ open: true, dispute }); }}
                                 className="text-success focus:text-success"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Mark as Recovered
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => setRejectModal({ open: true, dispute })}
+                                onSelect={(e) => { e.preventDefault(); setRejectModal({ open: true, dispute }); }}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Mark as Rejected
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setNoteModal({ open: true, dispute }); }}>
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Add Note
                               </DropdownMenuItem>
