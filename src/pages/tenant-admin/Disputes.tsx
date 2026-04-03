@@ -1032,7 +1032,7 @@ export default function Disputes() {
 
         {/* Email Review Modal */}
         <Dialog open={!!selectedDispute} onOpenChange={() => setSelectedDispute(null)}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
             <DialogHeader>
               <DialogTitle>Review Dispute Email</DialogTitle>
             </DialogHeader>
