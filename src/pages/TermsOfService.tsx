@@ -7,8 +7,8 @@ export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Terms of Service – AuditEase AI"
-        description="Read the Terms of Service for AuditEase AI. Performance-based pricing, data ownership, and acceptable use policies."
+        title="Terms of Service – AuditEase"
+        description="Read the Terms of Service for AuditEase. Performance-based pricing, data ownership, and acceptable use policies."
         path="/terms-of-service"
       />
       <LandingNav />
