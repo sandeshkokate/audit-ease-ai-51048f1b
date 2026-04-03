@@ -1049,29 +1049,35 @@ export default function Disputes() {
                   <Input value={editSubject} onChange={(e) => setEditSubject(e.target.value)} />
                 </div>
               </div>
-              {selectedDispute?.dispute_reasoning && (
-                <Collapsible>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                      <ChevronDown className="h-4 w-4" /> Dispute Reasoning
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2 space-y-2">
-                    {selectedDispute.dispute_reasoning.issues?.map((issue: any, i: number) => (
-                      <div key={i} className="bg-muted/50 rounded-md p-3">
-                        <p className="font-medium text-sm">{issue.type} issue</p>
-                        <p className="text-sm text-muted-foreground">{issue.description}</p>
-                        {issue.impact && (
-                          <p className="text-xs text-destructive mt-1">Impact: {formatCurrency(issue.impact)}</p>
-                        )}
-                      </div>
-                    ))}
-                    <p className="text-sm font-medium">
-                      Total overcharge: {formatCurrency(selectedDispute.dispute_reasoning.total_overcharge)}
-                    </p>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
+              {(() => {
+                const reasons = Array.isArray(selectedDispute?.discrepancy_reasons)
+                  ? selectedDispute.discrepancy_reasons
+                  : [];
+                const overcharge = selectedDispute?.discrepancy_amount ?? 0;
+                if (reasons.length === 0 && overcharge === 0) return null;
+                return (
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                        <ChevronDown className="h-4 w-4" /> Dispute Reasoning
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2 space-y-2">
+                      {reasons.map((reason: any, i: number) => (
+                        <div key={i} className="bg-muted/50 rounded-md p-3">
+                          <p className="font-medium text-sm capitalize">{(reason.type || "").replace(/_/g, " ")}</p>
+                          <p className="text-sm text-muted-foreground">{reason.detail}</p>
+                        </div>
+                      ))}
+                      {overcharge > 0 && (
+                        <p className="text-sm font-medium">
+                          Total overcharge: {formatCurrency(overcharge)}
+                        </p>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })()}
               <div className="space-y-1.5">
                 <Label className="text-xs">Email Body</Label>
                 <Textarea
