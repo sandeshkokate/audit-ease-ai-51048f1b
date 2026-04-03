@@ -19,6 +19,7 @@ export default function Landing() {
       <SEOHead />
       <LandingNav />
       <LandingHero />
+      <BuiltForSection />
       <LandingProblem />
       <LandingStats />
       <LandingHowItWorks />
