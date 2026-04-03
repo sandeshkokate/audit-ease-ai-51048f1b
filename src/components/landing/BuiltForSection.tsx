@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import {
-  Package, ShoppingBag, Store, Truck, Building2, Boxes, CreditCard, Landmark, ArrowRight,
+  Package, ShoppingBag, Store, Truck, Building2, Boxes, CreditCard, Landmark,
 } from 'lucide-react';
 
 const businessTypes = [
@@ -88,17 +86,6 @@ export default function BuiltForSection() {
               </span>
             </div>
           ))}
-        </div>
-
-        <div className="mt-12 text-center">
-          <p className="mb-4 text-muted-foreground">
-            Not sure if AuditEase is right for you?
-          </p>
-          <Link to="/contact">
-            <Button variant="hero-outline" size="lg" className="gap-2 shimmer-btn">
-              Get a free audit assessment <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </div>
     </section>
