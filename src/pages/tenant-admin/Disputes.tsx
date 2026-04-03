@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { logger } from "@/lib/logger";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Card, CardContent } from "@/components/ui/card";
