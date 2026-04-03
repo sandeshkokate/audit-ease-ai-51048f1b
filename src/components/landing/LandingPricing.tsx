@@ -78,7 +78,7 @@ export default function LandingPricing() {
             Simple, Performance-Based Pricing
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            Low one-time setup. We earn only when you recover.
+            No monthly fees. Minimal setup costs. No risk. You pay a percentage only when money lands back in your account.
           </p>
         </div>
 
