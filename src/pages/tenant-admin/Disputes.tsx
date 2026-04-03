@@ -249,6 +249,8 @@ export default function Disputes() {
                 ? "RTO"
                 : "Unclassified",
           amount: log.discrepancy_amount,
+          discrepancy_amount: log.discrepancy_amount,
+          discrepancy_reasons: Array.isArray(log.discrepancy_reasons) ? log.discrepancy_reasons : [],
           status: log.dispute_status || "draft",
           courier_email: `billing@${(log.courier_name || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
           email_subject: log.dispute_emails?.[0]?.subject || "",
