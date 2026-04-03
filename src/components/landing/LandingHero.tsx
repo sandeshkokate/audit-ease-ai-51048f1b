@@ -48,7 +48,6 @@ export default function LandingHero() {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start animate-fade-in-up" style={{ animationDelay: '400ms', opacity: 0 }}>
-              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Minimal setup fees — pay only when we recover</span></span>
               <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Works with Delhivery, Blue Dart, DTDC & 4 more</span>
               <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Average recovery: ₹8.50/shipment</span>
             </div>
