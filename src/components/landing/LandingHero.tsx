@@ -21,7 +21,7 @@ export default function LandingHero() {
           <div className="text-center lg:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
               <Sparkles className="h-3.5 w-3.5" />
-              AI-Powered Courier Billing Audit for Indian Businesses
+              Automated Courier Billing Audit for Indian Businesses
             </div>
 
             <h1 className="mb-6 text-3xl sm:text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
