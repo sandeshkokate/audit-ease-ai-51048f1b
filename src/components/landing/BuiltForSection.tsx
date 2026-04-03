@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import {
-  Package, ShoppingBag, Store, Truck, Building2, Boxes, CreditCard, Landmark, ArrowRight,
+  Package, ShoppingBag, Store, Truck, Building2, Boxes, CreditCard, Landmark,
 } from 'lucide-react';
 
 const businessTypes = [
