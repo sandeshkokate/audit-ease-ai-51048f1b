@@ -980,7 +980,10 @@ export default function Disputes() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => handleWithdraw(dispute)}
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setWithdrawModal({ open: true, dispute });
+                                }}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
