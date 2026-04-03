@@ -6,7 +6,7 @@ const setupFeatures = [
   "Complete platform onboarding & configuration",
   "Rate card setup for up to 6 couriers",
   "Courier CSV format mapping",
-  "1 month free support via WhatsApp",
+  "1 month free onboarding support",
   "Sample dispute email templates",
 ];
 
