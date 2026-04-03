@@ -126,6 +126,10 @@ export default function Disputes() {
   const [noteText, setNoteText] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [withdrawModal, setWithdrawModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({
+    open: false,
+    dispute: null,
+  });
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
