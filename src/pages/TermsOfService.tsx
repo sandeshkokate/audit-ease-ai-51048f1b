@@ -80,7 +80,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">6. Limitation of Liability</h2>
             <p>
-              AuditEase AI provides audit calculations and discrepancy detection on a best-effort basis. While we strive for accuracy, recovery amounts depend on courier partner responses and their internal dispute resolution processes.
+              AuditEase provides audit calculations and discrepancy detection on a best-effort basis. While we strive for accuracy, recovery amounts depend on courier partner responses and their internal dispute resolution processes.
             </p>
             <p>
               AuditEase AI shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability shall not exceed the fees paid by you in the preceding twelve months.
