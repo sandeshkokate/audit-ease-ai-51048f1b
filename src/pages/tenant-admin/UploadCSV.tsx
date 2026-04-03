@@ -11,19 +11,32 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Papa from "papaparse";
+import {
+  applyPincodeLookup,
+  buildRepresentativePincodeMap,
+  getLocationLookupFilters,
+  hasRowsMissingPincodes,
+  type ParsedShipmentRow,
+} from "@/lib/upload-location-lookup";
 
 /** Aliases: CSV column name (normalized) → internal column name */
 const COLUMN_ALIASES: Record<string, string> = {
+  awb: "awb_number",
   zone: "charged_zone",
   billing_zone: "charged_zone",
   shipment_zone: "charged_zone",
   weight: "charged_weight",
   status: "shipment_status",
+  courier_name: "courier",
   total_billed: "billed_amount",
   total_amount: "billed_amount",
   rto_charge: "rto_charge",
   cod_charge: "cod_amount",
   cod_amount: "cod_amount",
+  pickup_pincode: "origin_pincode",
+  sender_pincode: "origin_pincode",
+  customer_pincode: "destination_pincode",
+  delivery_pincode: "destination_pincode",
   origin_city: "origin_city",
   origin_state: "origin_state",
   destination_city: "destination_city",
@@ -100,6 +113,25 @@ AWB100002,BlueDart,ORD-5002,delivered,1.8,1.2,15,12,8,A,400001,400071,95.50,no,c
 AWB100003,DTDC,ORD-5003,rto,3.0,2.0,25,20,15,D,400001,560001,210.00,yes,prepaid
 AWB100004,Ecom Express,ORD-5004,delivered,0.5,0.3,10,8,5,C,400001,700001,68.00,no,prepaid
 AWB100005,XpressBees,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,no,cod`;
+
+async function enrichRowsWithPincodes(rows: ParsedShipmentRow[]) {
+  if (!hasRowsMissingPincodes(rows)) return rows;
+
+  const { cities, states } = getLocationLookupFilters(rows);
+  if (!cities.length || !states.length) return rows;
+
+  const { data, error } = await supabase
+    .from("pincode_zone_master")
+    .select("city, state, pincode")
+    .in("city", cities)
+    .in("state", states)
+    .order("pincode", { ascending: true })
+    .range(0, 4999);
+
+  if (error) throw error;
+
+  return applyPincodeLookup(rows, buildRepresentativePincodeMap(data ?? []));
+}
 
 export default function UploadCSV() {
   useDocumentTitle("Upload CSV");
@@ -238,16 +270,17 @@ export default function UploadCSV() {
           return val;
         },
       });
-      const rows = parseResult.data;
+      const rows = parseResult.data as ParsedShipmentRow[];
+      const enrichedRows = await enrichRowsWithPincodes(rows);
 
-      await supabase.from("upload_batches").update({ total_rows: rows.length }).eq("id", batchId);
+      await supabase.from("upload_batches").update({ total_rows: enrichedRows.length }).eq("id", batchId);
 
       setProcessingStep("Calculating discrepancies...");
 
       const { data, error: rpcError } = await supabase.rpc("process_csv_upload", {
         p_tenant_id: user.tenant_id,
         p_uploaded_by: user.id,
-        p_shipments: rows as any,
+        p_shipments: enrichedRows as any,
       });
 
       if (rpcError) throw rpcError;
