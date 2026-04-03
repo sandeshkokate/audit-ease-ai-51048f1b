@@ -8,6 +8,7 @@ import LandingIndustries from '@/components/landing/LandingIndustries';
 import LandingCalculator from '@/components/landing/LandingCalculator';
 import LandingPricing from '@/components/landing/LandingPricing';
 import LandingFAQ from '@/components/landing/LandingFAQ';
+import LandingFinalCTA from '@/components/landing/LandingFinalCTA';
 import LandingFooter from '@/components/landing/LandingFooter';
 import SEOHead from '@/components/shared/SEOHead';
 
@@ -25,6 +26,7 @@ export default function Landing() {
       <LandingCalculator />
       <LandingPricing />
       <LandingFAQ />
+      <LandingFinalCTA />
       <LandingFooter />
     </div>
   );
