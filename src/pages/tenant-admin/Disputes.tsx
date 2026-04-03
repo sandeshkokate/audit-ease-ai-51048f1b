@@ -126,6 +126,10 @@ export default function Disputes() {
   const [noteText, setNoteText] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [withdrawModal, setWithdrawModal] = useState<{ open: boolean; dispute: DisputeViewModel | null }>({
+    open: false,
+    dispute: null,
+  });
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -615,7 +619,8 @@ export default function Disputes() {
     }
     setActionLoading(true);
     try {
-      await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute!.id);
+      if (error) throw error;
       toast({ title: "Follow-up scheduled" });
       setFollowUpModal({ open: false, dispute: null });
       setFollowUpDate("");
@@ -629,10 +634,11 @@ export default function Disputes() {
 
   const handleEscalate = async (dispute: any) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from("audit_logs")
         .update({ escalated: true, escalated_at: new Date().toISOString(), priority: "high" })
         .eq("id", dispute.id);
+      if (error) throw error;
       toast({ title: "Dispute escalated to high priority" });
       refetch();
     } catch (err: any) {
@@ -640,14 +646,19 @@ export default function Disputes() {
     }
   };
 
-  const handleWithdraw = async (dispute: any) => {
-    if (!confirm("Withdraw this dispute? This cannot be undone.")) return;
+  const handleWithdraw = async () => {
+    if (!withdrawModal.dispute) return;
+    setActionLoading(true);
     try {
-      await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", withdrawModal.dispute.id);
+      if (error) throw error;
       toast({ title: "Dispute withdrawn" });
+      setWithdrawModal({ open: false, dispute: null });
       refetch();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -935,41 +946,44 @@ export default function Disputes() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48 bg-popover">
-                              <DropdownMenuItem onClick={() => handleMarkSent(dispute.id)}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleMarkSent(dispute.id); }}>
                                 <Send className="h-4 w-4 mr-2" />
                                 Mark as Raised
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => setRecoveryModal({ open: true, dispute })}
+                                onSelect={(e) => { e.preventDefault(); setRecoveryModal({ open: true, dispute }); }}
                                 className="text-success focus:text-success"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Mark as Recovered
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => setRejectModal({ open: true, dispute })}
+                                onSelect={(e) => { e.preventDefault(); setRejectModal({ open: true, dispute }); }}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Mark as Rejected
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setNoteModal({ open: true, dispute })}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setNoteModal({ open: true, dispute }); }}>
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Add Note
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setFollowUpModal({ open: true, dispute })}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setFollowUpModal({ open: true, dispute }); }}>
                                 <Calendar className="h-4 w-4 mr-2" />
                                 Set Follow-Up
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEscalate(dispute)}>
+                              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleEscalate(dispute); }}>
                                 <AlertTriangle className="h-4 w-4 mr-2" />
                                 Escalate
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => handleWithdraw(dispute)}
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setWithdrawModal({ open: true, dispute });
+                                }}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -1339,6 +1353,32 @@ export default function Disputes() {
               </Button>
               <Button onClick={handleSetFollowUp} disabled={actionLoading}>
                 {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Set Reminder"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Withdraw Confirmation Modal */}
+        <Dialog open={withdrawModal.open} onOpenChange={(o) => !o && setWithdrawModal({ open: false, dispute: null })}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-destructive" />
+                Withdraw Dispute
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to withdraw the dispute for AWB{" "}
+                <span className="font-medium text-foreground">{withdrawModal.dispute?.awb_number}</span>?
+                This will move it to the Cancelled tab.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setWithdrawModal({ open: false, dispute: null })}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleWithdraw} disabled={actionLoading}>
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Withdraw"}
               </Button>
             </DialogFooter>
           </DialogContent>
