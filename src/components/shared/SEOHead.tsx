@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
 const BASE_URL = 'https://auditease.com';
-const DEFAULT_TITLE = 'AuditEase AI – AI-Powered Courier Bill Audit & Recovery for Indian Businesses';
+const DEFAULT_TITLE = 'Courier Bill Audit & Recovery | AuditEase AI';
 const DEFAULT_DESCRIPTION =
-  'Recover 10-15% courier overcharges automatically. AuditEase AI audits Delhivery, Blue Dart, DTDC, Ecom Express billing. Pay only when we save you money.';
+  'Couriers overcharge Indian businesses 10-15% on shipping. AuditEase AI audits every invoice, finds billing errors, and recovers your money. Pay only when we recover.';
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 
 interface SEOHeadProps {
