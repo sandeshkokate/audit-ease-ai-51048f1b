@@ -4,8 +4,8 @@ import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
   { icon: Upload, title: 'Upload Your Invoice', description: 'Drop your courier CSV or Excel file. We support all major formats from Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart.', color: 'text-primary', bg: 'bg-primary/10' },
-  { icon: Search, title: 'AI Finds Every Overcharge', description: 'Our system compares every shipment against your rate card. Weight mismatches, zone errors, RTO overcharges — nothing slips through.', color: 'text-secondary', bg: 'bg-secondary/10' },
-  { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click AI-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: Search, title: 'System Finds Every Overcharge', description: 'Our platform compares every shipment against your rate card. Weight mismatches, zone errors, RTO overcharges — nothing slips through.', color: 'text-secondary', bg: 'bg-secondary/10' },
+  { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click auto-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
   { icon: Mail, title: 'You Get Your Money Back', description: 'We generate dispute emails ready to send. Track recoveries in real-time. Average clients recover ₹2-5 lakhs in the first quarter.', color: 'text-success', bg: 'bg-success/10' },
 ];
 
