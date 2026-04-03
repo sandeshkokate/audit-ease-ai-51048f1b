@@ -27,7 +27,7 @@ export default function About() {
 
           {/* Hero */}
           <header className="text-center space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">About AuditEase AI</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">About AuditEase</h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Helping Indian e-commerce businesses stop overpaying their courier partners.
             </p>
