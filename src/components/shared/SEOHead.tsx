@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
 const BASE_URL = 'https://auditease.com';
-const DEFAULT_TITLE = 'Courier Bill Audit & Recovery | AuditEase AI';
+const DEFAULT_TITLE = 'AuditEase | Courier Billing Audit for E-commerce, Banks & Enterprises';
 const DEFAULT_DESCRIPTION =
-  'Couriers overcharge Indian businesses 10-15% on shipping. AuditEase AI audits every invoice, finds billing errors, and recovers your money. Pay only when we recover.';
+  'Recover 8-15% of shipping costs. Automated courier billing audit for D2C brands, marketplace sellers, banks, NBFCs & enterprises shipping 500+ parcels or documents monthly.';
 const OG_IMAGE = `${BASE_URL}/og-image.png`;
 
 interface SEOHeadProps {

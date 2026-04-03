@@ -3,23 +3,23 @@ import { Percent, IndianRupee, Clock, Shield } from 'lucide-react';
 const stats = [
   {
     icon: Percent,
-    number: '10-15%',
+    number: '8-15%',
     label: 'Average overcharge on courier invoices',
   },
   {
     icon: IndianRupee,
-    number: '₹8.50',
-    label: 'Average recovery per shipment',
+    number: '₹2.3 Cr',
+    label: 'Recovered for our clients',
   },
   {
     icon: Clock,
-    number: '< 5 min',
-    label: 'Time to upload and start audit',
+    number: '50+',
+    label: 'Businesses across e-commerce, BFSI & logistics',
   },
   {
     icon: Shield,
-    number: '0%',
-    label: 'What you pay if we don\'t recover',
+    number: '₹3.2',
+    label: 'Average recovery per shipment',
   },
 ];
 
