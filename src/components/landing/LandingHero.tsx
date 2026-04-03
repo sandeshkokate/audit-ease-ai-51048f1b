@@ -31,7 +31,7 @@ export default function LandingHero() {
             </h1>
 
             <p className="mx-auto mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-              Helping D2C brands, e-commerce sellers, banks, NBFCs, and enterprises recover money from courier overcharges — inflated weights, wrong zones, hidden fees. AuditEase AI audits every invoice and recovers what's yours.
+              Helping D2C brands, e-commerce sellers, banks, NBFCs, and enterprises recover money from courier overcharges — inflated weights, wrong zones, hidden fees. AuditEase audits every invoice and recovers what's yours.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
