@@ -829,7 +829,7 @@ export default function Disputes() {
                     {search || courierFilter !== "all"
                       ? "Try adjusting your filters."
                       : activeTab === "draft"
-                        ? 'Click "Generate all dispute emails" to create drafts.'
+                        ? "Upload invoices and review individual disputes to create drafts."
                         : "Nothing in this category yet."}
                   </p>
                 </div>
