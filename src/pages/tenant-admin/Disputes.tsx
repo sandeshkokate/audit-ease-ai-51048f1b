@@ -619,7 +619,8 @@ export default function Disputes() {
     }
     setActionLoading(true);
     try {
-      await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute!.id);
+      if (error) throw error;
       toast({ title: "Follow-up scheduled" });
       setFollowUpModal({ open: false, dispute: null });
       setFollowUpDate("");
@@ -633,10 +634,11 @@ export default function Disputes() {
 
   const handleEscalate = async (dispute: any) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from("audit_logs")
         .update({ escalated: true, escalated_at: new Date().toISOString(), priority: "high" })
         .eq("id", dispute.id);
+      if (error) throw error;
       toast({ title: "Dispute escalated to high priority" });
       refetch();
     } catch (err: any) {
@@ -644,14 +646,19 @@ export default function Disputes() {
     }
   };
 
-  const handleWithdraw = async (dispute: any) => {
-    if (!confirm("Withdraw this dispute? This cannot be undone.")) return;
+  const handleWithdraw = async () => {
+    if (!withdrawModal.dispute) return;
+    setActionLoading(true);
     try {
-      await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", withdrawModal.dispute.id);
+      if (error) throw error;
       toast({ title: "Dispute withdrawn" });
+      setWithdrawModal({ open: false, dispute: null });
       refetch();
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
+    } finally {
+      setActionLoading(false);
     }
   };
 
