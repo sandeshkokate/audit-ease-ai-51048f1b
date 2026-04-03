@@ -9,7 +9,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="Blog – AuditEase AI | Courier Audit Insights"
+        title="Blog – AuditEase | Courier Audit Insights"
         description="Tips, guides, and insights on courier billing audits, shipping cost optimisation, and e-commerce logistics in India."
         path="/blog"
       />

@@ -58,7 +58,7 @@ export default function About() {
               <h2 className="text-2xl font-semibold text-foreground">Our Solution</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              AuditEase AI automates the entire courier billing audit lifecycle. Upload your shipment CSV, and the platform instantly detects weight discrepancies, zone mismatches, and RTO overcharges. It then generates AI-powered dispute emails tailored to each courier and tracks recovery status — all from a single dashboard.
+              AuditEase automates the entire courier billing audit lifecycle. Upload your shipment CSV, and the platform instantly detects weight discrepancies, zone mismatches, and RTO overcharges. It then generates automated dispute emails tailored to each courier and tracks recovery status — all from a single dashboard.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               Our performance-based pricing means you only pay when we save you money. There's no upfront cost, no long-term contracts — just measurable savings from day one.

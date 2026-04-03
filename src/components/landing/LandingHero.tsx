@@ -64,7 +64,7 @@ export default function LandingHero() {
                 </div>
                 <div className="mx-auto flex h-6 items-center gap-1.5 rounded-md bg-background/80 px-3 text-xs text-muted-foreground">
                   <div className="h-2 w-2 rounded-full bg-success" />
-                  app.auditease.ai/dashboard
+                  app.auditease.in/dashboard
                 </div>
               </div>
 

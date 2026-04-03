@@ -40,7 +40,7 @@ export default function LandingNav() {
             <Shield className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground">
-            AuditEase <span className="text-gradient">AI</span>
+            AuditEase
           </span>
         </Link>
 

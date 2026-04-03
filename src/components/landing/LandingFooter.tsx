@@ -26,7 +26,7 @@ export default function LandingFooter() {
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="text-lg font-bold tracking-tight text-white">
-                AuditEase <span className="text-gradient">AI</span>
+                AuditEase
               </span>
             </div>
             <p className="text-sm leading-relaxed opacity-60">

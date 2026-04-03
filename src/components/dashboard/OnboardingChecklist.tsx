@@ -85,7 +85,7 @@ export default function OnboardingChecklist({ tenantId }: Props) {
 
       {/* Header */}
       <div className="mb-5">
-        <h3 className="text-lg font-bold text-foreground">Welcome to AuditEase AI</h3>
+        <h3 className="text-lg font-bold text-foreground">Welcome to AuditEase</h3>
         <p className="text-sm text-muted-foreground mt-1">
           You're <span className="font-semibold text-primary">{remaining} step{remaining !== 1 ? 's' : ''}</span> away from recovering money:
         </p>

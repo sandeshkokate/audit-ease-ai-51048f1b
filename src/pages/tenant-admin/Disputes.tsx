@@ -737,7 +737,7 @@ export default function Disputes() {
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p>
-                  Sends all your unprocessed audit log discrepancies to our AI engine, which generates ready-to-send
+                  Sends all your unprocessed audit log discrepancies to our system, which generates ready-to-send
                   dispute emails for each one based on your courier's billing error. Emails appear as drafts for your
                   review before sending.
                 </p>
