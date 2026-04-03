@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
-  { icon: Upload, title: 'Upload Your Data', description: 'Upload your courier invoices and shipment data via CSV. We support all major Indian couriers.', color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Upload, title: 'Upload Your Invoice', description: 'Drop your courier CSV or Excel file. We support all major formats from Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart.', color: 'text-primary', bg: 'bg-primary/10' },
   { icon: Search, title: 'AI Detects Discrepancies', description: 'Our AI compares billed amounts against your contracted rates and identifies weight, zone, and RTO overcharges.', color: 'text-secondary', bg: 'bg-secondary/10' },
   { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click AI-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
   { icon: Mail, title: 'Recover Your Money', description: 'Track disputes through resolution and watch recovered amounts flow back to your business.', color: 'text-success', bg: 'bg-success/10' },
