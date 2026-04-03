@@ -69,6 +69,8 @@ interface DisputeViewModel {
   courier_name: string | null;
   discrepancy_type: string;
   amount: number | null;
+  discrepancy_amount: number | null;
+  discrepancy_reasons: any[] | null;
   status: string;
   courier_email: string;
   email_subject: string;
