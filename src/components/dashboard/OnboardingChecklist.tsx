@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, Circle, X, ArrowRight, Rocket } from 'lucide-react';
+import { CheckCircle2, Circle, X, ArrowRight, Upload } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 
@@ -12,28 +12,20 @@ interface Props {
 
 const steps = [
   {
-    key: 'rate_card',
-    title: 'Add your first rate card',
-    description: 'Configure courier rate cards so we can calculate expected charges.',
-    link: '/tenant-admin/settings',
-  },
-  {
     key: 'upload_csv',
-    title: 'Upload your first shipment CSV',
-    description: 'Upload a courier billing file to start auditing shipments.',
+    title: 'Upload your first courier invoice',
     link: '/tenant-admin/upload',
   },
   {
-    key: 'review_discrepancy',
-    title: 'Review your first discrepancy',
-    description: 'Check flagged overcharges found in your billing data.',
-    link: '/tenant-admin/audit-logs',
+    key: 'rate_card',
+    title: 'Configure your rate card',
+    subtitle: 'so we know what you should pay',
+    link: '/tenant-admin/settings',
   },
   {
-    key: 'raise_dispute',
-    title: 'Raise your first dispute',
-    description: 'Generate and send a dispute email to recover overcharges.',
-    link: '/tenant-admin/disputes',
+    key: 'review_discrepancy',
+    title: 'Review your first audit results',
+    link: '/tenant-admin/audit-logs',
   },
 ];
 
@@ -45,27 +37,25 @@ export default function OnboardingChecklist({ tenantId }: Props) {
   const { data: completion, isLoading } = useQuery({
     queryKey: ['onboarding-checklist', tenantId],
     queryFn: async () => {
-      const [rateCards, uploads, discrepancies, disputes] = await Promise.all([
+      const [rateCards, uploads, discrepancies] = await Promise.all([
         supabase.from('rate_cards').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
         supabase.from('upload_batches').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
         supabase.from('audit_logs').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).gt('discrepancy_amount', 0),
-        supabase.from('audit_logs').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('dispute_status', 'raised'),
       ]);
 
       return {
-        rate_card: (rateCards.count || 0) > 0,
         upload_csv: (uploads.count || 0) > 0,
+        rate_card: (rateCards.count || 0) > 0,
         review_discrepancy: (discrepancies.count || 0) > 0,
-        raise_dispute: (disputes.count || 0) > 0,
       };
     },
     enabled: !!tenantId && !dismissed,
     staleTime: 1000 * 60 * 5,
   });
 
-  // Auto-hide when all complete
   const completedCount = completion ? Object.values(completion).filter(Boolean).length : 0;
-  const allComplete = completedCount === 4;
+  const remaining = 3 - completedCount;
+  const allComplete = remaining === 0;
 
   useEffect(() => {
     if (allComplete && !dismissed) {
@@ -81,11 +71,10 @@ export default function OnboardingChecklist({ tenantId }: Props) {
     setDismissed(true);
   };
 
-  const progress = (completedCount / 4) * 100;
+  const progress = (completedCount / 3) * 100;
 
   return (
-    <div className="rounded-xl border border-primary/20 bg-card shadow-card p-5 relative">
-      {/* Dismiss button */}
+    <div className="rounded-xl border border-primary/20 bg-card shadow-card p-6 relative">
       <button
         onClick={handleDismiss}
         className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
@@ -95,36 +84,30 @@ export default function OnboardingChecklist({ tenantId }: Props) {
       </button>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-          <Rocket className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-foreground">Get started with AuditEase</h3>
-          <p className="text-xs text-muted-foreground">Complete these steps to start recovering overpayments</p>
-        </div>
+      <div className="mb-5">
+        <h3 className="text-lg font-bold text-foreground">Welcome to AuditEase AI</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          You're <span className="font-semibold text-primary">{remaining} step{remaining !== 1 ? 's' : ''}</span> away from recovering money:
+        </p>
       </div>
 
       {/* Progress bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium text-muted-foreground">{completedCount} of 4 steps complete</span>
-          <span className="text-xs font-medium text-primary">{progress.toFixed(0)}%</span>
-        </div>
+      <div className="mb-5">
         <Progress value={progress} className="h-2" />
       </div>
 
       {/* Steps */}
-      <div className="space-y-2">
-        {steps.map((step) => {
+      <div className="space-y-2 mb-5">
+        {steps.map((step, idx) => {
           const done = completion[step.key as keyof typeof completion];
           return (
-            <div
+            <button
               key={step.key}
-              className={`flex items-center gap-3 rounded-lg border p-3 transition-colors ${
+              onClick={() => !done && navigate(step.link)}
+              className={`flex items-center gap-3 w-full text-left rounded-lg border p-3.5 transition-colors ${
                 done
-                  ? 'border-success/20 bg-success/5'
-                  : 'border-border bg-muted/20 hover:bg-muted/40'
+                  ? 'border-success/20 bg-success/5 cursor-default'
+                  : 'border-border bg-muted/20 hover:bg-muted/40 cursor-pointer'
               }`}
             >
               {done ? (
@@ -132,26 +115,28 @@ export default function OnboardingChecklist({ tenantId }: Props) {
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground/40 shrink-0" />
               )}
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                  {step.title}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">{step.description}</p>
-              </div>
-              {!done && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-primary gap-1 shrink-0"
-                  onClick={() => navigate(step.link)}
-                >
-                  Go <ArrowRight className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
+              <span className={`text-sm font-medium flex-1 ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                {idx + 1}. {step.title}
+                {step.subtitle && !done && (
+                  <span className="text-muted-foreground font-normal"> ({step.subtitle})</span>
+                )}
+              </span>
+              {!done && <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+            </button>
           );
         })}
       </div>
+
+      {/* CTA */}
+      {!completion.upload_csv && (
+        <Button
+          variant="default"
+          className="w-full gap-2"
+          onClick={() => navigate('/tenant-admin/upload')}
+        >
+          <Upload className="h-4 w-4" /> Upload Invoice Now
+        </Button>
+      )}
     </div>
   );
 }
