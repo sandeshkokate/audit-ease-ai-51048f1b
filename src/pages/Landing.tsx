@@ -23,7 +23,6 @@ export default function Landing() {
       <LandingStats />
       <LandingHowItWorks />
       <LandingFeatures />
-      <LandingIndustries />
       <LandingCalculator />
       <LandingPricing />
       <LandingFAQ />
