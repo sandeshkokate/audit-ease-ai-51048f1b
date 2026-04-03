@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -105,8 +106,7 @@ export default function Login() {
     } catch (err: any) {
       const message = err?.message || "Invalid email or password.";
       const description = "Invalid email or password.";
-      // In development, log the actual error
-      if (import.meta.env.DEV) console.error("[Login]", err);
+      logger.error("[Login]", err);
       toast({ variant: "destructive", title: "Login Failed", description });
     } finally {
       setLoading(false);

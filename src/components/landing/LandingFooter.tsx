@@ -67,16 +67,6 @@ export default function LandingFooter() {
               </li>
               <li>
                 <a
-                  href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%27m%20interested%20in%20AuditEase%20AI"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:opacity-100 transition-opacity"
-                >
-                  WhatsApp Support
-                </a>
-              </li>
-              <li>
-                <a
                   href="mailto:support@auditease.com"
                   className="hover:opacity-100 transition-opacity"
                 >
