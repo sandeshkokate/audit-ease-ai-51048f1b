@@ -1,29 +1,25 @@
-import { IndianRupee, Percent, RefreshCw, Weight } from 'lucide-react';
+import { Percent, IndianRupee, Clock, Shield } from 'lucide-react';
 
 const stats = [
   {
-    icon: IndianRupee,
-    number: '₹3,500 Cr',
-    label: 'Annual losses to Indian businesses',
-    context: 'from courier billing errors',
-  },
-  {
     icon: Percent,
     number: '10-15%',
-    label: 'Average shipping overcharge',
-    context: 'across industries',
+    label: 'Average overcharge on courier invoices',
   },
   {
-    icon: RefreshCw,
-    number: '30-40%',
-    label: 'RTO rates in fashion',
-    context: 'each return has billing risk',
+    icon: IndianRupee,
+    number: '₹8.50',
+    label: 'Average recovery per shipment',
   },
   {
-    icon: Weight,
-    number: '0.5 kg',
-    label: 'Standard weight tolerance',
-    context: 'often exceeded by couriers',
+    icon: Clock,
+    number: '< 5 min',
+    label: 'Time to upload and start audit',
+  },
+  {
+    icon: Shield,
+    number: '0%',
+    label: 'What you pay if we don\'t recover',
   },
 ];
 
