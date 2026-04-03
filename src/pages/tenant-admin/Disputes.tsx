@@ -447,7 +447,7 @@ export default function Disputes() {
       `Please revert within 7 working days. If we do not hear back, we will escalate this matter.`,
       "",
       `Regards,`,
-      `AuditEase AI — Automated Billing Audit`,
+      `AuditEase — Automated Billing Audit`,
     ]
       .filter(Boolean)
       .join("\n");

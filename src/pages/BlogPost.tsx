@@ -82,7 +82,7 @@ export default function BlogPost() {
               Stop overpaying your courier partners.
             </h2>
             <p className="text-primary-foreground/80 text-sm md:text-base">
-              Try AuditEase AI free — upload your first CSV and see discrepancies in minutes.
+              Try AuditEase free — upload your first CSV and see discrepancies in minutes.
             </p>
             <Link to="/login">
               <Button size="lg" className="bg-card text-foreground hover:bg-card/90 gap-2 mt-2">

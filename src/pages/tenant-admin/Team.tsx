@@ -130,7 +130,7 @@ export default function Team() {
             body: JSON.stringify({
               from: 'AuditEase <noreply@auditeasetechnologies.com>',
               to: normalizedEmail,
-              subject: `You are invited to join AuditEase AI as ${roleLabel}`,
+              subject: `You are invited to join AuditEase as ${roleLabel}`,
               html: emailHtml,
             }),
           });

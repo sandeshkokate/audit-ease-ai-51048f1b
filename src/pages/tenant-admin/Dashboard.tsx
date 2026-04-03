@@ -252,7 +252,7 @@ export default function TenantDashboard() {
         </div>
 
         <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Welcome to AuditEase AI!</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-2">Welcome to AuditEase!</h2>
         <p className="text-sm text-muted-foreground max-w-md mb-6">
           Get started by uploading your first courier billing CSV. We'll analyze it against your rate cards and find billing errors.
         </p>

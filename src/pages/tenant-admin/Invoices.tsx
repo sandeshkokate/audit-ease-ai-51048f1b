@@ -106,7 +106,7 @@ export default function Invoices() {
     </tbody>
   </table>
   <div class="footer">
-    <p>AuditEase AI — Courier Billing Audit Platform</p>
+    <p>AuditEase — Courier Billing Audit Platform</p>
     <p>This is a computer-generated invoice.</p>
   </div>
 </body>
