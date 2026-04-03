@@ -25,18 +25,19 @@ export default function LandingHero() {
             </div>
 
             <h1 className="mb-6 text-3xl sm:text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
-              Stop Overpaying{' '}
-              <span className="text-gradient">Your Couriers</span>
+              Couriers Are Overcharging You.
+              <br />
+              <span className="text-gradient">We Get Your Money Back.</span>
             </h1>
 
             <p className="mx-auto mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-              AI-powered billing audit that detects weight discrepancies, zone mismatches, and RTO overcharges. Recover 10-15% of your shipping costs.
+              Indian businesses lose 10-15% on shipping to billing errors — inflated weights, wrong zones, hidden fees. AuditEase AI audits every invoice and recovers what's yours.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
               <Link to="/contact">
                 <Button variant="hero" size="lg" className="gap-2 px-8 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(245_58%_51%/0.4)] transition-shadow shimmer-btn">
-                  Start Recovering Money <ArrowRight className="h-4 w-4" />
+                  Start Free Audit <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <a href="#how-it-works">
