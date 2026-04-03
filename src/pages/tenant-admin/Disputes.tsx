@@ -1357,6 +1357,32 @@ export default function Disputes() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {/* Withdraw Confirmation Modal */}
+        <Dialog open={withdrawModal.open} onOpenChange={(o) => !o && setWithdrawModal({ open: false, dispute: null })}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5 text-destructive" />
+                Withdraw Dispute
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to withdraw the dispute for AWB{" "}
+                <span className="font-medium text-foreground">{withdrawModal.dispute?.awb_number}</span>?
+                This will move it to the Cancelled tab.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setWithdrawModal({ open: false, dispute: null })}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleWithdraw} disabled={actionLoading}>
+                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Withdraw"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
