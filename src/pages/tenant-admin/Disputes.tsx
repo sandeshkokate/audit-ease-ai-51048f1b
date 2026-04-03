@@ -100,7 +100,7 @@ export default function Disputes() {
   const [editTo, setEditTo] = useState("");
   const [editSubject, setEditSubject] = useState("");
   const [editBody, setEditBody] = useState("");
-  const [generating, setGenerating] = useState(false);
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
