@@ -1,6 +1,7 @@
 import LandingNav from '@/components/landing/LandingNav';
 import LandingHero from '@/components/landing/LandingHero';
 import LandingProblem from '@/components/landing/LandingProblem';
+import BuiltForSection from '@/components/landing/BuiltForSection';
 import LandingStats from '@/components/landing/LandingStats';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingFeatures from '@/components/landing/LandingFeatures';
