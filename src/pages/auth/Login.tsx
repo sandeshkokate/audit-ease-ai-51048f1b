@@ -128,7 +128,7 @@ export default function Login() {
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-foreground">
-              AuditEase <span className="text-gradient">AI</span>
+              AuditEase
             </span>
           </Link>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
