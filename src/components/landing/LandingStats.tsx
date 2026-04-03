@@ -48,7 +48,6 @@ export default function LandingStats() {
               <stat.icon className="mb-3 h-8 w-8 text-primary" aria-hidden="true" />
               <span className="text-3xl font-bold text-primary md:text-4xl">{stat.number}</span>
               <span className="mt-2 text-sm font-semibold text-foreground">{stat.label}</span>
-              <span className="mt-1 text-xs text-muted-foreground">{stat.context}</span>
             </div>
           ))}
         </div>
