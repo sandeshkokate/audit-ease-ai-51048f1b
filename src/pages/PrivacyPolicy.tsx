@@ -7,8 +7,8 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Privacy Policy – AuditEase AI"
-        description="Learn how AuditEase AI collects, uses, and protects your shipment data. We never sell or share your courier billing data."
+        title="Privacy Policy – AuditEase"
+        description="Learn how AuditEase collects, uses, and protects your shipment data. We never sell or share your courier billing data."
         path="/privacy-policy"
       />
       <LandingNav />
@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           {/* 1 */}
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">1. Information We Collect</h2>
-            <p>When you use AuditEase AI we may collect the following information:</p>
+            <p>When you use AuditEase we may collect the following information:</p>
             <ul className="list-disc space-y-1.5 pl-6">
               <li>Your name, email address, phone number, and company details provided during signup or contact form submissions.</li>
               <li>Courier shipment and billing data uploaded via CSV files for audit processing.</li>

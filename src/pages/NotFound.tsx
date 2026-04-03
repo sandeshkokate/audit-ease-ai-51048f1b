@@ -8,7 +8,7 @@ import SEOHead from '@/components/shared/SEOHead';
 const NotFound = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title="Page Not Found | AuditEase AI" description="The page you are looking for does not exist." />
+      <SEOHead title="Page Not Found | AuditEase" description="The page you are looking for does not exist." />
       <LandingNav />
       <main className="flex-1 flex items-center justify-center px-4 py-24">
         <div className="text-center max-w-md mx-auto space-y-8">

@@ -83,7 +83,7 @@ export default function Invoices() {
 </head>
 <body>
   <div class="header">
-    <div class="logo">Audit<span>Ease</span> AI</div>
+    <div class="logo">Audit<span>Ease</span></div>
     <div class="invoice-title">
       <h1>INVOICE</h1>
       <p>${invoice.invoice_number}</p>
@@ -106,7 +106,7 @@ export default function Invoices() {
     </tbody>
   </table>
   <div class="footer">
-    <p>AuditEase AI — Courier Billing Audit Platform</p>
+    <p>AuditEase — Courier Billing Audit Platform</p>
     <p>This is a computer-generated invoice.</p>
   </div>
 </body>

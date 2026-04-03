@@ -77,8 +77,8 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
-        title="Contact Us – AuditEase AI | Get a Free Courier Audit"
-        description="Have questions about courier billing audits? Contact AuditEase AI. We respond within 24 hours."
+        title="Contact Us – AuditEase | Get a Free Courier Audit"
+        description="Have questions about courier billing audits? Contact AuditEase. We respond within 24 hours."
         path="/contact"
       />
       <LandingNav />

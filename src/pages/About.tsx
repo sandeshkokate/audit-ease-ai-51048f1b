@@ -16,8 +16,8 @@ export default function About() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="About Us – AuditEase AI | Courier Billing Audit Platform"
-        description="Learn how AuditEase AI helps Indian e-commerce businesses recover 10-15% courier overcharges with automated billing audits."
+        title="About Us – AuditEase | Courier Billing Audit Platform"
+        description="Learn how AuditEase helps Indian e-commerce businesses recover 10-15% courier overcharges with automated billing audits."
         path="/about"
       />
       <LandingNav />
@@ -27,7 +27,7 @@ export default function About() {
 
           {/* Hero */}
           <header className="text-center space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">About AuditEase AI</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">About AuditEase</h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Helping Indian e-commerce businesses stop overpaying their courier partners.
             </p>
@@ -58,7 +58,7 @@ export default function About() {
               <h2 className="text-2xl font-semibold text-foreground">Our Solution</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              AuditEase AI automates the entire courier billing audit lifecycle. Upload your shipment CSV, and the platform instantly detects weight discrepancies, zone mismatches, and RTO overcharges. It then generates AI-powered dispute emails tailored to each courier and tracks recovery status — all from a single dashboard.
+              AuditEase automates the entire courier billing audit lifecycle. Upload your shipment CSV, and the platform instantly detects weight discrepancies, zone mismatches, and RTO overcharges. It then generates automated dispute emails tailored to each courier and tracks recovery status — all from a single dashboard.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               Our performance-based pricing means you only pay when we save you money. There's no upfront cost, no long-term contracts — just measurable savings from day one.

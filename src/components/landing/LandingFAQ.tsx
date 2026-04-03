@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: 'How do I get started?',
-    a: 'Upload your courier invoice (CSV or Excel). Our AI audits it in minutes. You\'ll see exactly how much you can recover before paying anything.',
+    a: 'Upload your courier invoice (CSV or Excel). Our platform audits it in minutes. You\'ll see exactly how much you can recover before paying anything.',
   },
   {
     q: 'What if you don\'t find any overcharges?',
@@ -33,7 +33,7 @@ export default function LandingFAQ() {
       <div className="container mx-auto px-4">
         <div className="mb-14 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">Frequently Asked Questions</h2>
-          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">Everything you need to know about AuditEase AI</p>
+          <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">Everything you need to know about AuditEase</p>
         </div>
         <div className="mx-auto max-w-3xl">
           <Accordion type="single" collapsible className="space-y-3">

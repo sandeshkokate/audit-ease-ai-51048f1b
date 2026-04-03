@@ -48,7 +48,7 @@ export default function ForgotPassword() {
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-foreground">
-              AuditEase <span className="text-gradient">AI</span>
+              AuditEase
             </span>
           </Link>
         </CardHeader>

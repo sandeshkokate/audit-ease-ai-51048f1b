@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 const BASE_URL = 'https://auditease.com';
-const DEFAULT_TITLE = 'AuditEase | Courier Billing Audit for E-commerce, Banks & Enterprises';
+const DEFAULT_TITLE = 'AuditEase | Automated Courier Billing Audit for E-commerce, Banks & Enterprises';
 const DEFAULT_DESCRIPTION =
   'Recover 8-15% of shipping costs. Automated courier billing audit for D2C brands, marketplace sellers, banks, NBFCs & enterprises shipping 500+ parcels or documents monthly.';
 const OG_IMAGE = `${BASE_URL}/og-image.png`;

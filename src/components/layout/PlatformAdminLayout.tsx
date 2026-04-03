@@ -42,7 +42,7 @@ export default function PlatformAdminLayout() {
         </div>
         {!collapsed && (
           <span className="text-lg font-bold text-sidebar-foreground whitespace-nowrap tracking-tight">
-            AuditEase <span className="text-sidebar-primary">AI</span>
+            AuditEase
           </span>
         )}
       </button>

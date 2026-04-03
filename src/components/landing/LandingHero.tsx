@@ -21,7 +21,7 @@ export default function LandingHero() {
           <div className="text-center lg:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-fade-in-up shadow-card" style={{ opacity: 0 }}>
               <Sparkles className="h-3.5 w-3.5" />
-              AI-Powered Courier Billing Audit for Indian Businesses
+              Automated Courier Billing Audit for Indian Businesses
             </div>
 
             <h1 className="mb-6 text-3xl sm:text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-6xl animate-fade-in-up" style={{ animationDelay: '100ms', opacity: 0 }}>
@@ -31,7 +31,7 @@ export default function LandingHero() {
             </h1>
 
             <p className="mx-auto mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground lg:mx-0 animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-              Helping D2C brands, e-commerce sellers, banks, NBFCs, and enterprises recover money from courier overcharges — inflated weights, wrong zones, hidden fees. AuditEase AI audits every invoice and recovers what's yours.
+              Helping D2C brands, e-commerce sellers, banks, NBFCs, and enterprises recover money from courier overcharges — inflated weights, wrong zones, hidden fees. AuditEase audits every invoice and recovers what's yours.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms', opacity: 0 }}>
@@ -64,7 +64,7 @@ export default function LandingHero() {
                 </div>
                 <div className="mx-auto flex h-6 items-center gap-1.5 rounded-md bg-background/80 px-3 text-xs text-muted-foreground">
                   <div className="h-2 w-2 rounded-full bg-success" />
-                  app.auditease.ai/dashboard
+                  app.auditease.in/dashboard
                 </div>
               </div>
 

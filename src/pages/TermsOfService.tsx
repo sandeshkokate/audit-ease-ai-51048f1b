@@ -7,8 +7,8 @@ export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Terms of Service – AuditEase AI"
-        description="Read the Terms of Service for AuditEase AI. Performance-based pricing, data ownership, and acceptable use policies."
+        title="Terms of Service – AuditEase"
+        description="Read the Terms of Service for AuditEase. Performance-based pricing, data ownership, and acceptable use policies."
         path="/terms-of-service"
       />
       <LandingNav />
@@ -24,7 +24,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using the AuditEase AI platform, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.
+              By accessing or using the AuditEase platform, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree, please do not use our services.
             </p>
           </section>
 
@@ -32,14 +32,14 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">2. Service Description</h2>
             <p>
-              AuditEase AI is an automated courier billing audit platform that identifies discrepancies in shipping charges billed by courier partners. The platform processes shipment data uploaded by clients, detects overcharges related to weight, zone, RTO, and other parameters, generates dispute communications, and tracks recoveries.
+              AuditEase is an automated courier billing audit platform that identifies discrepancies in shipping charges billed by courier partners. The platform processes shipment data uploaded by clients, detects overcharges related to weight, zone, RTO, and other parameters, generates dispute communications, and tracks recoveries.
             </p>
           </section>
 
           {/* 3 */}
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">3. Pricing &amp; Payment</h2>
-            <p>AuditEase AI operates on a performance-based pricing model. There is no upfront cost beyond the one-time setup fee. Ongoing fees are charged only on successful recoveries:</p>
+            <p>AuditEase operates on a performance-based pricing model. There is no upfront cost beyond the one-time setup fee. Ongoing fees are charged only on successful recoveries:</p>
             <ul className="list-disc space-y-1.5 pl-6">
               <li><strong className="text-foreground">Starter Plan</strong> — 10% of recovered amount (for recoveries up to ₹1L/month).</li>
               <li><strong className="text-foreground">Growth Plan</strong> — 8% of recovered amount (for recoveries between ₹1L–₹10L/month).</li>
@@ -54,7 +54,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">4. Data Ownership</h2>
             <p>
-              Clients retain full ownership of all shipment and billing data uploaded to the AuditEase AI platform. By uploading data, you grant AuditEase AI a limited, non-exclusive license to process your data solely for the purpose of performing billing audits, generating dispute communications, and tracking recoveries.
+              Clients retain full ownership of all shipment and billing data uploaded to the AuditEase platform. By uploading data, you grant AuditEase a limited, non-exclusive license to process your data solely for the purpose of performing billing audits, generating dispute communications, and tracking recoveries.
             </p>
             <p>
               We will not use your data for any other purpose, nor will we share it with third parties without your explicit consent.
@@ -80,10 +80,10 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">6. Limitation of Liability</h2>
             <p>
-              AuditEase AI provides audit calculations and discrepancy detection on a best-effort basis. While we strive for accuracy, recovery amounts depend on courier partner responses and their internal dispute resolution processes.
+              AuditEase provides audit calculations and discrepancy detection on a best-effort basis. While we strive for accuracy, recovery amounts depend on courier partner responses and their internal dispute resolution processes.
             </p>
             <p>
-              AuditEase AI shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability shall not exceed the fees paid by you in the preceding twelve months.
+              AuditEase shall not be held liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability shall not exceed the fees paid by you in the preceding twelve months.
             </p>
           </section>
 

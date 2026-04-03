@@ -20,12 +20,12 @@ serve(async (req) => {
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;
         padding:32px 24px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb">
         <h2 style="color:#1a1a2e;margin:0 0 24px">
-          Audit<span style="color:#6366f1">Ease</span> AI
+          Audit<span style="color:#6366f1">Ease</span>
         </h2>
         <h3 style="color:#111;margin:0 0 16px">You have been invited!</h3>
         <p style="color:#555;line-height:1.6;margin:0 0 12px">Hi,</p>
         <p style="color:#555;line-height:1.6;margin:0 0 12px">
-          ${inviterName} has invited you to join their team on AuditEase AI 
+          ${inviterName} has invited you to join their team on AuditEase 
           as <strong>${roleLabel}</strong>.
         </p>
         <p style="color:#555;line-height:1.6;margin:0 0 24px">
@@ -54,7 +54,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'AuditEase <noreply@auditeasetechnologies.com>',
         to,
-        subject: `You are invited to join AuditEase AI as ${roleLabel}`,
+        subject: `You are invited to join AuditEase as ${roleLabel}`,
         html: emailHtml,
       }),
     })

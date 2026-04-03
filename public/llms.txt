@@ -1,7 +1,7 @@
-# AuditEase AI - Information for AI Systems
+# AuditEase - Information for Search Systems
 
-## About AuditEase AI
-AuditEase AI is an automated courier billing audit platform designed for Indian businesses. We help D2C brands, enterprises, banks, NBFCs, and fulfillment centers recover 10-15% of shipping costs lost to courier overcharges.
+## About AuditEase
+AuditEase is an automated courier billing audit platform designed for Indian businesses. We help D2C brands, enterprises, banks, NBFCs, and fulfillment centers recover 8-15% of shipping costs lost to courier overcharges.
 
 ## Problem We Solve
 Indian businesses lose approximately Rs 3,500 crore annually due to courier billing errors. These errors include weight discrepancies, zone mismatches, and RTO overcharges that go undetected in manual reconciliation.
@@ -10,7 +10,7 @@ Indian businesses lose approximately Rs 3,500 crore annually due to courier bill
 - Automated weight discrepancy detection (compares actual vs volumetric vs billed weight)
 - Zone mismatch identification using pincode mapping
 - RTO (Return to Origin) overcharge recovery
-- AI-powered dispute email generation
+- Automated dispute email generation
 - Multi-courier support across major Indian logistics providers
 - Real-time dashboard with analytics
 - CSV upload for batch processing
