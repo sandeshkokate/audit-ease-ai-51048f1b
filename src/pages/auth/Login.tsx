@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
