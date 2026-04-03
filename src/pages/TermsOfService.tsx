@@ -54,7 +54,7 @@ export default function TermsOfService() {
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">4. Data Ownership</h2>
             <p>
-              Clients retain full ownership of all shipment and billing data uploaded to the AuditEase AI platform. By uploading data, you grant AuditEase AI a limited, non-exclusive license to process your data solely for the purpose of performing billing audits, generating dispute communications, and tracking recoveries.
+              Clients retain full ownership of all shipment and billing data uploaded to the AuditEase platform. By uploading data, you grant AuditEase a limited, non-exclusive license to process your data solely for the purpose of performing billing audits, generating dispute communications, and tracking recoveries.
             </p>
             <p>
               We will not use your data for any other purpose, nor will we share it with third parties without your explicit consent.
