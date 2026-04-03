@@ -39,7 +39,7 @@ export default function TermsOfService() {
           {/* 3 */}
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">3. Pricing &amp; Payment</h2>
-            <p>AuditEase AI operates on a performance-based pricing model. There is no upfront cost beyond the one-time setup fee. Ongoing fees are charged only on successful recoveries:</p>
+            <p>AuditEase operates on a performance-based pricing model. There is no upfront cost beyond the one-time setup fee. Ongoing fees are charged only on successful recoveries:</p>
             <ul className="list-disc space-y-1.5 pl-6">
               <li><strong className="text-foreground">Starter Plan</strong> — 10% of recovered amount (for recoveries up to ₹1L/month).</li>
               <li><strong className="text-foreground">Growth Plan</strong> — 8% of recovered amount (for recoveries between ₹1L–₹10L/month).</li>
