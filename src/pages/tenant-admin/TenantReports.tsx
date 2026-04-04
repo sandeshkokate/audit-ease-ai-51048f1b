@@ -66,7 +66,7 @@ export default function TenantReports() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('courier_name, discrepancy_amount, recovery_amount, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, dispute_status, created_at, billed_amount, expected_amount, recovery_date, awb')
+        .select('courier, overcharge_amount, discrepancy_type, status, created_at, billed_value, expected_value, awb_number')
         .eq('tenant_id', user.tenant_id)
         .gte('created_at', startDate.toISOString());
       if (error) throw error;
@@ -79,14 +79,15 @@ export default function TenantReports() {
   const courierAnalysis = useMemo(() => {
     const grouped: Record<string, { courier: string; shipments: number; discrepancies: number; total_overcharge: number; weight_errors: number; zone_errors: number; rto_errors: number }> = {};
     auditLogs.forEach(log => {
-      const c = log.courier_name || 'Unknown';
+      const c = log.courier || 'Unknown';
       if (!grouped[c]) grouped[c] = { courier: c, shipments: 0, discrepancies: 0, total_overcharge: 0, weight_errors: 0, zone_errors: 0, rto_errors: 0 };
       grouped[c].shipments += 1;
       if (hasActionableDiscrepancy(log)) grouped[c].discrepancies += 1;
-      grouped[c].total_overcharge += log.discrepancy_amount ?? 0;
-      if (hasActionableDiscrepancy(log) && log.has_weight_discrepancy) grouped[c].weight_errors++;
-      if (hasActionableDiscrepancy(log) && log.has_zone_discrepancy) grouped[c].zone_errors++;
-      if (hasActionableDiscrepancy(log) && log.has_rto_overcharge) grouped[c].rto_errors++;
+      grouped[c].total_overcharge += log.overcharge_amount ?? 0;
+      const dtype = (log.discrepancy_type || '').toLowerCase();
+      if (hasActionableDiscrepancy(log) && dtype === 'weight') grouped[c].weight_errors++;
+      if (hasActionableDiscrepancy(log) && dtype === 'zone') grouped[c].zone_errors++;
+      if (hasActionableDiscrepancy(log) && dtype === 'rto') grouped[c].rto_errors++;
     });
     return Object.values(grouped).map(g => ({
       ...g,
