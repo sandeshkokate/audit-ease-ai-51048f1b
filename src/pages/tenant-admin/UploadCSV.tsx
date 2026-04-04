@@ -166,12 +166,16 @@ export default function UploadCSV() {
   const hasActiveRateCards = rateCards.length > 0;
   const configuredCouriers = rateCards.map((r: any) => r.courier_name?.toLowerCase());
 
+  // Column mapper state
+  const [showMapper, setShowMapper] = useState(false);
+  // columnMap: required_field_name → original CSV header the user selected
+  const [columnMap, setColumnMap] = useState<Record<string, string>>({});
+
   // Detect couriers in parsed preview that have no rate card
   // preview is a 2D string array — find courier column index from headers
   const courierColIndex = (() => {
     const idx = headers.indexOf("courier");
     if (idx >= 0) return idx;
-    // Check if columnMap maps "courier" to a raw header, find that in rawHeaders
     const mapped = columnMap["courier"];
     if (mapped) {
       const rawIdx = rawHeaders.findIndex(h => h === mapped);
@@ -189,10 +193,6 @@ export default function UploadCSV() {
     (c: string) => !configuredCouriers.includes(c.toLowerCase())
   );
   const hasMissingCourierRateCards = missingRateCardCouriers.length > 0;
-  // Column mapper state
-  const [showMapper, setShowMapper] = useState(false);
-  // columnMap: required_field_name → original CSV header the user selected
-  const [columnMap, setColumnMap] = useState<Record<string, string>>({});
 
   /** Normalize then apply aliases */
   const resolveHeader = (raw: string): string => {
