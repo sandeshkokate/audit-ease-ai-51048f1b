@@ -53,8 +53,8 @@ export default function PrivacyPolicy() {
             </p>
             <p>
               You may request deletion of your data at any time by emailing{' '}
-              <a href="mailto:support@auditease.com" className="text-primary hover:underline">
-                support@auditease.com
+              <a href="mailto:support@auditeasetechnologies.com" className="text-primary hover:underline">
+                support@auditeasetechnologies.com
               </a>
               . We will process deletion requests within 15 business days.
             </p>
