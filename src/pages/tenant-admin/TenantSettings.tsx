@@ -284,38 +284,113 @@ export default function TenantSettings() {
 
   const removeZone = (zi: number) => setZones((z) => z.filter((_, i) => i !== zi));
 
-  
+  // Toggle rate card active/inactive
+  const handleToggleRateCard = async (id: string, currentlyActive: boolean) => {
+    try {
+      if (!currentlyActive) {
+        // When activating, deactivate other cards for the same courier
+        const card = rateCards.find((r: any) => r.id === id);
+        if (card) {
+          await supabase
+            .from("rate_cards")
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq("tenant_id", tenantId!)
+            .eq("courier_name", card.courier_name)
+            .eq("is_active", true);
+        }
+      }
+      const { error } = await supabase
+        .from("rate_cards")
+        .update({ is_active: !currentlyActive, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+      toast({ title: !currentlyActive ? "Rate card activated" : "Rate card deactivated" });
+      queryClient.invalidateQueries({ queryKey: ["tenant-rate-cards", tenantId] });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed", description: err.message });
+    }
+  };
 
-  const rateColumns: Column<any>[] = [
-    { key: "courier_name", header: "Courier", sortable: true },
-    {
-      key: "effective_from",
-      header: "Effective From",
-      render: (r) => (r.effective_from ? new Date(r.effective_from).toLocaleDateString() : "-"),
-    },
-    { key: "divisor", header: "Divisor", render: (r) => r.divisor ?? "-" },
-    {
-      key: "rto_percentage",
-      header: "RTO %",
-      render: (r) => (r.rto_percentage != null ? `${r.rto_percentage}%` : "-"),
-    },
-    {
-      key: "is_active",
-      header: "Status",
-      render: (r) => (
-        <Badge
-          variant="outline"
-          className={
-            r.is_active
-              ? "bg-success/10 text-success border-success/20"
-              : "bg-muted text-muted-foreground border-border"
-          }
-        >
-          {r.is_active ? "Active" : "Inactive"}
-        </Badge>
-      ),
-    },
-  ];
+  // Render rate_structure in a readable format
+  const renderRateStructure = (rateStructure: any) => {
+    if (!rateStructure) return <p className="text-sm text-muted-foreground">No rate data</p>;
+
+    // Check if it's the zone-based format: { "A": { "0-0.5": 40 }, "B": {...} }
+    const isZoneFormat = Object.keys(rateStructure).some(
+      (key) => typeof rateStructure[key] === "object" && !Array.isArray(rateStructure[key]) && key.length <= 3
+    );
+
+    if (isZoneFormat) {
+      return (
+        <div className="space-y-3">
+          {Object.entries(rateStructure).map(([zone, slabs]: [string, any]) => (
+            <div key={zone} className="border border-border rounded-lg p-3 bg-muted/30">
+              <h4 className="text-sm font-semibold text-foreground mb-2">Zone {zone}</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {Object.entries(slabs).map(([range, rate]: [string, any]) => (
+                  <div key={range} className="text-sm">
+                    <span className="text-muted-foreground">{range} kg:</span>{" "}
+                    <span className="font-medium text-foreground">₹{rate}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Multiplier-based format with weight_slabs
+    if (rateStructure.weight_slabs) {
+      return (
+        <div className="space-y-3">
+          <div className="border border-border rounded-lg p-3 bg-muted/30">
+            <h4 className="text-sm font-semibold text-foreground mb-2">Weight Slabs</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {rateStructure.weight_slabs.map((slab: any, i: number) => (
+                <div key={i} className="text-sm">
+                  <span className="text-muted-foreground">{slab.min_kg}-{slab.max_kg} kg:</span>{" "}
+                  <span className="font-medium text-foreground">₹{slab.rate}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {rateStructure.zone_multipliers && (
+            <div className="border border-border rounded-lg p-3 bg-muted/30">
+              <h4 className="text-sm font-semibold text-foreground mb-2">Zone Multipliers</h4>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {Object.entries(rateStructure.zone_multipliers).map(([zone, mult]: [string, any]) => (
+                  <div key={zone} className="text-sm">
+                    <span className="text-muted-foreground">{zone}:</span>{" "}
+                    <span className="font-medium text-foreground">×{mult}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {(rateStructure.base_rate || rateStructure.fuel_surcharge_percent) && (
+            <div className="border border-border rounded-lg p-3 bg-muted/30">
+              <h4 className="text-sm font-semibold text-foreground mb-2">Other Charges</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                {rateStructure.base_rate && (
+                  <div><span className="text-muted-foreground">Base Rate:</span> <span className="font-medium">₹{rateStructure.base_rate}</span></div>
+                )}
+                {rateStructure.fuel_surcharge_percent != null && (
+                  <div><span className="text-muted-foreground">Fuel Surcharge:</span> <span className="font-medium">{rateStructure.fuel_surcharge_percent}%</span></div>
+                )}
+                {rateStructure.cod_charge != null && (
+                  <div><span className="text-muted-foreground">COD Charge:</span> <span className="font-medium">₹{rateStructure.cod_charge}</span></div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Fallback: show raw JSON
+    return <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">{JSON.stringify(rateStructure, null, 2)}</pre>;
+  };
 
   if (loadingTenant) {
     return (
