@@ -92,9 +92,11 @@ export default function LandingFooter() {
           <p>© {new Date().getFullYear()} AuditEase Technologies. All rights reserved.</p>
           <p>Built for D2C brands, enterprises, banks, and NBFCs</p>
         </div>
-        <p className="mt-3 text-center text-[10px] opacity-30">
-          This platform provides tools to identify potential billing discrepancies. Recovery is not guaranteed and depends on courier partner responses.
-        </p>
+        <div className="mt-4 rounded-lg border border-border/20 bg-white/5 px-4 py-3 text-center">
+          <p className="text-xs font-semibold text-white/70">
+            ⚠️ Disclaimer: This platform provides tools to identify potential billing discrepancies. Recovery is not guaranteed and depends on courier partner responses.
+          </p>
+        </div>
       </div>
     </footer>
   );
