@@ -240,7 +240,7 @@ export default function Disputes() {
             order_id: null,
             courier: log.courier,
             courier_name: log.courier,
-            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : 'Unclassified',
+            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : dtype === 'overcharge' ? 'Rate Overcharge' : 'Unclassified',
             amount: log.overcharge_amount,
             discrepancy_amount: log.overcharge_amount,
             discrepancy_reasons: [],
@@ -412,6 +412,7 @@ export default function Disputes() {
     if (dtype === 'weight') discrepancies.push("Weight Discrepancy");
     if (dtype === 'zone') discrepancies.push("Zone Discrepancy");
     if (dtype === 'rto') discrepancies.push("RTO Overcharge");
+    if (dtype === 'overcharge') discrepancies.push("Rate Overcharge");
     const typeLabel = discrepancies.length > 0 ? discrepancies.join(", ") : "Billing Discrepancy";
 
     const subject = `Billing Dispute — AWB ${log.awb_number || "N/A"} | ${typeLabel}`;

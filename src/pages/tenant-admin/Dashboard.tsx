@@ -142,12 +142,13 @@ export default function TenantDashboard() {
         .eq('tenant_id', tenantId)
         .gt('overcharge_amount', 1);
 
-      const counts: Record<string, number> = { Weight: 0, Zone: 0, RTO: 0, Other: 0 };
+      const counts: Record<string, number> = { Weight: 0, Zone: 0, RTO: 0, 'Rate Overcharge': 0, Other: 0 };
       data?.forEach(r => {
         const t = r.discrepancy_type?.toLowerCase() ?? '';
         if (t === 'weight') counts.Weight++;
         else if (t === 'zone') counts.Zone++;
         else if (t === 'rto') counts.RTO++;
+        else if (t === 'overcharge') counts['Rate Overcharge']++;
         else counts.Other++;
       });
       return Object.entries(counts)
