@@ -164,7 +164,20 @@ export default function UploadCSV() {
     enabled: !!user?.tenant_id,
   });
   const hasActiveRateCards = rateCards.length > 0;
+  const configuredCouriers = rateCards.map((r: any) => r.courier_name?.toLowerCase());
 
+  // Detect couriers in parsed preview that have no rate card
+  const couriersInPreview = preview.length > 0
+    ? [...new Set(preview.map((row: any) => {
+        const courierKey = headers.includes("courier") ? "courier" : (columnMap["courier"] || "");
+        const val = courierKey ? row[courierKey] : "";
+        return typeof val === "string" ? val.trim() : "";
+      }).filter(Boolean))]
+    : [];
+  const missingRateCardCouriers = couriersInPreview.filter(
+    (c: string) => !configuredCouriers.includes(c.toLowerCase())
+  );
+  const hasMissingCourierRateCards = missingRateCardCouriers.length > 0;
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
   // columnMap: required_field_name → original CSV header the user selected
