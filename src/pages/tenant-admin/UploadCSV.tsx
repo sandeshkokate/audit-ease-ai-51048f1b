@@ -194,7 +194,18 @@ export default function UploadCSV() {
   );
   const hasMissingCourierRateCards = missingRateCardCouriers.length > 0;
 
-  /** Normalize then apply aliases */
+  // Check if rate cards have incomplete zone coverage
+  const incompleteZoneCouriers = couriersInPreview
+    .filter((c: string) => configuredCouriers.includes(c.toLowerCase()))
+    .filter((c: string) => {
+      const rc = rateCards.find((r: any) => r.courier_name?.toLowerCase() === c.toLowerCase());
+      if (!rc?.rate_structure || typeof rc.rate_structure !== 'object') return true;
+      const configuredZones = Object.keys(rc.rate_structure as Record<string, unknown>);
+      return configuredZones.length < 3;
+    });
+  const hasIncompleteZones = incompleteZoneCouriers.length > 0;
+
+
   const resolveHeader = (raw: string): string => {
     const normalized = normalizeCol(raw);
     return COLUMN_ALIASES[normalized] || normalized;
