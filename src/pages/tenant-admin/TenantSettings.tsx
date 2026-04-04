@@ -275,7 +275,7 @@ export default function TenantSettings() {
 
   const removeZone = (zi: number) => setZones((z) => z.filter((_, i) => i !== zi));
 
-  const updateRate = (key: string, value: any) => setRateCardForm((s) => ({ ...s, [key]: value }));
+  
 
   const rateColumns: Column<any>[] = [
     { key: "courier_name", header: "Courier", sortable: true },
