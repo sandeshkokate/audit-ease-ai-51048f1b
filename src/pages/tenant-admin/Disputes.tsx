@@ -240,7 +240,7 @@ export default function Disputes() {
             order_id: null,
             courier: log.courier,
             courier_name: log.courier,
-            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : 'Unclassified',
+            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : dtype === 'overcharge' ? 'Rate Overcharge' : 'Unclassified',
             amount: log.overcharge_amount,
             discrepancy_amount: log.overcharge_amount,
             discrepancy_reasons: [],
