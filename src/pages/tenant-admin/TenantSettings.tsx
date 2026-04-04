@@ -15,7 +15,7 @@ import DataTable, { Column } from "@/components/shared/DataTable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Loader2, Building2, Plus, Trash2, ArrowRight, ArrowLeft, ChevronDown, Check, Info, FileText } from "lucide-react";
+import { Save, Loader2, Building2, Plus, Trash2, ArrowRight, ArrowLeft, ChevronDown, ChevronRight, Check, Info, FileText, Eye, EyeOff } from "lucide-react";
 
 const COURIER_OPTIONS = ["Delhivery", "BlueDart", "DTDC", "Ecom Express", "XpressBees", "Shadowfax", "Ekart", "Other"];
 
