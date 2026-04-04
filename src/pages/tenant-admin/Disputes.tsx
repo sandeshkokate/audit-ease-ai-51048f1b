@@ -462,12 +462,9 @@ export default function Disputes() {
       const { error: updateError } = await supabase
         .from("audit_logs")
         .update({
-          dispute_status: "recovered",
-          recovery_amount: recoveredAmount,
-          recovery_date: creditNote.date || new Date().toISOString().split("T")[0],
-          credit_note_number: creditNote.number,
-          credit_note_date: creditNote.date || null,
-        })
+          status: "recovered",
+          resolution_notes: `Credit note: ${creditNote.number}, Amount: ${recoveredAmount}, Date: ${creditNote.date || 'N/A'}`,
+        } as any)
         .eq("id", recoveryModal.dispute.id);
       if (updateError) throw updateError;
 
