@@ -269,8 +269,6 @@ export default function TenantSettings() {
   const addSlab = (zi: number) =>
     setZones((z) => z.map((x, i) => (i === zi ? { ...x, slabs: [...x.slabs, { from: "", to: "", rate: "" }] } : x)));
 
-  const removeSlab = (zi: number, si: number) =>
-    setZones((z) => z.map((x, i) => (i === zi ? { ...x, slabs: x.slabs.filter((_, j) => j !== si) } : x)));
 
   const addZone = () =>
     setZones((z) => [...z, { name: `Zone${z.length + 1}`, slabs: DEFAULT_SLABS.map((s) => ({ ...s })) }]);
