@@ -407,6 +407,58 @@ export default function UploadCSV() {
   // Check if any required field still needs manual mapping
   const unmappedRequired = ALWAYS_REQUIRED.filter((f) => !isMapped(f));
 
+  if (loadingRateCards) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!hasActiveRateCards) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Upload CSV</h1>
+          <p className="text-sm text-muted-foreground">Upload your courier billing data for audit</p>
+        </div>
+        <Card className="shadow-card">
+          <CardContent className="py-16 text-center">
+            <div className="mx-auto w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
+              <AlertTriangle className="h-10 w-10 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-3">
+              One More Step Before Your First Audit! ☝️
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-lg">
+              To find overcharges, we need to know what your courier <strong>should</strong> be charging you.
+              Please add your rate card first — it only takes 2 minutes!
+            </p>
+            <div className="bg-muted/50 rounded-xl p-6 max-w-md mx-auto mb-8">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center justify-center gap-2">
+                <Lightbulb className="h-5 w-5 text-primary" />
+                Why is this important?
+              </h3>
+              <div className="text-sm text-muted-foreground text-left space-y-2">
+                <p><strong>Without a rate card:</strong> We don't know if ₹80 for a shipment is correct or overcharged.</p>
+                <p><strong>With your rate card:</strong> If your contract says ₹50, we instantly know you were overcharged ₹30!</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button onClick={() => navigate("/tenant-admin/settings?tab=ratecards")} className="gap-2" size="lg">
+                <Settings className="h-5 w-5" /> Add Rate Card Now
+              </Button>
+              <span className="text-muted-foreground">Takes about 2 minutes</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-8">
+              Need help? Check your email for rate card from your courier, or ask your courier's account manager.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
