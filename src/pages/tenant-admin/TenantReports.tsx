@@ -158,10 +158,10 @@ export default function TenantReports() {
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, disputes: 0, resolved: 0, recovered: 0, disputed_amount: 0 };
       byMonth[key].disputes += 1;
-      byMonth[key].disputed_amount += log.discrepancy_amount ?? 0;
-      if (log.dispute_status === 'recovered') {
+      byMonth[key].disputed_amount += log.overcharge_amount ?? 0;
+      if (log.status === 'recovered') {
         byMonth[key].resolved += 1;
-        byMonth[key].recovered += log.recovery_amount ?? 0;
+        byMonth[key].recovered += log.overcharge_amount ?? 0;
       }
     });
     return Object.values(byMonth)
@@ -177,8 +177,8 @@ export default function TenantReports() {
   // Recovery summary metrics
   const recoverySummary = useMemo(() => {
     const disputed = auditLogs.filter(l => hasActionableDiscrepancy(l));
-    const resolved = disputed.filter(l => l.dispute_status === 'recovered');
-    const totalRecovered = resolved.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
+    const resolved = disputed.filter(l => l.status === 'recovered');
+    const totalRecovered = resolved.reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
     return {
       totalDisputes: disputed.length,
       totalResolved: resolved.length,
@@ -191,16 +191,17 @@ export default function TenantReports() {
   const financialImpact = useMemo(() => {
     const byMonth: Record<string, { month: string; sortKey: string; gross_savings: number; commission: number; net_savings: number; recovery_count: number }> = {};
     auditLogs.forEach(log => {
-      if (!log.recovery_amount) return;
-      const d = new Date(log.recovery_date ?? log.created_at ?? '');
+      if (log.status !== 'recovered') return;
+      const amt = log.overcharge_amount ?? 0;
+      if (amt <= 0) return;
+      const d = new Date(log.created_at ?? '');
       const key = format(d, 'yyyy-MM');
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, gross_savings: 0, commission: 0, net_savings: 0, recovery_count: 0 };
-      const gross = log.recovery_amount ?? 0;
-      const comm = gross * commissionRate;
-      byMonth[key].gross_savings += gross;
+      const comm = amt * commissionRate;
+      byMonth[key].gross_savings += amt;
       byMonth[key].commission += comm;
-      byMonth[key].net_savings += gross - comm;
+      byMonth[key].net_savings += amt - comm;
       byMonth[key].recovery_count += 1;
     });
     return Object.values(byMonth)
@@ -211,7 +212,7 @@ export default function TenantReports() {
   const totalOrders = auditLogs.length;
   const totalDiscrepancies = auditLogs.filter(l => hasActionableDiscrepancy(l)).length;
   const detectionRate = totalOrders ? ((totalDiscrepancies / totalOrders) * 100).toFixed(1) : '0';
-  const totalGross = auditLogs.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
+  const totalGross = auditLogs.filter(l => l.status === 'recovered').reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
   const totalCommission = totalGross * commissionRate;
   const totalNet = totalGross - totalCommission;
 
