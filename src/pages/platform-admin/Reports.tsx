@@ -156,10 +156,10 @@ export default function Reports() {
     const detectionRate = totalOrders > 0 ? parseFloat(((discrepancies.length / totalOrders) * 100).toFixed(1)) : 0;
 
     // Courier analysis
-    const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number; totalRecovered: number; totalBilled: number; totalExpected: number; weight: number; zone: number; rto: number }> = {};
+    const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number; totalRecovered: number; totalBilled: number; totalExpected: number; weight: number; zone: number; rto: number; overcharge: number }> = {};
     auditData.forEach(d => {
       const c = d.courier || 'Unknown';
-      if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0, totalRecovered: 0, totalBilled: 0, totalExpected: 0, weight: 0, zone: 0, rto: 0 };
+      if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0, totalRecovered: 0, totalBilled: 0, totalExpected: 0, weight: 0, zone: 0, rto: 0, overcharge: 0 };
       courierMap[c].shipments++;
       courierMap[c].totalBilled += d.billed_value || 0;
       courierMap[c].totalExpected += d.expected_value || 0;
@@ -172,6 +172,7 @@ export default function Reports() {
       if (dtype === 'weight') courierMap[c].weight++;
       if (dtype === 'zone') courierMap[c].zone++;
       if (dtype === 'rto') courierMap[c].rto++;
+      if (dtype === 'overcharge') courierMap[c].overcharge++;
     });
     const courierAnalysis = Object.entries(courierMap).map(([courier, v]) => ({
       courier,
