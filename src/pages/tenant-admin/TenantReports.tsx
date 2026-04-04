@@ -370,8 +370,9 @@ export default function TenantReports() {
                     if (selectedType === 'Weight') return dtype === 'weight';
                     if (selectedType === 'Zone') return dtype === 'zone';
                     if (selectedType === 'RTO') return dtype === 'rto';
+                    if (selectedType === 'Rate Overcharge') return dtype === 'overcharge';
                     if (selectedType === 'Damage') return dtype === 'damage';
-                    return (l.overcharge_amount ?? 0) > 0 && !['weight','zone','rto','damage'].includes(dtype);
+                    return (l.overcharge_amount ?? 0) > 0 && !['weight','zone','rto','overcharge','damage'].includes(dtype);
                   })}
                   pageSize={10}
                   searchable
