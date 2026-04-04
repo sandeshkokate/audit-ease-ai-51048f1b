@@ -15,7 +15,7 @@ export default function LandingFinalCTA() {
         </p>
         <Link to="/contact">
           <Button variant="hero" size="lg" className="gap-2 px-10 py-6 text-base font-semibold shadow-button hover:shadow-[0_6px_24px_0_hsl(245_58%_51%/0.4)] transition-shadow shimmer-btn">
-            Start Your Audit <ArrowRight className="h-4 w-4" />
+            Upload Your First Invoice <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>
         <p className="mt-4 text-xs text-muted-foreground">One-time setup fee applies. See pricing for details.</p>

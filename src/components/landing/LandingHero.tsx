@@ -69,14 +69,14 @@ export default function LandingHero() {
               </div>
 
               <div className="p-5 bg-gradient-to-b from-background/50 to-background">
-                <div className="mb-4 grid grid-cols-2 gap-3">
+                <div className="mb-4 grid grid-cols-2 gap-4 md:gap-5">
                   {[
                     { label: 'Sample Orders', value: '1,000', icon: FileSpreadsheet, color: 'text-primary', bg: 'bg-primary/10' },
                     { label: 'Errors Found', value: '~120', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
                     { label: 'Disputes', value: '~95', icon: Mail, color: 'text-secondary', bg: 'bg-secondary/10' },
                     { label: 'Potential Recovery', value: 'Varies', icon: IndianRupee, color: 'text-success', bg: 'bg-success/10' },
                   ].map((s) => (
-                    <div key={s.label} className="rounded-xl border border-border/50 bg-card/80 p-3 shadow-card hover:shadow-card-hover transition-shadow">
+                    <div key={s.label} className="rounded-xl border border-border/50 bg-card/80 p-4 shadow-card hover:shadow-card-hover transition-shadow">
                       <div className={`mb-2 inline-flex h-7 w-7 items-center justify-center rounded-lg ${s.bg}`}>
                         <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                       </div>
