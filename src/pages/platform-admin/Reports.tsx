@@ -127,12 +127,12 @@ export default function Reports() {
 
         const { data } = await supabase
           .from('audit_logs')
-          .select('discrepancy_amount, recovery_amount')
+          .select('overcharge_amount, status')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
 
-        const totalDisc = data?.reduce((s, d) => s + (d.discrepancy_amount || 0), 0) || 0;
-        const totalRec = data?.reduce((s, d) => s + (d.recovery_amount || 0), 0) || 0;
+        const totalDisc = data?.reduce((s, d) => s + (d.overcharge_amount || 0), 0) || 0;
+        const totalRec = data?.filter(d => d.status === 'recovered').reduce((s, d) => s + (d.overcharge_amount || 0), 0) || 0;
         const shipments = data?.length || 0;
 
         months.push({
