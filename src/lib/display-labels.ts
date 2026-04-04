@@ -70,6 +70,7 @@ export const DISCREPANCY_TYPE_LABELS: Record<string, string> = {
   weight: 'Weight',
   zone: 'Zone',
   rto: 'RTO',
+  overcharge: 'Rate Overcharge',
   damage: 'Damage',
   unclassified: 'Unclassified',
   no_issue: 'No Issue',
@@ -81,6 +82,7 @@ export const AUDIT_TYPE_OPTIONS = [
   { value: 'weight', label: 'Weight' },
   { value: 'zone', label: 'Zone' },
   { value: 'rto', label: 'RTO' },
+  { value: 'overcharge', label: 'Rate Overcharge' },
   { value: 'damage', label: 'Damage' },
   { value: 'unclassified', label: 'Unclassified' },
   { value: 'no_issue', label: 'No Issue' },
@@ -92,6 +94,7 @@ export const DISPUTE_TYPE_OPTIONS = [
   { value: 'weight', label: 'Weight' },
   { value: 'zone', label: 'Zone' },
   { value: 'rto', label: 'RTO' },
+  { value: 'overcharge', label: 'Rate Overcharge' },
   { value: 'damage', label: 'Damage' },
   { value: 'unclassified', label: 'Unclassified' },
 ] as const;
@@ -121,6 +124,7 @@ export const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
 • Weight — Courier charged more than the actual/volumetric weight
 • Zone — Courier applied a higher delivery zone than the correct pincode zone
 • RTO — Return-to-origin charges applied incorrectly or at wrong rate
+• Rate Overcharge — Forward charge exceeds expected rate card amount for the weight and zone
 • Damage — Shipment classified as damaged to inflate charges
 • Unclassified — Billing difference detected but type not yet categorised
 • No Issue — No billing error found for this shipment`;
