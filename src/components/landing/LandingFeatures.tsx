@@ -1,11 +1,11 @@
 import { Search, Mail, BarChart3, FileSpreadsheet, RefreshCw, PieChart } from 'lucide-react';
 
 const features = [
-  { icon: Search, title: 'Smart Detection', description: 'Catch weight discrepancies, zone mismatches & RTO overcharges that cost you ₹2-5 per shipment — automatically.', color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Search, title: 'Smart Detection', description: 'Catch weight discrepancies, zone mismatches & RTO overcharges automatically — no manual effort required.', color: 'text-primary', bg: 'bg-primary/10' },
   { icon: Mail, title: 'Dispute Email Templates', description: "Professional dispute email templates tailored to each courier's preferred format — ready to send.", color: 'text-secondary', bg: 'bg-secondary/10' },
-  { icon: BarChart3, title: 'Real-time Dashboard', description: 'Recover 8-15% of your shipping spend — that\'s ₹50K-5L/month for most businesses. Track it all in real-time.', color: 'text-accent', bg: 'bg-accent/10' },
-  { icon: FileSpreadsheet, title: 'Multi-Courier Support', description: 'Works with Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and more.', color: 'text-success', bg: 'bg-success/10' },
-  { icon: RefreshCw, title: 'Automated Reconciliation', description: 'Stop your ops team from spending 20+ hours/month on Excel reconciliation. We automate credit note matching.', color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: BarChart3, title: 'Real-time Dashboard', description: 'Track every overcharge, dispute, and recovery in one place. See your savings grow in real-time.', color: 'text-accent', bg: 'bg-accent/10' },
+  { icon: FileSpreadsheet, title: 'Multi-Courier Support', description: 'Works with all major Indian courier partners. Upload any standard shipping CSV format.', color: 'text-success', bg: 'bg-success/10' },
+  { icon: RefreshCw, title: 'Automated Reconciliation', description: 'Stop your ops team from spending hours on Excel reconciliation. We automate credit note matching.', color: 'text-warning', bg: 'bg-warning/10' },
   { icon: PieChart, title: 'Detailed Reports', description: 'Comprehensive analytics on courier performance, error patterns, and recovery trends.', color: 'text-secondary', bg: 'bg-secondary/10' },
 ];
 

@@ -67,10 +67,10 @@ export default function LandingFooter() {
               </li>
               <li>
                 <a
-                  href="mailto:support@auditease.com"
+                  href="mailto:support@auditeasetechnologies.com"
                   className="hover:opacity-100 transition-opacity"
                 >
-                  support@auditease.com
+                  support@auditeasetechnologies.com
                 </a>
               </li>
             </ul>
@@ -92,6 +92,9 @@ export default function LandingFooter() {
           <p>© {new Date().getFullYear()} AuditEase Technologies. All rights reserved.</p>
           <p>Built for D2C brands, enterprises, banks, and NBFCs</p>
         </div>
+        <p className="mt-3 text-center text-[10px] opacity-30">
+          This platform provides tools to identify potential billing discrepancies. Recovery is not guaranteed and depends on courier partner responses.
+        </p>
       </div>
     </footer>
   );

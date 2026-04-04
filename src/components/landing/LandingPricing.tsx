@@ -128,7 +128,7 @@ export default function LandingPricing() {
                         <span className="font-semibold text-foreground">{tier.tier}</span>
                         {tier.featured && (
                           <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                            Most Popular
+                            Recommended
                           </span>
                         )}
                       </div>

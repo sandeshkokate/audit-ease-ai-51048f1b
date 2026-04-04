@@ -3,11 +3,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 const faqs = [
   {
     q: 'How do couriers overcharge?',
-    a: 'Three main ways: (1) They weigh your package higher than actual, (2) They bill a farther delivery zone than correct, (3) They charge incorrect return-to-origin fees. These add up to 10-15% of your shipping spend.',
+    a: 'Three main ways: (1) They weigh your package higher than actual, (2) They bill a farther delivery zone than correct, (3) They charge incorrect return-to-origin fees. These errors can add up to significant amounts over time.',
   },
   {
     q: 'Which couriers do you support?',
-    a: 'Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart — covering 90%+ of Indian logistics.',
+    a: 'We support all major Indian courier partners. Simply upload your shipping data in CSV format and our system will audit it automatically.',
   },
   {
     q: 'How do I get started?',
@@ -19,11 +19,11 @@ const faqs = [
   },
   {
     q: 'How long does recovery take?',
-    a: 'Disputes are typically resolved in 15-30 days. We provide ready-to-send emails and track the entire process for you.',
+    a: 'Resolution timelines vary by courier partner. We provide ready-to-send dispute emails and help you track the entire process.',
   },
   {
     q: 'Is my data secure?',
-    a: 'Yes. Bank-grade encryption, SOC 2 compliant infrastructure, and your data is never shared with third parties.',
+    a: 'Yes. Your data is encrypted and stored securely using industry-standard practices. We never share your data with third parties.',
   },
 ];
 

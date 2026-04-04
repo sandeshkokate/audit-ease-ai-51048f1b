@@ -25,6 +25,9 @@ export default function LandingCalculator() {
           </div>
           <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">Estimate Your Potential Recovery</h2>
           <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">Based on publicly available industry averages — not our own claims</p>
+          <div className="mx-auto mt-4 max-w-2xl rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs text-muted-foreground">
+            <span className="font-semibold text-warning">⚠️ Illustrative Estimates Only:</span> This calculator uses hypothetical industry assumptions for illustration purposes. AuditEase does not guarantee any specific recovery amount. Actual results depend entirely on your shipping data and courier billing accuracy.
+          </div>
         </div>
 
         <div className="mx-auto max-w-4xl rounded-2xl border border-border bg-card shadow-card overflow-hidden">

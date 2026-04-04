@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
-  { icon: Upload, title: 'Upload Your Invoice', description: 'Drop your courier CSV or Excel file. We support all major formats from Delhivery, Blue Dart, DTDC, Ecom Express, XpressBees, Shadowfax, and Ekart.', color: 'text-primary', bg: 'bg-primary/10' },
+  { icon: Upload, title: 'Upload Your Invoice', description: 'Drop your courier CSV or Excel file. We support standard shipping data formats from all major courier partners.', color: 'text-primary', bg: 'bg-primary/10' },
   { icon: Search, title: 'System Finds Every Overcharge', description: 'Our platform compares every shipment against your rate card. Weight mismatches, zone errors, RTO overcharges — nothing slips through.', color: 'text-secondary', bg: 'bg-secondary/10' },
   { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click auto-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
-  { icon: Mail, title: 'You Get Your Money Back', description: 'We generate dispute emails ready to send. Track recoveries in real-time. Average clients recover ₹2-5 lakhs in the first quarter.', color: 'text-success', bg: 'bg-success/10' },
+  { icon: Mail, title: 'You Get Your Money Back', description: 'We generate dispute emails ready to send. Track all your disputes and recoveries in real-time.', color: 'text-success', bg: 'bg-success/10' },
 ];
 
 export default function LandingHowItWorks() {
@@ -65,7 +65,7 @@ export default function LandingHowItWorks() {
                   </div>
                   <div>
                     <div className="font-semibold text-foreground">Drag &amp; drop your CSV file</div>
-                    <div className="text-sm text-muted-foreground">Supports Delhivery, Blue Dart, DTDC, and more</div>
+                    <div className="text-sm text-muted-foreground">Supports all major courier formats</div>
                   </div>
                 </div>
               )}
@@ -88,9 +88,9 @@ export default function LandingHowItWorks() {
                     <span>AWB Number</span><span>Error Type</span><span>Est. Overcharge</span>
                   </div>
                   {[
-                    { awb: 'DEL789456', type: 'Weight', amount: '₹245', color: 'text-warning bg-warning/10' },
-                    { awb: 'BD456123', type: 'Zone', amount: '₹180', color: 'text-secondary bg-secondary/10' },
-                    { awb: 'XB321654', type: 'RTO', amount: '₹320', color: 'text-destructive bg-destructive/10' },
+                    { awb: '789456123', type: 'Weight', amount: '₹245', color: 'text-warning bg-warning/10' },
+                    { awb: '456123789', type: 'Zone', amount: '₹180', color: 'text-secondary bg-secondary/10' },
+                    { awb: '321654987', type: 'RTO', amount: '₹320', color: 'text-destructive bg-destructive/10' },
                   ].map((item) => (
                     <div key={item.awb} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
                       <span className="font-mono text-sm font-medium text-foreground">{item.awb}</span>
@@ -107,7 +107,7 @@ export default function LandingHowItWorks() {
                       <Mail className="h-4 w-4 text-primary" />
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dispute Email Draft</span>
                     </div>
-                    <div className="text-sm font-medium text-foreground">Subject: Billing Discrepancy — AWB DEL789456</div>
+                    <div className="text-sm font-medium text-foreground">Subject: Billing Discrepancy — AWB 789456123</div>
                     <div className="mt-1 text-xs text-muted-foreground">Dear Support Team, We have identified a billing discrepancy on the above shipment. The charged weight (2.5 kg) exceeds the actual volumetric weight (1.8 kg)...</div>
                   </div>
                   <div className="flex gap-2">

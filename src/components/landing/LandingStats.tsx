@@ -3,39 +3,39 @@ import { Percent, IndianRupee, Clock, Shield } from 'lucide-react';
 const stats = [
   {
     icon: Percent,
-    number: '8-15%',
-    label: 'Average overcharge on courier invoices',
+    number: '100%',
+    label: 'Of your shipments audited automatically',
   },
   {
     icon: IndianRupee,
-    number: '₹2.3 Cr',
-    label: 'Recovered for our clients',
+    number: '₹0',
+    label: 'Upfront payment if nothing is recovered',
   },
   {
     icon: Clock,
-    number: '50+',
-    label: 'Businesses across e-commerce, BFSI & logistics',
+    number: '< 5 min',
+    label: 'Time to upload and start your audit',
   },
   {
     icon: Shield,
-    number: '₹3.2',
-    label: 'Average recovery per shipment',
+    number: '0%',
+    label: 'Commission if no overcharges found',
   },
 ];
 
 export default function LandingStats() {
   return (
     <section
-      aria-label="The courier billing problem in numbers"
+      aria-label="Why choose AuditEase"
       className="relative bg-muted/40 py-20 md:py-28"
     >
       <div className="container mx-auto px-4">
         <div className="mb-14 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground md:text-4xl">
-            The Courier Billing Problem
+            Zero Risk, Maximum Recovery
           </h2>
           <p className="mx-auto max-w-xl text-muted-foreground md:text-lg">
-            Indian businesses are leaking money through shipping overcharges
+            You only pay when we find and help you recover overcharges
           </p>
         </div>
 

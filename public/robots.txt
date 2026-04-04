@@ -19,4 +19,4 @@ Disallow: /accountant/
 Disallow: /reset-password
 Disallow: /invite/
 
-Sitemap: https://auditease.ai/sitemap.xml
+Sitemap: https://auditeasetechnologies.com/sitemap.xml
