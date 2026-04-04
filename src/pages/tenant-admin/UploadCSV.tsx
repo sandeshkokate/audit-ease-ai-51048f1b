@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle, Settings, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Papa from "papaparse";
 import {
