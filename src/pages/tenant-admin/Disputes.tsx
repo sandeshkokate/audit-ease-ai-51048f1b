@@ -169,11 +169,11 @@ export default function Disputes() {
       if (!user?.tenant_id) return [];
       const { data } = await supabase
         .from("audit_logs")
-        .select("courier_name")
+        .select("courier")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0)
-        .not("courier_name", "is", null);
-      return [...new Set((data || []).map((r) => r.courier_name as string))].filter(Boolean).sort();
+        .gt("overcharge_amount", 0)
+        .not("courier", "is", null);
+      return [...new Set((data || []).map((r) => r.courier as string))].filter(Boolean).sort();
     },
     enabled: !!user?.tenant_id,
   });
