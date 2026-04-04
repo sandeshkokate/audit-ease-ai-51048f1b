@@ -491,11 +491,9 @@ export default function Disputes() {
         supabase
           .from("audit_logs")
           .update({
-            dispute_status: "recovered",
-            credit_note_number: `${bulkCreditNote.number_prefix}-${i + 1}`,
-            credit_note_date: bulkCreditNote.date || null,
-            recovery_amount: paginated.find((d) => d.id === id)?.amount || 0,
-          })
+            status: "recovered",
+            resolution_notes: `Credit note: ${bulkCreditNote.number_prefix}-${i + 1}`,
+          } as any)
           .eq("id", id),
       );
       await Promise.all(updates);
