@@ -518,7 +518,7 @@ export default function Disputes() {
     try {
       await supabase
         .from("audit_logs")
-        .update({ dispute_status: "rejected", rejection_reason: rejectReason, rejected_at: new Date().toISOString() })
+        .update({ status: "rejected", resolution_notes: rejectReason } as any)
         .eq("id", rejectModal.dispute.id);
       toast({ title: "Dispute marked as rejected" });
       setRejectModal({ open: false, dispute: null });
