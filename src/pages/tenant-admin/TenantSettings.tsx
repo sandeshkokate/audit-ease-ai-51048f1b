@@ -527,191 +527,313 @@ export default function TenantSettings() {
         }}
       >
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add Rate Card</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Fill in rates for each zone and weight slab. No JSON needed.
-            </p>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            {/* Courier + dates */}
-            <div className="space-y-1.5">
-              <Label>Courier Name *</Label>
-              <Select value={rateCardForm.courier_name} onValueChange={(v) => updateRate("courier_name", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select courier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COURIER_OPTIONS.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Progress indicator */}
+          <div className="mb-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground">
+                Step {wizardStep} of {TOTAL_STEPS}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {wizardStep === 1 && "Choose Courier"}
+                {wizardStep === 2 && "Basic Settings"}
+                {wizardStep === 3 && "Enter Rates"}
+              </span>
             </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${(wizardStep / TOTAL_STEPS) * 100}%` }}
+              />
+            </div>
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Effective From *</Label>
+          {/* STEP 1: Choose Courier */}
+          {wizardStep === 1 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  Which courier is this rate card for?
+                </h2>
+                <p className="text-muted-foreground">
+                  Select the courier company whose rates you want to add.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {COURIER_OPTIONS.filter((c) => c !== "Other").map((courier) => (
+                  <button
+                    key={courier}
+                    type="button"
+                    onClick={() => setRateCardForm((prev) => ({ ...prev, courier_name: courier }))}
+                    className={`p-4 rounded-xl border-2 transition-all text-center hover:border-primary/50 ${
+                      rateCardForm.courier_name === courier
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "border-border bg-card hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-medium text-foreground">{courier}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Or type courier name if not listed above..."
+                  value={COURIER_OPTIONS.filter((c) => c !== "Other").includes(rateCardForm.courier_name) ? "" : rateCardForm.courier_name}
+                  onChange={(e) => setRateCardForm((prev) => ({ ...prev, courier_name: e.target.value }))}
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => setWizardStep(2)}
+                  disabled={!rateCardForm.courier_name}
+                  className="gap-2"
+                >
+                  Next: Basic Settings <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Basic Settings */}
+          {wizardStep === 2 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  A few quick settings for {rateCardForm.courier_name}
+                </h2>
+                <p className="text-muted-foreground">
+                  Don't worry if you're not sure — the defaults work for most businesses!
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  📅 When did these rates become active?
+                  <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   type="date"
                   value={rateCardForm.effective_from}
-                  onChange={(e) => updateRate("effective_from", e.target.value)}
+                  onChange={(e) => setRateCardForm((prev) => ({ ...prev, effective_from: e.target.value }))}
+                  className="max-w-xs"
                 />
+                <p className="text-xs text-muted-foreground">
+                  This is usually mentioned in the rate card email or document header
+                </p>
               </div>
-              <div className="space-y-1.5">
-                <Label>Effective To</Label>
-                <Input
-                  type="date"
-                  value={rateCardForm.effective_to}
-                  onChange={(e) => updateRate("effective_to", e.target.value)}
-                />
-              </div>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label>Volumetric Divisor</Label>
-                <Input
-                  type="number"
-                  value={rateCardForm.divisor}
-                  onChange={(e) => updateRate("divisor", Number(e.target.value))}
-                />
-                <p className="text-xs text-muted-foreground">Usually 5000</p>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  🔄 Return (RTO) charge percentage
+                </Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    value={rateCardForm.rto_percentage}
+                    onChange={(e) => setRateCardForm((prev) => ({ ...prev, rto_percentage: Number(e.target.value) }))}
+                    className="w-24"
+                  />
+                  <span className="text-muted-foreground">% of forward shipping cost</span>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                  <p className="font-medium text-foreground mb-1">💡 What's this?</p>
+                  <p className="text-muted-foreground">
+                    When a package is returned to you (customer refused, wrong address, etc.),
+                    couriers charge a percentage of the original shipping cost.
+                    <strong> Most couriers charge 50%</strong>, but check your contract.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Min Chargeable (kg)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={rateCardForm.min_chargeable_weight}
-                  onChange={(e) => updateRate("min_chargeable_weight", Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>RTO %</Label>
-                <Input
-                  type="number"
-                  value={rateCardForm.rto_percentage}
-                  onChange={(e) => updateRate("rto_percentage", Number(e.target.value))}
-                />
-                <p className="text-xs text-muted-foreground">e.g. 50 = 50% of forward</p>
-              </div>
-            </div>
 
-            {/* Zone wizard */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-semibold">Zone Rates (₹ per kg) *</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addZone}>
-                  + Add Zone
+              <details className="group">
+                <summary className="cursor-pointer text-sm font-medium text-primary hover:text-primary/80 list-none flex items-center gap-1">
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                  Show advanced settings (optional)
+                </summary>
+                <div className="mt-4 space-y-4 pl-5 border-l-2 border-muted">
+                  <div className="space-y-2">
+                    <Label>Volumetric Divisor</Label>
+                    <Input
+                      type="number"
+                      value={rateCardForm.divisor}
+                      onChange={(e) => setRateCardForm((prev) => ({ ...prev, divisor: Number(e.target.value) }))}
+                      className="w-32"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Used to calculate volumetric weight (L×W×H ÷ this number). Standard is 5000.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Minimum Chargeable Weight (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={rateCardForm.min_chargeable_weight}
+                      onChange={(e) => setRateCardForm((prev) => ({ ...prev, min_chargeable_weight: Number(e.target.value) }))}
+                      className="w-32"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Minimum weight for billing even if package weighs less. Usually 0.5 kg.
+                    </p>
+                  </div>
+                </div>
+              </details>
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setWizardStep(1)} className="gap-2">
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </Button>
+                <Button
+                  onClick={() => setWizardStep(3)}
+                  disabled={!rateCardForm.effective_from}
+                  className="gap-2"
+                >
+                  Next: Enter Rates <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+          )}
 
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+          {/* STEP 3: Enter Zone Rates */}
+          {wizardStep === 3 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  Enter your shipping rates 💰
+                </h2>
+                <p className="text-muted-foreground">
+                  Copy the rates from your rate card document. We've set up common weight ranges for you.
+                </p>
+              </div>
+
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">
+                      What are Zones?
+                    </p>
+                    <p className="text-amber-700 dark:text-amber-300">
+                      Couriers divide India into zones based on distance. Zone A is usually nearby
+                      (same city), Zone B is within the state, Zone C is nearby states, and so on.
+                      Farther zones cost more. Your rate card will show which zone each pincode falls into.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
                 {zones.map((zone, zi) => (
-                  <div key={zi} className="border border-border rounded-lg p-3 space-y-2 bg-muted/20">
-                    {/* Zone name row */}
-                    <div className="flex items-center gap-2">
-                      <Label className="text-xs text-muted-foreground w-20 shrink-0">Zone name</Label>
-                      <Input
-                        className="h-7 text-sm w-28"
-                        value={zone.name}
-                        onChange={(e) => updateZoneName(zi, e.target.value)}
-                        placeholder="e.g. A"
-                      />
+                  <div key={zi} className="border border-border rounded-xl p-4 space-y-3 bg-card">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          className="h-8 w-20 font-semibold"
+                          value={zone.name}
+                          onChange={(e) => updateZoneName(zi, e.target.value)}
+                          placeholder="Zone A"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {zi === 0 && "(Local/Same City)"}
+                          {zi === 1 && "(Within State)"}
+                          {zi === 2 && "(Rest of India)"}
+                        </span>
+                      </div>
                       {zones.length > 1 && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-7 text-xs text-destructive hover:text-destructive ml-auto"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => removeZone(zi)}
                         >
-                          Remove zone
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
 
-                    {/* Slab header */}
-                    <div className="grid grid-cols-4 gap-1 text-xs text-muted-foreground px-1">
-                      <span>From (kg)</span>
-                      <span>To (kg)</span>
-                      <span className="col-span-2">Rate (₹/kg)</span>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-muted-foreground">
+                            <th className="pb-2 pr-2 font-medium">Weight Range</th>
+                            <th className="pb-2 font-medium">Rate per kg (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {zone.slabs.map((slab, si) => (
+                            <tr key={si}>
+                              <td className="py-1 pr-2">
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    className="h-8 w-16 text-center"
+                                    value={slab.from}
+                                    onChange={(e) => updateSlab(zi, si, "from", e.target.value)}
+                                    placeholder="0"
+                                  />
+                                  <span className="text-muted-foreground">to</span>
+                                  <Input
+                                    className="h-8 w-16 text-center"
+                                    value={slab.to}
+                                    onChange={(e) => updateSlab(zi, si, "to", e.target.value)}
+                                    placeholder="0.5"
+                                  />
+                                  <span className="text-muted-foreground">kg</span>
+                                </div>
+                              </td>
+                              <td className="py-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-muted-foreground">₹</span>
+                                  <Input
+                                    className="h-8 w-20"
+                                    value={slab.rate}
+                                    onChange={(e) => updateSlab(zi, si, "rate", e.target.value)}
+                                    placeholder="45"
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
 
-                    {/* Slab rows */}
-                    {zone.slabs.map((slab, si) => (
-                      <div key={si} className="grid grid-cols-4 gap-1 items-center">
-                        <Input
-                          className="h-7 text-sm"
-                          value={slab.from}
-                          placeholder="0"
-                          onChange={(e) => updateSlab(zi, si, "from", e.target.value)}
-                        />
-                        <Input
-                          className="h-7 text-sm"
-                          value={slab.to}
-                          placeholder="0.5"
-                          onChange={(e) => updateSlab(zi, si, "to", e.target.value)}
-                        />
-                        <Input
-                          className="h-7 text-sm col-span-2"
-                          value={slab.rate}
-                          placeholder="e.g. 45"
-                          onChange={(e) => updateSlab(zi, si, "rate", e.target.value)}
-                        />
-                      </div>
-                    ))}
-
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => addSlab(zi)}
-                      >
-                        + Add weight slab
-                      </Button>
-                      {zone.slabs.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs text-muted-foreground"
-                          onClick={() => removeSlab(zi, zone.slabs.length - 1)}
-                        >
-                          Remove last slab
-                        </Button>
-                      )}
-                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => addSlab(zi)}
+                    >
+                      + Add another weight range
+                    </Button>
                   </div>
                 ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addZone}
+                  className="w-full"
+                >
+                  + Add Another Zone
+                </Button>
               </div>
 
-              <p className="text-xs text-muted-foreground mt-2">
-                Add one row per weight range per zone. Example: Zone A, 0–0.5 kg = ₹30/kg, 0.5–1 kg = ₹40/kg.
-              </p>
+              <div className="flex justify-between pt-4 border-t">
+                <Button variant="outline" onClick={() => setWizardStep(2)} className="gap-2">
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </Button>
+                <Button onClick={handleAddRateCard} disabled={addingRate} className="gap-2">
+                  {addingRate ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
+                  ) : (
+                    <><Check className="h-4 w-4" /> Save Rate Card</>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setRateCardModal(false);
-                resetModal();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddRateCard} disabled={addingRate}>
-              {addingRate ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Rate Card"}
-            </Button>
-          </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </div>
