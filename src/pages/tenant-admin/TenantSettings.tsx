@@ -391,14 +391,42 @@ export default function TenantSettings() {
             <p className="text-sm text-muted-foreground">
               Manage your courier rate cards for accurate discrepancy detection.
             </p>
-            <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}>
-              <Plus className="h-4 w-4" /> Add Rate Card
-            </Button>
+            {rateCards.length > 0 && (
+              <Button variant="hero" size="sm" className="gap-2" onClick={() => setRateCardModal(true)}>
+                <Plus className="h-4 w-4" /> Add Rate Card
+              </Button>
+            )}
           </div>
           {loadingRates ? (
             <div className="flex items-center justify-center h-32">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
+          ) : rateCards.length === 0 ? (
+            <Card className="shadow-card border-dashed border-2 border-primary/30 bg-primary/5">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <FileText className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Let's Set Up Your First Rate Card! 🎉
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                  A rate card tells us what your courier <strong>should</strong> charge you.
+                  We compare this against what they <strong>actually</strong> charged to find overcharges.
+                </p>
+                <div className="bg-card rounded-lg p-4 max-w-sm mx-auto mb-6 text-left border">
+                  <p className="text-sm font-medium text-foreground mb-2">📄 Where to find your rate card:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Check your email for "Rate Card" or "Pricing" from your courier</li>
+                    <li>• Look in your courier's seller portal under "Billing" or "Rates"</li>
+                    <li>• Ask your courier account manager to send it</li>
+                  </ul>
+                </div>
+                <Button onClick={() => setRateCardModal(true)} className="gap-2">
+                  <Plus className="h-4 w-4" /> Add Your First Rate Card
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <DataTable
               columns={rateColumns}
