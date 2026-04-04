@@ -330,7 +330,7 @@ export default function Disputes() {
           if (inserted) {
             await supabase
               .from("audit_logs")
-              .update({ dispute_status: "draft" })
+              .update({ status: "draft" } as any)
               .eq("id", dispute.id);
           }
 
