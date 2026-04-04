@@ -136,7 +136,7 @@ export default function TenantReports() {
       byMonth[key].orders += 1;
       if (hasActionableDiscrepancy(log)) {
         byMonth[key].discrepancies += 1;
-        byMonth[key].total_overcharge += log.discrepancy_amount ?? 0;
+        byMonth[key].total_overcharge += log.overcharge_amount ?? 0;
       }
     });
     return Object.values(byMonth)
