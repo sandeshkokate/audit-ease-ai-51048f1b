@@ -137,6 +137,7 @@ async function enrichRowsWithPincodes(rows: ParsedShipmentRow[]) {
 export default function UploadCSV() {
   useDocumentTitle("Upload CSV");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]); // normalised headers after auto-map
@@ -146,6 +147,23 @@ export default function UploadCSV() {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check if rate cards exist
+  const { data: rateCards = [], isLoading: loadingRateCards } = useQuery({
+    queryKey: ["rate-cards-check", user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from("rate_cards")
+        .select("id, courier_name, is_active")
+        .eq("tenant_id", user.tenant_id)
+        .eq("is_active", true);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.tenant_id,
+  });
+  const hasActiveRateCards = rateCards.length > 0;
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
