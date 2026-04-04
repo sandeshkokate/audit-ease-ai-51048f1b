@@ -357,21 +357,23 @@ export default function TenantReports() {
                 <DataTable
                   columns={[
                     { key: 'awb', header: 'AWB', sortable: true },
-                    { key: 'courier_name', header: 'Courier', sortable: true },
-                    { key: 'discrepancy_amount', header: 'Amount (₹)', sortable: true, render: (r: any) => formatCurrency(r.discrepancy_amount) },
-                    { key: 'dispute_status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.dispute_status || 'detected'}</Badge> },
+                    { key: 'awb_number', header: 'AWB', sortable: true },
+                    { key: 'courier', header: 'Courier', sortable: true },
+                    { key: 'overcharge_amount', header: 'Amount (₹)', sortable: true, render: (r: any) => formatCurrency(r.overcharge_amount) },
+                    { key: 'status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.status || 'detected'}</Badge> },
                   ] as any}
                   data={auditLogs.filter(l => {
                     if (!hasActionableDiscrepancy(l)) return false;
-                    if (selectedType === 'Weight') return l.has_weight_discrepancy;
-                    if (selectedType === 'Zone') return l.has_zone_discrepancy;
-                    if (selectedType === 'RTO') return l.has_rto_overcharge;
-                    if (selectedType === 'Damage') return l.has_damage_misclassification;
-                    return (l.discrepancy_amount ?? 0) > 0 && !l.has_weight_discrepancy && !l.has_zone_discrepancy && !l.has_rto_overcharge && !l.has_damage_misclassification;
+                    const dtype = (l.discrepancy_type || '').toLowerCase();
+                    if (selectedType === 'Weight') return dtype === 'weight';
+                    if (selectedType === 'Zone') return dtype === 'zone';
+                    if (selectedType === 'RTO') return dtype === 'rto';
+                    if (selectedType === 'Damage') return dtype === 'damage';
+                    return (l.overcharge_amount ?? 0) > 0 && !['weight','zone','rto','damage'].includes(dtype);
                   })}
                   pageSize={10}
                   searchable
-                  searchKeys={['awb', 'courier_name']}
+                  searchKeys={['awb_number', 'courier']}
                   searchPlaceholder="Search within this type..."
                 />
               </CardContent>

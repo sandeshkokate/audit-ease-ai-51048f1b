@@ -99,33 +99,42 @@ export default function Recoveries() {
         if (awb) {
           const { data: auditLog } = await supabase
             .from('audit_logs')
-            .select('id, discrepancy_amount')
+            .select('id, overcharge_amount')
             .eq('tenant_id', user?.tenant_id)
-            .eq('awb', awb)
-            .gt('discrepancy_amount', 0)
+            .eq('awb_number', awb)
+            .gt('overcharge_amount', 0)
             .maybeSingle();
 
           if (auditLog) {
             matchedAuditLogId = auditLog.id;
-            const diff = Math.abs((auditLog.discrepancy_amount || 0) - amount);
+            const diff = Math.abs((auditLog.overcharge_amount || 0) - amount);
             matchStatus = diff < 1 ? 'matched' : 'review';
           }
         }
 
         // Try matching by order_id if AWB didn't match
         if (matchStatus === 'unmatched' && orderId) {
-          const { data: auditLog } = await supabase
-            .from('audit_logs')
-            .select('id, discrepancy_amount')
+          const { data: shipment } = await supabase
+            .from('shipments')
+            .select('id, awb_number')
             .eq('tenant_id', user?.tenant_id)
             .eq('order_id', orderId)
-            .gt('discrepancy_amount', 0)
             .maybeSingle();
 
-          if (auditLog) {
-            matchedAuditLogId = auditLog.id;
-            const diff = Math.abs((auditLog.discrepancy_amount || 0) - amount);
-            matchStatus = diff < 1 ? 'matched' : 'review';
+          if (shipment) {
+            const { data: auditLog } = await supabase
+              .from('audit_logs')
+              .select('id, overcharge_amount')
+              .eq('tenant_id', user?.tenant_id)
+              .eq('awb_number', shipment.awb_number)
+              .gt('overcharge_amount', 0)
+              .maybeSingle();
+
+            if (auditLog) {
+              matchedAuditLogId = auditLog.id;
+              const diff = Math.abs((auditLog.overcharge_amount || 0) - amount);
+              matchStatus = diff < 1 ? 'matched' : 'review';
+            }
           }
         }
 
@@ -148,11 +157,9 @@ export default function Recoveries() {
           matched++;
           if (matchedAuditLogId) {
             await supabase.from('audit_logs').update({
-              dispute_status: 'recovered',
-              recovery_amount: amount,
-              credit_note_number: creditNoteNumber,
-              credit_note_date: creditDate,
-            }).eq('id', matchedAuditLogId);
+              status: 'recovered',
+              resolution_notes: `Credit note: ${creditNoteNumber}`,
+            } as any).eq('id', matchedAuditLogId);
           }
         } else if (matchStatus === 'review') {
           reviewCount++;
