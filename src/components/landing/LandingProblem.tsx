@@ -2,9 +2,9 @@ import { Target, Clock, TrendingUp } from 'lucide-react';
 
 export default function LandingProblem() {
   const stats = [
-    { icon: Target, stat: '10–15%', title: 'Invoices Have Errors', desc: 'Industry studies show this is the average billing error rate across couriers', note: 'Source: Industry Research' },
-    { icon: Clock, stat: '20+ hrs', title: 'Monthly Manual Effort', desc: 'Time spent by operations teams manually checking invoices for 10K shipments', note: 'Average for mid-size D2C brands' },
-    { icon: TrendingUp, stat: '2–5%', title: 'Of Shipping Costs Lost', desc: 'Typical overpayment due to undetected billing errors — fully recoverable', note: 'Industry estimate' },
+    { icon: Target, stat: '10–15%', title: 'Invoices May Have Errors', desc: 'Industry research suggests this is a common billing error rate across couriers', note: 'Source: Industry estimates — actual rates vary' },
+    { icon: Clock, stat: '20+ hrs', title: 'Monthly Manual Effort', desc: 'Typical time spent by operations teams manually checking invoices for high-volume shippers', note: 'Varies by business size' },
+    { icon: TrendingUp, stat: '2–5%', title: 'Of Shipping Costs Potentially Lost', desc: 'Typical overpayment range due to undetected billing errors — largely recoverable', note: 'Industry estimate — results vary' },
   ];
 
   const errorTypes = [
@@ -45,7 +45,7 @@ export default function LandingProblem() {
           </p>
 
           <p className="mt-4 text-base text-muted-foreground md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Most businesses don't audit — the volumes are too high, the data is messy, and who has the time? So the overcharges pile up. ₹50 here, ₹200 there. By year-end, you've lost lakhs.
+            Most businesses don't audit — the volumes are too high, the data is messy, and who has the time? So the overcharges pile up. ₹50 here, ₹200 there. By year-end, you've potentially lost lakhs.
           </p>
         </div>
 

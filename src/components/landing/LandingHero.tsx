@@ -48,9 +48,9 @@ export default function LandingHero() {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start animate-fade-in-up" style={{ animationDelay: '400ms', opacity: 0 }}>
-              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Minimal Signup fees — pay only when we recover</span>
-              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Works with Delhivery, Blue Dart, DTDC & 4 more</span>
-              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Average recovery: ₹8.50/shipment</span>
+              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Pay only when we recover</span>
+              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Works with all major Indian couriers</span>
+              <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-success" /> Upload &amp; audit in under 5 minutes</span>
             </div>
           </div>
 
@@ -71,10 +71,10 @@ export default function LandingHero() {
               <div className="p-5 bg-gradient-to-b from-background/50 to-background">
                 <div className="mb-4 grid grid-cols-2 gap-3">
                   {[
-                    { label: 'Orders Audited', value: '12,458', icon: FileSpreadsheet, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'Discrepancies', value: '1,847', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
-                    { label: 'Disputes Raised', value: '1,523', icon: Mail, color: 'text-secondary', bg: 'bg-secondary/10' },
-                    { label: 'Recoverable', value: '₹4.2L*', icon: IndianRupee, color: 'text-success', bg: 'bg-success/10' },
+                    { label: 'Sample Orders', value: '1,000', icon: FileSpreadsheet, color: 'text-primary', bg: 'bg-primary/10' },
+                    { label: 'Errors Found', value: '~120', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
+                    { label: 'Disputes', value: '~95', icon: Mail, color: 'text-secondary', bg: 'bg-secondary/10' },
+                    { label: 'Potential Recovery', value: 'Varies', icon: IndianRupee, color: 'text-success', bg: 'bg-success/10' },
                   ].map((s) => (
                     <div key={s.label} className="rounded-xl border border-border/50 bg-card/80 p-3 shadow-card hover:shadow-card-hover transition-shadow">
                       <div className={`mb-2 inline-flex h-7 w-7 items-center justify-center rounded-lg ${s.bg}`}>
@@ -94,7 +94,7 @@ export default function LandingHero() {
                     ))}
                   </div>
                 </div>
-                <p className="mt-2 text-center text-xs text-muted-foreground italic">* Illustrative sample data</p>
+                <p className="mt-2 text-center text-xs text-muted-foreground italic">* Illustrative sample — not real customer data</p>
               </div>
             </div>
 
@@ -105,7 +105,7 @@ export default function LandingHero() {
                 </div>
                 <div>
                   <div className="text-foreground">Weight Error Detected</div>
-                  <div className="text-muted-foreground">AWB DEL789456</div>
+                  <div className="text-muted-foreground">AWB 789456123</div>
                 </div>
               </div>
             </div>
