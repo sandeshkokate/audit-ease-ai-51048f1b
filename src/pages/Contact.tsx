@@ -67,7 +67,7 @@ export default function Contact() {
       toast({
         variant: 'destructive',
         title: 'Something went wrong',
-        description: 'Please try again or email support@auditease.com',
+        description: 'Please try again or email support@auditeasetechnologies.com',
       });
     } finally {
       setLoading(false);
