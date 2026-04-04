@@ -124,6 +124,7 @@ export const TYPE_DEFINITIONS = `Discrepancy Type Definitions:
 • Weight — Courier charged more than the actual/volumetric weight
 • Zone — Courier applied a higher delivery zone than the correct pincode zone
 • RTO — Return-to-origin charges applied incorrectly or at wrong rate
+• Rate Overcharge — Forward charge exceeds expected rate card amount for the weight and zone
 • Damage — Shipment classified as damaged to inflate charges
 • Unclassified — Billing difference detected but type not yet categorised
 • No Issue — No billing error found for this shipment`;
