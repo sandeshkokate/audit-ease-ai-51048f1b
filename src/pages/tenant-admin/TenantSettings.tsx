@@ -232,6 +232,14 @@ export default function TenantSettings() {
 
     setAddingRate(true);
     try {
+      // Deactivate any existing active rate card for this courier (unique constraint enforced)
+      await supabase
+        .from("rate_cards")
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq("tenant_id", tenantId!)
+        .eq("courier_name", rateCardForm.courier_name)
+        .eq("is_active", true);
+
       const { error } = await supabase.from("rate_cards").insert({
         tenant_id: tenantId,
         courier_name: rateCardForm.courier_name,
