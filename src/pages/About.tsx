@@ -1,23 +1,17 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Package, AlertTriangle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import SEOHead from '@/components/shared/SEOHead';
-
-const couriers = [
-  'Delhivery', 'Blue Dart', 'DTDC', 'Ecom Express',
-  'XpressBees', 'Shadowfax', 'Ekart',
-];
 
 export default function About() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
         title="About Us – AuditEase | Courier Billing Audit Platform"
-        description="Learn how AuditEase helps Indian e-commerce businesses recover 10-15% courier overcharges with automated billing audits."
+        description="Learn how AuditEase helps Indian e-commerce businesses identify and recover courier billing discrepancies with automated audits."
         path="/about"
       />
       <LandingNav />
@@ -42,10 +36,10 @@ export default function About() {
               <h2 className="text-2xl font-semibold text-foreground">The Problem</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              Indian e-commerce businesses overpay courier partners by an estimated 10–15% on shipping charges. These discrepancies stem from weight mismatches between actual and billed weight, zone mismatches where shipments are charged for a farther zone than the actual destination, and RTO overcharges where return-to-origin shipments are billed at full forward rates.
+              Indian e-commerce businesses sometimes face billing discrepancies in their courier invoices. Common issues include weight differences between actual and billed weight, zone classification variations, and RTO billing inconsistencies.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Operations teams typically reconcile courier invoices manually using spreadsheets — a process that is time-consuming, error-prone, and often deprioritised as order volumes grow. The result: lakhs of rupees in recoverable overcharges go unclaimed every month.
+              Operations teams typically reconcile courier invoices manually using spreadsheets — a process that is time-consuming and often deprioritised as order volumes grow. This means potential billing discrepancies may go unnoticed.
             </p>
           </section>
 
@@ -58,10 +52,10 @@ export default function About() {
               <h2 className="text-2xl font-semibold text-foreground">Our Solution</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              AuditEase automates the entire courier billing audit lifecycle. Upload your shipment CSV, and the platform instantly detects weight discrepancies, zone mismatches, and RTO overcharges. It then generates automated dispute emails tailored to each courier and tracks recovery status — all from a single dashboard.
+              AuditEase automates the courier billing audit process. Upload your shipment CSV, and the platform identifies potential weight discrepancies, zone mismatches, and RTO billing issues. It then generates dispute email templates and helps you track dispute status — all from a single dashboard.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Our performance-based pricing means you only pay when we save you money. There's no upfront cost, no long-term contracts — just measurable savings from day one.
+              Our performance-based pricing means you only pay when we help you recover money. There's no long-term contracts — just measurable savings from day one.
             </p>
           </section>
 
@@ -74,15 +68,8 @@ export default function About() {
               <h2 className="text-2xl font-semibold text-foreground">What We Support</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              We support the major couriers covering approximately 85% of the Indian e-commerce logistics market.
+              We support all major Indian courier partners. Simply upload your shipping data in CSV format — our system will automatically process and audit it.
             </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              {couriers.map((c) => (
-                <Badge key={c} variant="secondary" className="px-4 py-2 text-sm font-medium">
-                  {c}
-                </Badge>
-              ))}
-            </div>
           </section>
 
           <Separator />

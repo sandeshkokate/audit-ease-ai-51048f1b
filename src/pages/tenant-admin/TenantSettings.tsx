@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Save, Loader2, Building2, Plus, Trash2, ArrowRight, ArrowLeft, ChevronDown, ChevronRight, Check, Info, FileText, Eye, EyeOff } from "lucide-react";
 
-const COURIER_OPTIONS = ["Delhivery", "BlueDart", "DTDC", "Ecom Express", "XpressBees", "Shadowfax", "Ekart", "Other"];
+const COURIER_OPTIONS = ["Courier 1", "Courier 2", "Courier 3", "Courier 4", "Courier 5", "Courier 6", "Courier 7", "Other"];
 
 // Wizard types
 type WeightSlab = { from: string; to: string; rate: string };

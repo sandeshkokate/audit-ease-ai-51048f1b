@@ -12,7 +12,7 @@ export default function HelpWidget() {
       icon: Book,
       title: 'Documentation',
       description: 'Step-by-step guides and tutorials',
-      action: () => window.open('https://docs.auditease.com', '_blank'),
+      action: () => window.open('https://docs.auditeasetechnologies.com', '_blank'),
     },
     {
       icon: MessageSquare,
