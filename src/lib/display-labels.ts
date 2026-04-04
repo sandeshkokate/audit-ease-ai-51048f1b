@@ -70,6 +70,7 @@ export const DISCREPANCY_TYPE_LABELS: Record<string, string> = {
   weight: 'Weight',
   zone: 'Zone',
   rto: 'RTO',
+  overcharge: 'Rate Overcharge',
   damage: 'Damage',
   unclassified: 'Unclassified',
   no_issue: 'No Issue',
