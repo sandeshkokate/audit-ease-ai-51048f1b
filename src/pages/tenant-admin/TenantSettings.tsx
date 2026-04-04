@@ -510,14 +510,62 @@ export default function TenantSettings() {
               </CardContent>
             </Card>
           ) : (
-            <DataTable
-              columns={rateColumns}
-              data={rateCards}
-              pageSize={10}
-              searchable
-              searchKeys={["courier_name"]}
-              searchPlaceholder="Search rates..."
-            />
+            <div className="space-y-3">
+              {rateCards.map((rc: any) => (
+                <Card key={rc.id} className={`shadow-card transition-all ${!rc.is_active ? "opacity-60" : ""}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setExpandedRateCard(expandedRateCard === rc.id ? null : rc.id)}
+                          className="flex items-center gap-2 text-left"
+                        >
+                          {expandedRateCard === rc.id ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <span className="font-semibold text-foreground">{rc.courier_name}</span>
+                        </button>
+                        <Badge
+                          variant="outline"
+                          className={
+                            rc.is_active
+                              ? "bg-success/10 text-success border-success/20"
+                              : "bg-muted text-muted-foreground border-border"
+                          }
+                        >
+                          {rc.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>From: {rc.effective_from ? new Date(rc.effective_from).toLocaleDateString() : "-"}</span>
+                        <span>| RTO: {rc.rto_percentage ?? "-"}%</span>
+                        <span>| Divisor: {rc.divisor ?? "-"}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleRateCard(rc.id, rc.is_active)}
+                          className="ml-2"
+                        >
+                          {rc.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {expandedRateCard === rc.id && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <h4 className="text-sm font-medium text-foreground mb-3">Rate Structure</h4>
+                        {renderRateStructure(rc.rate_structure)}
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          Min chargeable weight: {rc.min_chargeable_weight ?? 0.5} kg
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </TabsContent>
 
