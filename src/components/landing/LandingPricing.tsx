@@ -127,7 +127,8 @@ export default function LandingPricing() {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">{tier.tier}</span>
                         {tier.featured && (
-                          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-sm">
+                            <CheckCircle className="h-3 w-3" />
                             Recommended
                           </span>
                         )}
