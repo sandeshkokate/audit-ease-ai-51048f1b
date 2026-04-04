@@ -565,7 +565,7 @@ export default function Disputes() {
     }
     setActionLoading(true);
     try {
-      const { error } = await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute!.id);
+      const { error } = await supabase.from("audit_logs").update({ resolution_notes: `Follow-up: ${followUpDate}` } as any).eq("id", followUpModal.dispute!.id);
       if (error) throw error;
       toast({ title: "Follow-up scheduled" });
       setFollowUpModal({ open: false, dispute: null });
