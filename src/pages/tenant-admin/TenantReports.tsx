@@ -102,16 +102,15 @@ export default function TenantReports() {
       Weight: { name: 'Weight', count: 0, amount: 0 },
       Zone: { name: 'Zone', count: 0, amount: 0 },
       RTO: { name: 'RTO', count: 0, amount: 0 },
-      Damage: { name: 'Damage', count: 0, amount: 0 },
       Other: { name: 'Other', count: 0, amount: 0 },
     };
     auditLogs.forEach(log => {
-      const amt = log.discrepancy_amount ?? 0;
+      const amt = log.overcharge_amount ?? 0;
       if (!hasActionableDiscrepancy(log)) return;
-      if (log.has_weight_discrepancy) { map.Weight.count++; map.Weight.amount += amt; }
-      else if (log.has_zone_discrepancy) { map.Zone.count++; map.Zone.amount += amt; }
-      else if (log.has_rto_overcharge) { map.RTO.count++; map.RTO.amount += amt; }
-      else if (log.has_damage_misclassification) { map.Damage.count++; map.Damage.amount += amt; }
+      const dtype = (log.discrepancy_type || '').toLowerCase();
+      if (dtype === 'weight') { map.Weight.count++; map.Weight.amount += amt; }
+      else if (dtype === 'zone') { map.Zone.count++; map.Zone.amount += amt; }
+      else if (dtype === 'rto') { map.RTO.count++; map.RTO.amount += amt; }
       else { map.Other.count++; map.Other.amount += amt; }
     });
     const all = Object.values(map).filter(d => d.count > 0);
