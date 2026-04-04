@@ -191,7 +191,7 @@ export default function Disputes() {
 
       let query = supabase
         .from("audit_logs")
-        .select("*, dispute_emails(*), dispute_notes(*)", { count: "exact" })
+        .select("*", { count: "exact" })
         .eq("tenant_id", user.tenant_id)
         .gt("overcharge_amount", 0) as any;
 
@@ -246,11 +246,11 @@ export default function Disputes() {
             discrepancy_reasons: [],
             status: log.status || "draft",
             courier_email: `billing@${(log.courier || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
-            email_subject: log.dispute_emails?.[0]?.subject || "",
-            email_body: log.dispute_emails?.[0]?.body || "",
-            dispute_email: log.dispute_emails?.[0] || null,
-            dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
-            notes: log.dispute_notes || [],
+            email_subject: "",
+            email_body: "",
+            dispute_email: null,
+            dispute_reasoning: null,
+            notes: [],
             follow_up_date: null,
             escalated: false,
             priority: null,
@@ -408,31 +408,30 @@ export default function Disputes() {
     const courierEmail = courier?.dispute_email || `billing@${courierName.toLowerCase().replace(/\s+/g, "")}.com`;
 
     const discrepancies: string[] = [];
-    if (log.has_weight_discrepancy) discrepancies.push("Weight Discrepancy");
-    if (log.has_zone_discrepancy) discrepancies.push("Zone Discrepancy");
-    if (log.has_rto_overcharge) discrepancies.push("RTO Overcharge");
-    if (log.has_damage_misclassification) discrepancies.push("Damage Misclassification");
+    const dtype = (log.discrepancy_type || '').toLowerCase();
+    if (dtype === 'weight') discrepancies.push("Weight Discrepancy");
+    if (dtype === 'zone') discrepancies.push("Zone Discrepancy");
+    if (dtype === 'rto') discrepancies.push("RTO Overcharge");
     const typeLabel = discrepancies.length > 0 ? discrepancies.join(", ") : "Billing Discrepancy";
 
-    const subject = `Billing Dispute — AWB ${log.awb || "N/A"} | Order ${log.order_id} | ${typeLabel}`;
+    const subject = `Billing Dispute — AWB ${log.awb_number || "N/A"} | ${typeLabel}`;
     const body = [
       `Dear ${courierName} Billing Team,`,
       "",
       `We have identified a billing discrepancy on the following shipment and request an immediate review and correction:`,
       "",
-      `AWB Number: ${log.awb || "N/A"}`,
-      `Order ID: ${log.order_id}`,
+      `AWB Number: ${log.awb_number || "N/A"}`,
       `Courier: ${courierName}`,
       `Discrepancy Type: ${typeLabel}`,
-      `Billed Amount: ₹${log.billed_amount ?? 0}`,
-      `Expected Amount: ₹${log.expected_amount ?? 0}`,
-      `Discrepancy Amount: ₹${log.discrepancy_amount ?? 0}`,
-      log.charged_weight ? `Charged Weight: ${log.charged_weight} kg` : "",
-      log.dead_weight ? `Actual/Dead Weight: ${log.dead_weight} kg` : "",
-      log.charged_zone ? `Charged Zone: ${log.charged_zone}` : "",
+      `Billed Amount: ₹${log.billed_value ?? 0}`,
+      `Expected Amount: ₹${log.expected_value ?? 0}`,
+      `Overcharge Amount: ₹${log.overcharge_amount ?? 0}`,
+      log.billed_weight ? `Charged Weight: ${log.billed_weight} kg` : "",
+      log.expected_weight ? `Expected Weight: ${log.expected_weight} kg` : "",
+      log.billed_zone ? `Charged Zone: ${log.billed_zone}` : "",
       log.expected_zone ? `Expected Zone: ${log.expected_zone}` : "",
       "",
-      `We request you to review this shipment and issue a credit note for the overcharged amount of ₹${log.discrepancy_amount ?? 0}.`,
+      `We request you to review this shipment and issue a credit note for the overcharged amount of ₹${log.overcharge_amount ?? 0}.`,
       "",
       `Please revert within 7 working days. If we do not hear back, we will escalate this matter.`,
       "",
