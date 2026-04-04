@@ -155,7 +155,7 @@ export default function UploadCSV() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from("rate_cards")
-        .select("id, courier_name, is_active")
+        .select("id, courier_name, is_active, rate_structure")
         .eq("tenant_id", user.tenant_id)
         .eq("is_active", true);
       if (error) throw error;
@@ -194,7 +194,18 @@ export default function UploadCSV() {
   );
   const hasMissingCourierRateCards = missingRateCardCouriers.length > 0;
 
-  /** Normalize then apply aliases */
+  // Check if rate cards have incomplete zone coverage
+  const incompleteZoneCouriers = couriersInPreview
+    .filter((c: string) => configuredCouriers.includes(c.toLowerCase()))
+    .filter((c: string) => {
+      const rc = rateCards.find((r: any) => r.courier_name?.toLowerCase() === c.toLowerCase());
+      if (!rc?.rate_structure || typeof rc.rate_structure !== 'object') return true;
+      const configuredZones = Object.keys(rc.rate_structure as Record<string, unknown>);
+      return configuredZones.length < 3;
+    });
+  const hasIncompleteZones = incompleteZoneCouriers.length > 0;
+
+
   const resolveHeader = (raw: string): string => {
     const normalized = normalizeCol(raw);
     return COLUMN_ALIASES[normalized] || normalized;
@@ -792,6 +803,30 @@ export default function UploadCSV() {
                     onClick={() => navigate("/tenant-admin/settings?tab=ratecards")}
                   >
                     <Settings className="h-4 w-4" /> Add Rate Cards Now
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {hasIncompleteZones && !hasMissingCourierRateCards && (
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-warning">
+                    Incomplete zone rates for: {incompleteZoneCouriers.join(", ")}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your rate card only has rates for a few zones. Zone discrepancy amounts will use estimates (10% of billed amount) for zones without configured rates. For accurate results, add rates for all zones (A through E).
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 gap-2"
+                    onClick={() => navigate("/tenant-admin/settings?tab=ratecards")}
+                  >
+                    <Settings className="h-4 w-4" /> Complete Zone Rates
                   </Button>
                 </div>
               </div>
