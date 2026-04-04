@@ -217,14 +217,7 @@ export default function Disputes() {
 
       // Type
       if (typeFilter !== "all") {
-        const typeMap: Record<string, string> = {
-          weight: "has_weight_discrepancy",
-          zone: "has_zone_discrepancy",
-          rto: "has_rto_overcharge",
-        };
-        if (typeMap[typeFilter]) {
-          query = query.eq(typeMap[typeFilter], true);
-        }
+        query = query.eq("discrepancy_type", typeFilter);
       }
 
       // Date range
