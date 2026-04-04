@@ -378,7 +378,7 @@ export default function Disputes() {
     try {
       await supabase
         .from("audit_logs")
-        .update({ dispute_status: "raised", dispute_raised_date: new Date().toISOString().split("T")[0] })
+        .update({ status: "raised" } as any)
         .eq("id", disputeId);
       const emailId = id ? paginated.find((d) => d.id === id)?.dispute_email?.id : selectedDispute?.dispute_email?.id;
       if (emailId)
