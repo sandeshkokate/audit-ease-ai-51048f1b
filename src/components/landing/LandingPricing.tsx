@@ -148,9 +148,11 @@ export default function LandingPricing() {
                 </div>
               ))}
             </div>
-            <div className="border-t border-border bg-muted/30 px-6 py-3 text-center text-xs text-muted-foreground">
-              No recovery = No commission. It's that simple.
-              <p className="text-center text-xs text-muted-foreground mt-1 opacity-70">
+            <div className="border-t border-border bg-muted/30 px-6 py-5 text-center">
+              <p className="text-sm font-semibold text-foreground">
+                No recovery = No commission. It's that simple.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
                 Recovery amounts vary by business. Results depend on courier mix, order volume, and rate card accuracy.
               </p>
             </div>
