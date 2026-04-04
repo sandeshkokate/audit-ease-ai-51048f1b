@@ -94,6 +94,7 @@ export const DISPUTE_TYPE_OPTIONS = [
   { value: 'weight', label: 'Weight' },
   { value: 'zone', label: 'Zone' },
   { value: 'rto', label: 'RTO' },
+  { value: 'overcharge', label: 'Rate Overcharge' },
   { value: 'damage', label: 'Damage' },
   { value: 'unclassified', label: 'Unclassified' },
 ] as const;
