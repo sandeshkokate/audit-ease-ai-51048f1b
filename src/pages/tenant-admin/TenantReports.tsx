@@ -102,6 +102,7 @@ export default function TenantReports() {
       Weight: { name: 'Weight', count: 0, amount: 0 },
       Zone: { name: 'Zone', count: 0, amount: 0 },
       RTO: { name: 'RTO', count: 0, amount: 0 },
+      'Rate Overcharge': { name: 'Rate Overcharge', count: 0, amount: 0 },
       Other: { name: 'Other', count: 0, amount: 0 },
     };
     auditLogs.forEach(log => {
@@ -111,6 +112,7 @@ export default function TenantReports() {
       if (dtype === 'weight') { map.Weight.count++; map.Weight.amount += amt; }
       else if (dtype === 'zone') { map.Zone.count++; map.Zone.amount += amt; }
       else if (dtype === 'rto') { map.RTO.count++; map.RTO.amount += amt; }
+      else if (dtype === 'overcharge') { map['Rate Overcharge'].count++; map['Rate Overcharge'].amount += amt; }
       else { map.Other.count++; map.Other.amount += amt; }
     });
     const all = Object.values(map).filter(d => d.count > 0);
