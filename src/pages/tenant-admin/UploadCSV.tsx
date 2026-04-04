@@ -809,6 +809,30 @@ export default function UploadCSV() {
             </div>
           )}
 
+          {hasIncompleteZones && !hasMissingCourierRateCards && (
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-warning">
+                    Incomplete zone rates for: {incompleteZoneCouriers.join(", ")}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your rate card only has rates for a few zones. Zone discrepancy amounts will use estimates (10% of billed amount) for zones without configured rates. For accurate results, add rates for all zones (A through E).
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 gap-2"
+                    onClick={() => navigate("/tenant-admin/settings?tab=ratecards")}
+                  >
+                    <Settings className="h-4 w-4" /> Complete Zone Rates
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <Button
               variant="hero"
