@@ -293,7 +293,7 @@ export default function TenantSettings() {
             .from("rate_cards")
             .update({ is_active: false, updated_at: new Date().toISOString() })
             .eq("tenant_id", tenantId!)
-            .eq("courier_name", card.courier_name)
+            .eq("courier", (card as any).courier || (card as any).courier_name)
             .eq("is_active", true);
         }
       }

@@ -1065,7 +1065,7 @@ export default function Disputes() {
                         .insert({
                           tenant_id: selectedDispute.tenant_id,
                           audit_log_id: selectedDispute.id,
-                          courier_name: log.courier_name,
+                          courier_name: log.courier,
                           courier_email: email.courier_email,
                           subject: email.subject,
                           body: email.body,
