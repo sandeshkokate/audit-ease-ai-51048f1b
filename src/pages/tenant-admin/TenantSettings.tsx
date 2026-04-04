@@ -194,6 +194,7 @@ export default function TenantSettings() {
   };
 
   const resetModal = () => {
+    setWizardStep(1);
     setRateCardForm({
       courier_name: "",
       effective_from: "",
