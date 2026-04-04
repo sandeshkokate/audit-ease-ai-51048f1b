@@ -232,35 +232,32 @@ export default function Disputes() {
       if (error) throw error;
 
       return {
-        rows: (data || []).map((log) => ({
-          id: log.id,
-          awb_number: log.awb,
-          order_id: log.order_id,
-          courier: log.courier_name,
-          courier_name: log.courier_name,
-          discrepancy_type: log.has_weight_discrepancy
-            ? "Weight"
-            : log.has_zone_discrepancy
-              ? "Zone"
-              : log.has_rto_overcharge
-                ? "RTO"
-                : "Unclassified",
-          amount: log.discrepancy_amount,
-          discrepancy_amount: log.discrepancy_amount,
-          discrepancy_reasons: Array.isArray(log.discrepancy_reasons) ? log.discrepancy_reasons : [],
-          status: log.dispute_status || "draft",
-          courier_email: `billing@${(log.courier_name || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
-          email_subject: log.dispute_emails?.[0]?.subject || "",
-          email_body: log.dispute_emails?.[0]?.body || "",
-          dispute_email: log.dispute_emails?.[0] || null,
-          dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
-          notes: log.dispute_notes || [],
-          follow_up_date: log.follow_up_date || null,
-          escalated: log.escalated || false,
-          priority: log.priority || null,
-          created_at: log.created_at,
-          tenant_id: log.tenant_id,
-        })),
+        rows: (data || []).map((log: any) => {
+          const dtype = (log.discrepancy_type || '').toLowerCase();
+          return {
+            id: log.id,
+            awb_number: log.awb_number,
+            order_id: null,
+            courier: log.courier,
+            courier_name: log.courier,
+            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : 'Unclassified',
+            amount: log.overcharge_amount,
+            discrepancy_amount: log.overcharge_amount,
+            discrepancy_reasons: [],
+            status: log.status || "draft",
+            courier_email: `billing@${(log.courier || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
+            email_subject: log.dispute_emails?.[0]?.subject || "",
+            email_body: log.dispute_emails?.[0]?.body || "",
+            dispute_email: log.dispute_emails?.[0] || null,
+            dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
+            notes: log.dispute_notes || [],
+            follow_up_date: null,
+            escalated: false,
+            priority: null,
+            created_at: log.created_at,
+            tenant_id: log.tenant_id,
+          };
+        }),
         total: count || 0,
       };
     },
