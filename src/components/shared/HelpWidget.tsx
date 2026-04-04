@@ -88,8 +88,8 @@ export default function HelpWidget() {
           </div>
           <p className="text-center text-xs text-muted-foreground pt-2">
             Or email us directly at{' '}
-            <a href="mailto:support@auditease.com" className="text-primary hover:underline">
-              support@auditease.com
+            <a href="mailto:support@auditeasetechnologies.com" className="text-primary hover:underline">
+              support@auditeasetechnologies.com
             </a>
           </p>
         </DialogContent>
