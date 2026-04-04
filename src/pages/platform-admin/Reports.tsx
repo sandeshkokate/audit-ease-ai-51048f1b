@@ -73,7 +73,7 @@ export default function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('id, discrepancy_amount, recovery_amount, billed_amount, expected_amount, courier_name, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, tenant_id, created_at, order_id, awb, charged_weight, charged_zone, expected_zone')
+        .select('id, overcharge_amount, billed_value, expected_value, courier, discrepancy_type, tenant_id, created_at, awb_number, billed_weight, billed_zone, expected_zone, status')
         .gte('created_at', range.from.toISOString())
         .lte('created_at', range.to.toISOString());
       if (error) throw error;
