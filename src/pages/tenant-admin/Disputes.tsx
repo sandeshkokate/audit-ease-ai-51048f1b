@@ -199,20 +199,20 @@ export default function Disputes() {
       const statuses = TAB_STATUSES[activeTab];
       if (statuses && statuses.length > 0) {
         if (activeTab === "draft") {
-          query = query.or(`dispute_status.is.null,dispute_status.in.(${statuses.join(",")})`);
+          query = query.or(`status.is.null,status.in.(${statuses.join(",")})`);
         } else {
-          query = query.in("dispute_status", statuses);
+          query = query.in("status", statuses);
         }
       }
 
       // Search
       if (search.trim()) {
-        query = query.or(`awb.ilike.%${search}%,courier_name.ilike.%${search}%`);
+        query = query.or(`awb_number.ilike.%${search}%,courier.ilike.%${search}%`);
       }
 
       // Courier
       if (courierFilter !== "all") {
-        query = query.eq("courier_name", courierFilter);
+        query = query.eq("courier", courierFilter);
       }
 
       // Type
