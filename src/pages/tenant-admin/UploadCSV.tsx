@@ -155,7 +155,7 @@ export default function UploadCSV() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from("rate_cards")
-        .select("id, courier_name, is_active")
+        .select("id, courier_name, is_active, rate_structure")
         .eq("tenant_id", user.tenant_id)
         .eq("is_active", true);
       if (error) throw error;
