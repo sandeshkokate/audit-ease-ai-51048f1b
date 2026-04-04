@@ -164,7 +164,20 @@ export default function UploadCSV() {
     enabled: !!user?.tenant_id,
   });
   const hasActiveRateCards = rateCards.length > 0;
+  const configuredCouriers = rateCards.map((r: any) => r.courier_name?.toLowerCase());
 
+  // Detect couriers in parsed preview that have no rate card
+  const couriersInPreview = preview.length > 0
+    ? [...new Set(preview.map((row: any) => {
+        const courierKey = headers.includes("courier") ? "courier" : (columnMap["courier"] || "");
+        const val = courierKey ? row[courierKey] : "";
+        return typeof val === "string" ? val.trim() : "";
+      }).filter(Boolean))]
+    : [];
+  const missingRateCardCouriers = couriersInPreview.filter(
+    (c: string) => !configuredCouriers.includes(c.toLowerCase())
+  );
+  const hasMissingCourierRateCards = missingRateCardCouriers.length > 0;
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
   // columnMap: required_field_name → original CSV header the user selected
@@ -750,13 +763,37 @@ export default function UploadCSV() {
               return null;
             })()}
 
+          {hasMissingCourierRateCards && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-destructive">
+                    Missing rate cards for: {missingRateCardCouriers.join(", ")}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You need to configure rate cards for these couriers before uploading. Without rate cards, we can't calculate correct charges or detect overcharges.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 gap-2"
+                    onClick={() => navigate("/tenant-admin/settings?tab=ratecards")}
+                  >
+                    <Settings className="h-4 w-4" /> Add Rate Cards Now
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end">
             <Button
               variant="hero"
               size="lg"
               className="gap-2"
               onClick={handleProcess}
-              disabled={processing || !allValid}
+              disabled={processing || !allValid || hasMissingCourierRateCards}
             >
               {processing ? (
                 <>
