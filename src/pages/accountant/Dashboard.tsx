@@ -19,14 +19,14 @@ export default function AccountantDashboard() {
       if (!user?.tenant_id) throw new Error('No tenant');
       const { data } = await supabase
         .from('audit_logs')
-        .select('id, discrepancy_amount, recovery_amount, dispute_status')
+        .select('id, overcharge_amount, status')
         .eq('tenant_id', user.tenant_id);
 
       const logs = data || [];
-      const discrepancies = logs.filter(l => (l.discrepancy_amount ?? 0) > 0);
-      const recovered = logs.filter(l => l.dispute_status === 'recovered');
-      const recoveredAmount = recovered.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
-      const discrepancyAmount = discrepancies.reduce((s, l) => s + (l.discrepancy_amount ?? 0), 0);
+      const discrepancies = logs.filter(l => (l.overcharge_amount ?? 0) > 1);
+      const recovered = logs.filter(l => l.status === 'recovered');
+      const recoveredAmount = recovered.reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
+      const discrepancyAmount = discrepancies.reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
 
       return {
         totalOrders: logs.length,
@@ -58,16 +58,16 @@ export default function AccountantDashboard() {
       if (!user?.tenant_id) return [];
       const { data } = await supabase
         .from('audit_logs')
-        .select('has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, discrepancy_amount')
+        .select('discrepancy_type, overcharge_amount')
         .eq('tenant_id', user.tenant_id)
-        .gt('discrepancy_amount', 0);
+        .gt('overcharge_amount', 1);
 
-      const counts = { Weight: 0, Zone: 0, RTO: 0, Damage: 0, Other: 0 };
+      const counts: Record<string, number> = { Weight: 0, Zone: 0, RTO: 0, Other: 0 };
       data?.forEach(r => {
-        if (r.has_weight_discrepancy) counts.Weight++;
-        else if (r.has_zone_discrepancy) counts.Zone++;
-        else if (r.has_rto_overcharge) counts.RTO++;
-        else if (r.has_damage_misclassification) counts.Damage++;
+        const t = r.discrepancy_type?.toLowerCase() ?? '';
+        if (t === 'weight') counts.Weight++;
+        else if (t === 'zone') counts.Zone++;
+        else if (t === 'rto') counts.RTO++;
         else counts.Other++;
       });
       return Object.entries(counts).filter(([, v]) => v > 0).map(([name, value]) => ({ name, value }));
@@ -82,7 +82,7 @@ export default function AccountantDashboard() {
       const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
       const { data } = await supabase
         .from('audit_logs')
-        .select('id, recovery_amount, dispute_status, created_at')
+        .select('id, overcharge_amount, status, created_at')
         .eq('tenant_id', user.tenant_id)
         .gte('created_at', sixMonthsAgo.toISOString());
 
@@ -95,8 +95,8 @@ export default function AccountantDashboard() {
           return d >= mStart && d <= mEnd;
         }) || [];
         const recovered = inMonth
-          .filter(l => l.dispute_status === 'recovered')
-          .reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
+          .filter(l => l.status === 'recovered')
+          .reduce((sum, l) => sum + (l.overcharge_amount || 0), 0);
         months.push({ month: format(mStart, 'MMM'), recovered });
       }
       return months;
