@@ -191,7 +191,7 @@ export default function Disputes() {
 
       let query = supabase
         .from("audit_logs")
-        .select("*, dispute_emails(*), dispute_notes(*)", { count: "exact" })
+        .select("*", { count: "exact" })
         .eq("tenant_id", user.tenant_id)
         .gt("overcharge_amount", 0) as any;
 
