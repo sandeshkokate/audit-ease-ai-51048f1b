@@ -106,6 +106,7 @@ export default function AuditLogs() {
     if (typeFilter === 'weight') query = query.eq('discrepancy_type', 'weight').gt('overcharge_amount', 1);
     else if (typeFilter === 'zone') query = query.eq('discrepancy_type', 'zone').gt('overcharge_amount', 1);
     else if (typeFilter === 'rto') query = query.eq('discrepancy_type', 'rto').gt('overcharge_amount', 1);
+    else if (typeFilter === 'overcharge') query = query.eq('discrepancy_type', 'overcharge').gt('overcharge_amount', 1);
     else if (typeFilter === 'no_issue') query = query.eq('status', 'no_issue');
 
     if (searchQuery.trim()) {

@@ -412,6 +412,7 @@ export default function Disputes() {
     if (dtype === 'weight') discrepancies.push("Weight Discrepancy");
     if (dtype === 'zone') discrepancies.push("Zone Discrepancy");
     if (dtype === 'rto') discrepancies.push("RTO Overcharge");
+    if (dtype === 'overcharge') discrepancies.push("Rate Overcharge");
     const typeLabel = discrepancies.length > 0 ? discrepancies.join(", ") : "Billing Discrepancy";
 
     const subject = `Billing Dispute — AWB ${log.awb_number || "N/A"} | ${typeLabel}`;

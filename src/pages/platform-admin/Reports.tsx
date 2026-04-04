@@ -227,6 +227,7 @@ export default function Reports() {
       Weight: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'weight'),
       Zone: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'zone'),
       RTO: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'rto'),
+      'Rate Overcharge': auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'overcharge'),
       Damage: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'damage'),
     };
 
