@@ -12,20 +12,22 @@ interface Props {
 
 const steps = [
   {
+    key: 'rate_card',
+    title: 'Add your rate card',
+    subtitle: 'so we know what you should pay',
+    link: '/tenant-admin/settings?tab=ratecards',
+  },
+  {
     key: 'upload_csv',
     title: 'Upload your first courier invoice',
     link: '/tenant-admin/upload',
-  },
-  {
-    key: 'rate_card',
-    title: 'Configure your rate card',
-    subtitle: 'so we know what you should pay',
-    link: '/tenant-admin/settings',
+    dependsOn: 'rate_card',
   },
   {
     key: 'review_discrepancy',
     title: 'Review your first audit results',
     link: '/tenant-admin/audit-logs',
+    dependsOn: 'upload_csv',
   },
 ];
 
@@ -100,35 +102,48 @@ export default function OnboardingChecklist({ tenantId }: Props) {
       <div className="space-y-2 mb-5">
         {steps.map((step, idx) => {
           const done = completion[step.key as keyof typeof completion];
+          const depKey = (step as any).dependsOn as string | undefined;
+          const disabled = depKey ? !completion[depKey as keyof typeof completion] : false;
           return (
             <button
               key={step.key}
-              onClick={() => !done && navigate(step.link)}
+              onClick={() => !done && !disabled && navigate(step.link)}
               className={`flex items-center gap-3 w-full text-left rounded-lg border p-3.5 transition-colors ${
                 done
                   ? 'border-success/20 bg-success/5 cursor-default'
+                  : disabled
+                  ? 'border-border bg-muted/30 opacity-60 cursor-not-allowed'
                   : 'border-border bg-muted/20 hover:bg-muted/40 cursor-pointer'
               }`}
+              disabled={disabled}
             >
               {done ? (
                 <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground/40 shrink-0" />
               )}
-              <span className={`text-sm font-medium flex-1 ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+              <span className={`text-sm font-medium flex-1 ${done ? 'text-muted-foreground line-through' : disabled ? 'text-muted-foreground' : 'text-foreground'}`}>
                 {idx + 1}. {step.title}
                 {step.subtitle && !done && (
                   <span className="text-muted-foreground font-normal"> ({step.subtitle})</span>
                 )}
               </span>
-              {!done && <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+              {!done && !disabled && <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />}
             </button>
           );
         })}
       </div>
 
       {/* CTA */}
-      {!completion.upload_csv && (
+      {!completion.rate_card ? (
+        <Button
+          variant="default"
+          className="w-full gap-2"
+          onClick={() => navigate('/tenant-admin/settings?tab=ratecards')}
+        >
+          Add Rate Card Now
+        </Button>
+      ) : !completion.upload_csv ? (
         <Button
           variant="default"
           className="w-full gap-2"
@@ -136,7 +151,7 @@ export default function OnboardingChecklist({ tenantId }: Props) {
         >
           <Upload className="h-4 w-4" /> Upload Invoice Now
         </Button>
-      )}
+      ) : null}
     </div>
   );
 }

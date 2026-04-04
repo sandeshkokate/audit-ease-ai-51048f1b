@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Loader2, AlertTriangle, Settings, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Papa from "papaparse";
 import {
@@ -136,6 +137,7 @@ async function enrichRowsWithPincodes(rows: ParsedShipmentRow[]) {
 export default function UploadCSV() {
   useDocumentTitle("Upload CSV");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]); // normalised headers after auto-map
@@ -145,6 +147,23 @@ export default function UploadCSV() {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check if rate cards exist
+  const { data: rateCards = [], isLoading: loadingRateCards } = useQuery({
+    queryKey: ["rate-cards-check", user?.tenant_id],
+    queryFn: async () => {
+      if (!user?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from("rate_cards")
+        .select("id, courier_name, is_active")
+        .eq("tenant_id", user.tenant_id)
+        .eq("is_active", true);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.tenant_id,
+  });
+  const hasActiveRateCards = rateCards.length > 0;
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
@@ -387,6 +406,58 @@ export default function UploadCSV() {
 
   // Check if any required field still needs manual mapping
   const unmappedRequired = ALWAYS_REQUIRED.filter((f) => !isMapped(f));
+
+  if (loadingRateCards) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!hasActiveRateCards) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Upload CSV</h1>
+          <p className="text-sm text-muted-foreground">Upload your courier billing data for audit</p>
+        </div>
+        <Card className="shadow-card">
+          <CardContent className="py-16 text-center">
+            <div className="mx-auto w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
+              <AlertTriangle className="h-10 w-10 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-3">
+              One More Step Before Your First Audit! ☝️
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto mb-6 text-lg">
+              To find overcharges, we need to know what your courier <strong>should</strong> be charging you.
+              Please add your rate card first — it only takes 2 minutes!
+            </p>
+            <div className="bg-muted/50 rounded-xl p-6 max-w-md mx-auto mb-8">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center justify-center gap-2">
+                <Lightbulb className="h-5 w-5 text-primary" />
+                Why is this important?
+              </h3>
+              <div className="text-sm text-muted-foreground text-left space-y-2">
+                <p><strong>Without a rate card:</strong> We don't know if ₹80 for a shipment is correct or overcharged.</p>
+                <p><strong>With your rate card:</strong> If your contract says ₹50, we instantly know you were overcharged ₹30!</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button onClick={() => navigate("/tenant-admin/settings?tab=ratecards")} className="gap-2" size="lg">
+                <Settings className="h-5 w-5" /> Add Rate Card Now
+              </Button>
+              <span className="text-muted-foreground">Takes about 2 minutes</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-8">
+              Need help? Check your email for rate card from your courier, or ask your courier's account manager.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
