@@ -98,6 +98,7 @@ export default function TenantSettings() {
     EMPTY_ZONES.map((z) => ({ ...z, slabs: z.slabs.map((s) => ({ ...s })) })),
   );
   const [addingRate, setAddingRate] = useState(false);
+  const [expandedRateCard, setExpandedRateCard] = useState<string | null>(null);
 
   // Fetch tenant profile
   const { data: tenantData, isLoading: loadingTenant } = useQuery({
