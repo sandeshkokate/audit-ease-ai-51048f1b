@@ -69,7 +69,7 @@ export default function LandingHero() {
               </div>
 
               <div className="p-5 bg-gradient-to-b from-background/50 to-background">
-                <div className="mb-4 grid grid-cols-2 gap-3">
+                <div className="mb-4 grid grid-cols-2 gap-4 md:gap-5">
                   {[
                     { label: 'Sample Orders', value: '1,000', icon: FileSpreadsheet, color: 'text-primary', bg: 'bg-primary/10' },
                     { label: 'Errors Found', value: '~120', icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
