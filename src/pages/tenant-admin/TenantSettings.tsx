@@ -208,25 +208,23 @@ export default function TenantSettings() {
 
   const handleAddRateCard = async () => {
     if (!rateCardForm.courier_name || !rateCardForm.effective_from) {
-      toast({ variant: "destructive", title: "Courier name and effective date are required" });
+      toast({ variant: "destructive", title: "Oops! Missing information", description: "Please select a courier and enter when these rates became active." });
       return;
     }
 
-    // Build and validate rate structure from wizard
     const rateStructure = buildRateStructure(zones);
     if (Object.keys(rateStructure).length === 0) {
-      toast({ variant: "destructive", title: "Please add at least one zone with rates" });
+      toast({ variant: "destructive", title: "No rates entered", description: "Please add at least one zone with shipping rates. Check your rate card document for the numbers." });
       return;
     }
 
-    // Validate with Zod schema
     const { rateStructureSchema } = await import("@/lib/validation-schemas");
     const validation = rateStructureSchema.safeParse(rateStructure);
     if (!validation.success) {
       toast({
         variant: "destructive",
-        title: "Incomplete rate card",
-        description: validation.error.errors[0]?.message || "Fill in all rates.",
+        title: "Some rates look incomplete",
+        description: "Make sure every weight range has a rate filled in. Leave no blank boxes in the rates you've added.",
       });
       return;
     }
@@ -246,7 +244,7 @@ export default function TenantSettings() {
         created_by: user?.id,
       });
       if (error) throw error;
-      toast({ title: "Rate card added successfully" });
+      toast({ title: "🎉 Rate card saved!", description: "You can now upload your courier bills and we'll find any overcharges." });
       setRateCardModal(false);
       resetModal();
       queryClient.invalidateQueries({ queryKey: ["tenant-rate-cards", tenantId] });
