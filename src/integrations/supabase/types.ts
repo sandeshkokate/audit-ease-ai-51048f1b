@@ -76,189 +76,116 @@ export type Database = {
       }
       audit_logs: {
         Row: {
-          awb: string | null
-          billed_amount: number | null
-          box_count: number | null
-          breadth_cm: number | null
-          charged_weight: number | null
-          charged_zone: string | null
-          courier_name: string | null
+          awb_number: string
+          billed_rto: number | null
+          billed_value: number | null
+          billed_weight: number | null
+          billed_zone: string | null
+          courier: string
           created_at: string | null
-          created_by: string | null
-          credit_note_date: string | null
-          credit_note_number: string | null
-          customer_pincode: string | null
-          dead_weight: number | null
-          delivery_date: string | null
-          destination_city: string | null
-          destination_state: string | null
-          dimensions_json: Json | null
-          discrepancy_amount: number | null
-          discrepancy_reasons: Json | null
-          dispute_email_id: string | null
-          dispute_raised_date: string | null
-          dispute_status: string | null
-          escalated: boolean | null
-          escalated_at: string | null
-          escalation_reason: string | null
-          expected_amount: number | null
+          discrepancy_type: string
+          expected_rto: number | null
+          expected_value: number | null
+          expected_weight: number | null
           expected_zone: string | null
-          follow_up_date: string | null
-          has_damage_misclassification: boolean | null
-          has_rto_overcharge: boolean | null
-          has_weight_discrepancy: boolean | null
-          has_zone_discrepancy: boolean | null
-          height_cm: number | null
+          forward_charge: number | null
           id: string
-          is_rto: boolean | null
-          length_cm: number | null
-          max_expected_weight: number | null
-          order_date: string | null
-          order_id: string
-          origin_city: string | null
-          origin_pincode: string | null
-          origin_state: string | null
-          priority: string | null
-          recovery_amount: number | null
-          recovery_date: string | null
-          rejected_at: string | null
-          rejection_reason: string | null
-          rto_reason: string | null
-          shipment_status: string | null
+          overcharge_amount: number | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          rto_percentage: number | null
+          shipment_id: string | null
+          status: string | null
           tenant_id: string
-          updated_at: string | null
-          updated_by: string | null
-          upload_batch_id: string | null
-          volumetric_weight: number | null
         }
         Insert: {
-          awb?: string | null
-          billed_amount?: number | null
-          box_count?: number | null
-          breadth_cm?: number | null
-          charged_weight?: number | null
-          charged_zone?: string | null
-          courier_name?: string | null
+          awb_number: string
+          billed_rto?: number | null
+          billed_value?: number | null
+          billed_weight?: number | null
+          billed_zone?: string | null
+          courier: string
           created_at?: string | null
-          created_by?: string | null
-          credit_note_date?: string | null
-          credit_note_number?: string | null
-          customer_pincode?: string | null
-          dead_weight?: number | null
-          delivery_date?: string | null
-          destination_city?: string | null
-          destination_state?: string | null
-          dimensions_json?: Json | null
-          discrepancy_amount?: number | null
-          discrepancy_reasons?: Json | null
-          dispute_email_id?: string | null
-          dispute_raised_date?: string | null
-          dispute_status?: string | null
-          escalated?: boolean | null
-          escalated_at?: string | null
-          escalation_reason?: string | null
-          expected_amount?: number | null
+          discrepancy_type: string
+          expected_rto?: number | null
+          expected_value?: number | null
+          expected_weight?: number | null
           expected_zone?: string | null
-          follow_up_date?: string | null
-          has_damage_misclassification?: boolean | null
-          has_rto_overcharge?: boolean | null
-          has_weight_discrepancy?: boolean | null
-          has_zone_discrepancy?: boolean | null
-          height_cm?: number | null
+          forward_charge?: number | null
           id?: string
-          is_rto?: boolean | null
-          length_cm?: number | null
-          max_expected_weight?: number | null
-          order_date?: string | null
-          order_id: string
-          origin_city?: string | null
-          origin_pincode?: string | null
-          origin_state?: string | null
-          priority?: string | null
-          recovery_amount?: number | null
-          recovery_date?: string | null
-          rejected_at?: string | null
-          rejection_reason?: string | null
-          rto_reason?: string | null
-          shipment_status?: string | null
+          overcharge_amount?: number | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          rto_percentage?: number | null
+          shipment_id?: string | null
+          status?: string | null
           tenant_id: string
-          updated_at?: string | null
-          updated_by?: string | null
-          upload_batch_id?: string | null
-          volumetric_weight?: number | null
         }
         Update: {
-          awb?: string | null
-          billed_amount?: number | null
-          box_count?: number | null
-          breadth_cm?: number | null
-          charged_weight?: number | null
-          charged_zone?: string | null
-          courier_name?: string | null
+          awb_number?: string
+          billed_rto?: number | null
+          billed_value?: number | null
+          billed_weight?: number | null
+          billed_zone?: string | null
+          courier?: string
           created_at?: string | null
-          created_by?: string | null
-          credit_note_date?: string | null
-          credit_note_number?: string | null
-          customer_pincode?: string | null
-          dead_weight?: number | null
-          delivery_date?: string | null
-          destination_city?: string | null
-          destination_state?: string | null
-          dimensions_json?: Json | null
-          discrepancy_amount?: number | null
-          discrepancy_reasons?: Json | null
-          dispute_email_id?: string | null
-          dispute_raised_date?: string | null
-          dispute_status?: string | null
-          escalated?: boolean | null
-          escalated_at?: string | null
-          escalation_reason?: string | null
-          expected_amount?: number | null
+          discrepancy_type?: string
+          expected_rto?: number | null
+          expected_value?: number | null
+          expected_weight?: number | null
           expected_zone?: string | null
-          follow_up_date?: string | null
-          has_damage_misclassification?: boolean | null
-          has_rto_overcharge?: boolean | null
-          has_weight_discrepancy?: boolean | null
-          has_zone_discrepancy?: boolean | null
-          height_cm?: number | null
+          forward_charge?: number | null
           id?: string
-          is_rto?: boolean | null
-          length_cm?: number | null
-          max_expected_weight?: number | null
-          order_date?: string | null
-          order_id?: string
-          origin_city?: string | null
-          origin_pincode?: string | null
-          origin_state?: string | null
-          priority?: string | null
-          recovery_amount?: number | null
-          recovery_date?: string | null
-          rejected_at?: string | null
-          rejection_reason?: string | null
-          rto_reason?: string | null
-          shipment_status?: string | null
+          overcharge_amount?: number | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          rto_percentage?: number | null
+          shipment_id?: string | null
+          status?: string | null
           tenant_id?: string
-          updated_at?: string | null
-          updated_by?: string | null
-          upload_batch_id?: string | null
-          volumetric_weight?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
+            foreignKeyName: "audit_logs_shipment_id_fkey"
+            columns: ["shipment_id"]
             isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "audit_logs_upload_batch_id_fkey"
-            columns: ["upload_batch_id"]
-            isOneToOne: false
-            referencedRelation: "upload_batches"
+            referencedRelation: "shipments"
             referencedColumns: ["id"]
           },
         ]
+      }
+      city_zone_mapping: {
+        Row: {
+          courier: string
+          destination_city: string
+          destination_state: string
+          id: string
+          origin_city: string
+          origin_state: string
+          tenant_id: string
+          zone: string
+        }
+        Insert: {
+          courier: string
+          destination_city: string
+          destination_state: string
+          id?: string
+          origin_city: string
+          origin_state: string
+          tenant_id: string
+          zone: string
+        }
+        Update: {
+          courier?: string
+          destination_city?: string
+          destination_state?: string
+          id?: string
+          origin_city?: string
+          origin_state?: string
+          tenant_id?: string
+          zone?: string
+        }
+        Relationships: []
       }
       contact_submissions: {
         Row: {
@@ -527,13 +454,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "dispute_emails_audit_log_id_fkey"
-            columns: ["audit_log_id"]
-            isOneToOne: false
-            referencedRelation: "audit_logs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "dispute_emails_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -571,13 +491,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "dispute_notes_audit_log_id_fkey"
-            columns: ["audit_log_id"]
-            isOneToOne: false
-            referencedRelation: "audit_logs"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "dispute_notes_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -993,68 +906,45 @@ export type Database = {
       }
       rate_cards: {
         Row: {
-          contract_pdf_url: string | null
-          courier_name: string
+          courier: string
           created_at: string | null
           created_by: string | null
-          divisor: number | null
           effective_from: string
           effective_to: string | null
           id: string
           is_active: boolean | null
-          min_chargeable_weight: number | null
           rate_structure: Json
           rto_percentage: number | null
           tenant_id: string
           updated_at: string | null
-          updated_by: string | null
-          uploaded_via: string | null
         }
         Insert: {
-          contract_pdf_url?: string | null
-          courier_name: string
+          courier: string
           created_at?: string | null
           created_by?: string | null
-          divisor?: number | null
-          effective_from: string
-          effective_to?: string | null
-          id?: string
-          is_active?: boolean | null
-          min_chargeable_weight?: number | null
-          rate_structure?: Json
-          rto_percentage?: number | null
-          tenant_id: string
-          updated_at?: string | null
-          updated_by?: string | null
-          uploaded_via?: string | null
-        }
-        Update: {
-          contract_pdf_url?: string | null
-          courier_name?: string
-          created_at?: string | null
-          created_by?: string | null
-          divisor?: number | null
           effective_from?: string
           effective_to?: string | null
           id?: string
           is_active?: boolean | null
-          min_chargeable_weight?: number | null
+          rate_structure: Json
+          rto_percentage?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          courier?: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_active?: boolean | null
           rate_structure?: Json
           rto_percentage?: number | null
           tenant_id?: string
           updated_at?: string | null
-          updated_by?: string | null
-          uploaded_via?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "rate_cards_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       rate_limits: {
         Row: {
@@ -1074,6 +964,105 @@ export type Database = {
           attempted_at?: string
           id?: string
           identifier?: string
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          actual_weight: number | null
+          awb_number: string
+          billed_amount: number | null
+          billed_weight: number | null
+          billed_zone: string | null
+          cod_amount: number | null
+          cod_charge: number | null
+          courier: string
+          created_at: string | null
+          destination_city: string | null
+          destination_state: string | null
+          forward_charge: number | null
+          fuel_surcharge: number | null
+          height_cm: number | null
+          id: string
+          is_rto: boolean | null
+          length_cm: number | null
+          order_id: string | null
+          origin_city: string | null
+          origin_state: string | null
+          payment_mode: string | null
+          product_type: string | null
+          rto_charge: number | null
+          shipment_date: string | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+          uploaded_by: string | null
+          volumetric_weight: number | null
+          width_cm: number | null
+        }
+        Insert: {
+          actual_weight?: number | null
+          awb_number: string
+          billed_amount?: number | null
+          billed_weight?: number | null
+          billed_zone?: string | null
+          cod_amount?: number | null
+          cod_charge?: number | null
+          courier: string
+          created_at?: string | null
+          destination_city?: string | null
+          destination_state?: string | null
+          forward_charge?: number | null
+          fuel_surcharge?: number | null
+          height_cm?: number | null
+          id?: string
+          is_rto?: boolean | null
+          length_cm?: number | null
+          order_id?: string | null
+          origin_city?: string | null
+          origin_state?: string | null
+          payment_mode?: string | null
+          product_type?: string | null
+          rto_charge?: number | null
+          shipment_date?: string | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          volumetric_weight?: number | null
+          width_cm?: number | null
+        }
+        Update: {
+          actual_weight?: number | null
+          awb_number?: string
+          billed_amount?: number | null
+          billed_weight?: number | null
+          billed_zone?: string | null
+          cod_amount?: number | null
+          cod_charge?: number | null
+          courier?: string
+          created_at?: string | null
+          destination_city?: string | null
+          destination_state?: string | null
+          forward_charge?: number | null
+          fuel_surcharge?: number | null
+          height_cm?: number | null
+          id?: string
+          is_rto?: boolean | null
+          length_cm?: number | null
+          order_id?: string | null
+          origin_city?: string | null
+          origin_state?: string | null
+          payment_mode?: string | null
+          product_type?: string | null
+          rto_charge?: number | null
+          shipment_date?: string | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+          volumetric_weight?: number | null
+          width_cm?: number | null
         }
         Relationships: []
       }
