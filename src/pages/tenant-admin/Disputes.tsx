@@ -596,7 +596,7 @@ export default function Disputes() {
     if (!withdrawModal.dispute) return;
     setActionLoading(true);
     try {
-      const { error } = await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", withdrawModal.dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ status: "cancelled" } as any).eq("id", withdrawModal.dispute.id);
       if (error) throw error;
       toast({ title: "Dispute withdrawn" });
       setWithdrawModal({ open: false, dispute: null });
