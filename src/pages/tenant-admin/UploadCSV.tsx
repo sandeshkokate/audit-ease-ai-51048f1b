@@ -209,7 +209,7 @@ export default function UploadCSV() {
     enabled: !!user?.tenant_id,
   });
   const hasActiveRateCards = rateCards.length > 0;
-  const configuredCouriers = rateCards.map((r: any) => r.courier_name?.toLowerCase());
+  const configuredCouriers = rateCards.map((r: any) => (r.courier || r.courier_name)?.toLowerCase());
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
