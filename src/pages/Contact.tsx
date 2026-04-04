@@ -162,8 +162,8 @@ export default function Contact() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Or email us directly:{' '}
-          <a href="mailto:support@auditease.com" className="text-primary hover:underline">
-            support@auditease.com
+          <a href="mailto:support@auditeasetechnologies.com" className="text-primary hover:underline">
+            support@auditeasetechnologies.com
           </a>
         </p>
       </main>

@@ -79,8 +79,8 @@ export default function PrivacyPolicy() {
             <h2 className="text-xl font-semibold text-foreground">5. Contact</h2>
             <p>
               For any privacy-related inquiries, data deletion requests, or concerns, please reach out to us at{' '}
-              <a href="mailto:support@auditease.com" className="text-primary hover:underline">
-                support@auditease.com
+              <a href="mailto:support@auditeasetechnologies.com" className="text-primary hover:underline">
+                support@auditeasetechnologies.com
               </a>
               .
             </p>
