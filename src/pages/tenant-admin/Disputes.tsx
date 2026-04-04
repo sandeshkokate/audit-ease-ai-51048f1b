@@ -144,18 +144,18 @@ export default function Disputes() {
       if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 };
       const { data, error } = await supabase
         .from("audit_logs")
-        .select("dispute_status, discrepancy_amount")
+        .select("status, overcharge_amount")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0);
+        .gt("overcharge_amount", 0);
       if (error) throw error;
       const rows = data || [];
       return {
-        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "pending", "email_copied"].includes(r.dispute_status))
+        draft: rows.filter((r) => !r.status || ["draft", "detected", "pending", "email_copied"].includes(r.status))
           .length,
-        raised: rows.filter((r) => ["raised", "disputed"].includes(r.dispute_status || "")).length,
-        recovered: rows.filter((r) => r.dispute_status === "recovered").length,
-        rejected: rows.filter((r) => r.dispute_status === "rejected").length,
-        cancelled: rows.filter((r) => r.dispute_status === "cancelled").length,
+        raised: rows.filter((r) => ["raised", "disputed"].includes(r.status || "")).length,
+        recovered: rows.filter((r) => r.status === "recovered").length,
+        rejected: rows.filter((r) => r.status === "rejected").length,
+        cancelled: rows.filter((r) => r.status === "cancelled").length,
         all: rows.length,
       };
     },
@@ -169,11 +169,11 @@ export default function Disputes() {
       if (!user?.tenant_id) return [];
       const { data } = await supabase
         .from("audit_logs")
-        .select("courier_name")
+        .select("courier")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0)
-        .not("courier_name", "is", null);
-      return [...new Set((data || []).map((r) => r.courier_name as string))].filter(Boolean).sort();
+        .gt("overcharge_amount", 0)
+        .not("courier", "is", null);
+      return [...new Set((data || []).map((r) => r.courier as string))].filter(Boolean).sort();
     },
     enabled: !!user?.tenant_id,
   });
@@ -193,38 +193,31 @@ export default function Disputes() {
         .from("audit_logs")
         .select("*, dispute_emails(*), dispute_notes(*)", { count: "exact" })
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0) as any;
+        .gt("overcharge_amount", 0) as any;
 
       // Tab filter
       const statuses = TAB_STATUSES[activeTab];
       if (statuses && statuses.length > 0) {
         if (activeTab === "draft") {
-          query = query.or(`dispute_status.is.null,dispute_status.in.(${statuses.join(",")})`);
+          query = query.or(`status.is.null,status.in.(${statuses.join(",")})`);
         } else {
-          query = query.in("dispute_status", statuses);
+          query = query.in("status", statuses);
         }
       }
 
       // Search
       if (search.trim()) {
-        query = query.or(`awb.ilike.%${search}%,courier_name.ilike.%${search}%`);
+        query = query.or(`awb_number.ilike.%${search}%,courier.ilike.%${search}%`);
       }
 
       // Courier
       if (courierFilter !== "all") {
-        query = query.eq("courier_name", courierFilter);
+        query = query.eq("courier", courierFilter);
       }
 
       // Type
       if (typeFilter !== "all") {
-        const typeMap: Record<string, string> = {
-          weight: "has_weight_discrepancy",
-          zone: "has_zone_discrepancy",
-          rto: "has_rto_overcharge",
-        };
-        if (typeMap[typeFilter]) {
-          query = query.eq(typeMap[typeFilter], true);
-        }
+        query = query.eq("discrepancy_type", typeFilter);
       }
 
       // Date range
@@ -239,35 +232,32 @@ export default function Disputes() {
       if (error) throw error;
 
       return {
-        rows: (data || []).map((log) => ({
-          id: log.id,
-          awb_number: log.awb,
-          order_id: log.order_id,
-          courier: log.courier_name,
-          courier_name: log.courier_name,
-          discrepancy_type: log.has_weight_discrepancy
-            ? "Weight"
-            : log.has_zone_discrepancy
-              ? "Zone"
-              : log.has_rto_overcharge
-                ? "RTO"
-                : "Unclassified",
-          amount: log.discrepancy_amount,
-          discrepancy_amount: log.discrepancy_amount,
-          discrepancy_reasons: Array.isArray(log.discrepancy_reasons) ? log.discrepancy_reasons : [],
-          status: log.dispute_status || "draft",
-          courier_email: `billing@${(log.courier_name || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
-          email_subject: log.dispute_emails?.[0]?.subject || "",
-          email_body: log.dispute_emails?.[0]?.body || "",
-          dispute_email: log.dispute_emails?.[0] || null,
-          dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
-          notes: log.dispute_notes || [],
-          follow_up_date: log.follow_up_date || null,
-          escalated: log.escalated || false,
-          priority: log.priority || null,
-          created_at: log.created_at,
-          tenant_id: log.tenant_id,
-        })),
+        rows: (data || []).map((log: any) => {
+          const dtype = (log.discrepancy_type || '').toLowerCase();
+          return {
+            id: log.id,
+            awb_number: log.awb_number,
+            order_id: null,
+            courier: log.courier,
+            courier_name: log.courier,
+            discrepancy_type: dtype === 'weight' ? 'Weight' : dtype === 'zone' ? 'Zone' : dtype === 'rto' ? 'RTO' : 'Unclassified',
+            amount: log.overcharge_amount,
+            discrepancy_amount: log.overcharge_amount,
+            discrepancy_reasons: [],
+            status: log.status || "draft",
+            courier_email: `billing@${(log.courier || "courier").toLowerCase().replace(/\s+/g, "")}.com`,
+            email_subject: log.dispute_emails?.[0]?.subject || "",
+            email_body: log.dispute_emails?.[0]?.body || "",
+            dispute_email: log.dispute_emails?.[0] || null,
+            dispute_reasoning: log.dispute_emails?.[0]?.dispute_reasoning || null,
+            notes: log.dispute_notes || [],
+            follow_up_date: null,
+            escalated: false,
+            priority: null,
+            created_at: log.created_at,
+            tenant_id: log.tenant_id,
+          };
+        }),
         total: count || 0,
       };
     },
@@ -328,7 +318,7 @@ export default function Disputes() {
             .insert({
               tenant_id: dispute.tenant_id,
               audit_log_id: dispute.id,
-              courier_name: log.courier_name,
+              courier_name: log.courier,
               courier_email: email.courier_email,
               subject: email.subject,
               body: email.body,
@@ -340,7 +330,7 @@ export default function Disputes() {
           if (inserted) {
             await supabase
               .from("audit_logs")
-              .update({ dispute_status: "draft" })
+              .update({ status: "draft" } as any)
               .eq("id", dispute.id);
           }
 
@@ -388,7 +378,7 @@ export default function Disputes() {
     try {
       await supabase
         .from("audit_logs")
-        .update({ dispute_status: "raised", dispute_raised_date: new Date().toISOString().split("T")[0] })
+        .update({ status: "raised" } as any)
         .eq("id", disputeId);
       const emailId = id ? paginated.find((d) => d.id === id)?.dispute_email?.id : selectedDispute?.dispute_email?.id;
       if (emailId)
@@ -472,12 +462,9 @@ export default function Disputes() {
       const { error: updateError } = await supabase
         .from("audit_logs")
         .update({
-          dispute_status: "recovered",
-          recovery_amount: recoveredAmount,
-          recovery_date: creditNote.date || new Date().toISOString().split("T")[0],
-          credit_note_number: creditNote.number,
-          credit_note_date: creditNote.date || null,
-        })
+          status: "recovered",
+          resolution_notes: `Credit note: ${creditNote.number}, Amount: ${recoveredAmount}, Date: ${creditNote.date || 'N/A'}`,
+        } as any)
         .eq("id", recoveryModal.dispute.id);
       if (updateError) throw updateError;
 
@@ -504,11 +491,9 @@ export default function Disputes() {
         supabase
           .from("audit_logs")
           .update({
-            dispute_status: "recovered",
-            credit_note_number: `${bulkCreditNote.number_prefix}-${i + 1}`,
-            credit_note_date: bulkCreditNote.date || null,
-            recovery_amount: paginated.find((d) => d.id === id)?.amount || 0,
-          })
+            status: "recovered",
+            resolution_notes: `Credit note: ${bulkCreditNote.number_prefix}-${i + 1}`,
+          } as any)
           .eq("id", id),
       );
       await Promise.all(updates);
@@ -533,7 +518,7 @@ export default function Disputes() {
     try {
       await supabase
         .from("audit_logs")
-        .update({ dispute_status: "rejected", rejection_reason: rejectReason, rejected_at: new Date().toISOString() })
+        .update({ status: "rejected", resolution_notes: rejectReason } as any)
         .eq("id", rejectModal.dispute.id);
       toast({ title: "Dispute marked as rejected" });
       setRejectModal({ open: false, dispute: null });
@@ -580,7 +565,7 @@ export default function Disputes() {
     }
     setActionLoading(true);
     try {
-      const { error } = await supabase.from("audit_logs").update({ follow_up_date: followUpDate }).eq("id", followUpModal.dispute!.id);
+      const { error } = await supabase.from("audit_logs").update({ resolution_notes: `Follow-up: ${followUpDate}` } as any).eq("id", followUpModal.dispute!.id);
       if (error) throw error;
       toast({ title: "Follow-up scheduled" });
       setFollowUpModal({ open: false, dispute: null });
@@ -597,7 +582,7 @@ export default function Disputes() {
     try {
       const { error } = await supabase
         .from("audit_logs")
-        .update({ escalated: true, escalated_at: new Date().toISOString(), priority: "high" })
+        .update({ resolution_notes: "Escalated to high priority" } as any)
         .eq("id", dispute.id);
       if (error) throw error;
       toast({ title: "Dispute escalated to high priority" });
@@ -611,7 +596,7 @@ export default function Disputes() {
     if (!withdrawModal.dispute) return;
     setActionLoading(true);
     try {
-      const { error } = await supabase.from("audit_logs").update({ dispute_status: "cancelled" }).eq("id", withdrawModal.dispute.id);
+      const { error } = await supabase.from("audit_logs").update({ status: "cancelled" } as any).eq("id", withdrawModal.dispute.id);
       if (error) throw error;
       toast({ title: "Dispute withdrawn" });
       setWithdrawModal({ open: false, dispute: null });
@@ -1080,7 +1065,7 @@ export default function Disputes() {
                         .insert({
                           tenant_id: selectedDispute.tenant_id,
                           audit_log_id: selectedDispute.id,
-                          courier_name: log.courier_name,
+                          courier_name: log.courier,
                           courier_email: email.courier_email,
                           subject: email.subject,
                           body: email.body,

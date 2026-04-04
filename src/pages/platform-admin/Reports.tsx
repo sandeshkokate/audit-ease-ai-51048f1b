@@ -127,12 +127,12 @@ export default function Reports() {
 
         const { data } = await supabase
           .from('audit_logs')
-          .select('discrepancy_amount, recovery_amount')
+          .select('overcharge_amount, status')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
 
-        const totalDisc = data?.reduce((s, d) => s + (d.discrepancy_amount || 0), 0) || 0;
-        const totalRec = data?.reduce((s, d) => s + (d.recovery_amount || 0), 0) || 0;
+        const totalDisc = data?.reduce((s, d) => s + (d.overcharge_amount || 0), 0) || 0;
+        const totalRec = data?.filter(d => d.status === 'recovered').reduce((s, d) => s + (d.overcharge_amount || 0), 0) || 0;
         const shipments = data?.length || 0;
 
         months.push({
@@ -150,27 +150,28 @@ export default function Reports() {
   // Compute derived stats
   const stats = useMemo(() => {
     const totalOrders = auditData.length;
-    const discrepancies = auditData.filter(d => (d.discrepancy_amount || 0) > 0);
-    const totalOvercharge = discrepancies.reduce((s, d) => s + (d.discrepancy_amount || 0), 0);
-    const totalRecovered = auditData.reduce((s, d) => s + (d.recovery_amount || 0), 0);
+    const discrepancies = auditData.filter(d => (d.overcharge_amount || 0) > 0);
+    const totalOvercharge = discrepancies.reduce((s, d) => s + (d.overcharge_amount || 0), 0);
+    const totalRecovered = auditData.filter(d => d.status === 'recovered').reduce((s, d) => s + (d.overcharge_amount || 0), 0);
     const detectionRate = totalOrders > 0 ? parseFloat(((discrepancies.length / totalOrders) * 100).toFixed(1)) : 0;
 
     // Courier analysis
     const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number; totalRecovered: number; totalBilled: number; totalExpected: number; weight: number; zone: number; rto: number }> = {};
     auditData.forEach(d => {
-      const c = d.courier_name || 'Unknown';
+      const c = d.courier || 'Unknown';
       if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0, totalRecovered: 0, totalBilled: 0, totalExpected: 0, weight: 0, zone: 0, rto: 0 };
       courierMap[c].shipments++;
-      courierMap[c].totalBilled += d.billed_amount || 0;
-      courierMap[c].totalExpected += d.expected_amount || 0;
-      if ((d.discrepancy_amount || 0) > 0) {
+      courierMap[c].totalBilled += d.billed_value || 0;
+      courierMap[c].totalExpected += d.expected_value || 0;
+      if ((d.overcharge_amount || 0) > 0) {
         courierMap[c].discrepancies++;
-        courierMap[c].totalOvercharge += d.discrepancy_amount || 0;
+        courierMap[c].totalOvercharge += d.overcharge_amount || 0;
       }
-      courierMap[c].totalRecovered += d.recovery_amount || 0;
-      if (d.has_weight_discrepancy) courierMap[c].weight++;
-      if (d.has_zone_discrepancy) courierMap[c].zone++;
-      if (d.has_rto_overcharge) courierMap[c].rto++;
+      if (d.status === 'recovered') courierMap[c].totalRecovered += d.overcharge_amount || 0;
+      const dtype = (d.discrepancy_type || '').toLowerCase();
+      if (dtype === 'weight') courierMap[c].weight++;
+      if (dtype === 'zone') courierMap[c].zone++;
+      if (dtype === 'rto') courierMap[c].rto++;
     });
     const courierAnalysis = Object.entries(courierMap).map(([courier, v]) => ({
       courier,
@@ -190,10 +191,11 @@ export default function Reports() {
     // Discrepancy types for pie chart
     let weight = 0, zone = 0, rto = 0, damage = 0;
     auditData.forEach(d => {
-      if (d.has_weight_discrepancy) weight++;
-      if (d.has_zone_discrepancy) zone++;
-      if (d.has_rto_overcharge) rto++;
-      if (d.has_damage_misclassification) damage++;
+      const dtype = (d.discrepancy_type || '').toLowerCase();
+      if (dtype === 'weight') weight++;
+      if (dtype === 'zone') zone++;
+      if (dtype === 'rto') rto++;
+      if (dtype === 'damage') damage++;
     });
     const discrepancyTypes = [
       { name: 'Weight', value: weight },
@@ -208,21 +210,21 @@ export default function Reports() {
       if (!d.tenant_id) return;
       if (!tenantMap[d.tenant_id]) tenantMap[d.tenant_id] = { orders: 0, discrepancies: 0, overcharge: 0, recovered: 0, billed: 0, expected: 0 };
       tenantMap[d.tenant_id].orders++;
-      tenantMap[d.tenant_id].billed += d.billed_amount || 0;
-      tenantMap[d.tenant_id].expected += d.expected_amount || 0;
-      if ((d.discrepancy_amount || 0) > 0) {
+      tenantMap[d.tenant_id].billed += d.billed_value || 0;
+      tenantMap[d.tenant_id].expected += d.expected_value || 0;
+      if ((d.overcharge_amount || 0) > 0) {
         tenantMap[d.tenant_id].discrepancies++;
-        tenantMap[d.tenant_id].overcharge += d.discrepancy_amount || 0;
+        tenantMap[d.tenant_id].overcharge += d.overcharge_amount || 0;
       }
-      tenantMap[d.tenant_id].recovered += d.recovery_amount || 0;
+      if (d.status === 'recovered') tenantMap[d.tenant_id].recovered += d.overcharge_amount || 0;
     });
 
     // Drill-down data for pie chart
     const drillDownMap: Record<string, any[]> = {
-      Weight: auditData.filter(d => d.has_weight_discrepancy),
-      Zone: auditData.filter(d => d.has_zone_discrepancy),
-      RTO: auditData.filter(d => d.has_rto_overcharge),
-      Damage: auditData.filter(d => d.has_damage_misclassification),
+      Weight: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'weight'),
+      Zone: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'zone'),
+      RTO: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'rto'),
+      Damage: auditData.filter(d => (d.discrepancy_type || '').toLowerCase() === 'damage'),
     };
 
     return { totalOrders, discrepancyCount: discrepancies.length, totalOvercharge, totalRecovered, detectionRate, courierAnalysis, discrepancyTypes, tenantMap, drillDownMap };

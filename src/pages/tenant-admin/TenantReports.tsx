@@ -66,7 +66,7 @@ export default function TenantReports() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('courier_name, discrepancy_amount, recovery_amount, has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, dispute_status, created_at, billed_amount, expected_amount, recovery_date, awb')
+        .select('courier, overcharge_amount, discrepancy_type, status, created_at, billed_value, expected_value, awb_number')
         .eq('tenant_id', user.tenant_id)
         .gte('created_at', startDate.toISOString());
       if (error) throw error;
@@ -79,14 +79,15 @@ export default function TenantReports() {
   const courierAnalysis = useMemo(() => {
     const grouped: Record<string, { courier: string; shipments: number; discrepancies: number; total_overcharge: number; weight_errors: number; zone_errors: number; rto_errors: number }> = {};
     auditLogs.forEach(log => {
-      const c = log.courier_name || 'Unknown';
+      const c = log.courier || 'Unknown';
       if (!grouped[c]) grouped[c] = { courier: c, shipments: 0, discrepancies: 0, total_overcharge: 0, weight_errors: 0, zone_errors: 0, rto_errors: 0 };
       grouped[c].shipments += 1;
       if (hasActionableDiscrepancy(log)) grouped[c].discrepancies += 1;
-      grouped[c].total_overcharge += log.discrepancy_amount ?? 0;
-      if (hasActionableDiscrepancy(log) && log.has_weight_discrepancy) grouped[c].weight_errors++;
-      if (hasActionableDiscrepancy(log) && log.has_zone_discrepancy) grouped[c].zone_errors++;
-      if (hasActionableDiscrepancy(log) && log.has_rto_overcharge) grouped[c].rto_errors++;
+      grouped[c].total_overcharge += log.overcharge_amount ?? 0;
+      const dtype = (log.discrepancy_type || '').toLowerCase();
+      if (hasActionableDiscrepancy(log) && dtype === 'weight') grouped[c].weight_errors++;
+      if (hasActionableDiscrepancy(log) && dtype === 'zone') grouped[c].zone_errors++;
+      if (hasActionableDiscrepancy(log) && dtype === 'rto') grouped[c].rto_errors++;
     });
     return Object.values(grouped).map(g => ({
       ...g,
@@ -101,16 +102,15 @@ export default function TenantReports() {
       Weight: { name: 'Weight', count: 0, amount: 0 },
       Zone: { name: 'Zone', count: 0, amount: 0 },
       RTO: { name: 'RTO', count: 0, amount: 0 },
-      Damage: { name: 'Damage', count: 0, amount: 0 },
       Other: { name: 'Other', count: 0, amount: 0 },
     };
     auditLogs.forEach(log => {
-      const amt = log.discrepancy_amount ?? 0;
+      const amt = log.overcharge_amount ?? 0;
       if (!hasActionableDiscrepancy(log)) return;
-      if (log.has_weight_discrepancy) { map.Weight.count++; map.Weight.amount += amt; }
-      else if (log.has_zone_discrepancy) { map.Zone.count++; map.Zone.amount += amt; }
-      else if (log.has_rto_overcharge) { map.RTO.count++; map.RTO.amount += amt; }
-      else if (log.has_damage_misclassification) { map.Damage.count++; map.Damage.amount += amt; }
+      const dtype = (log.discrepancy_type || '').toLowerCase();
+      if (dtype === 'weight') { map.Weight.count++; map.Weight.amount += amt; }
+      else if (dtype === 'zone') { map.Zone.count++; map.Zone.amount += amt; }
+      else if (dtype === 'rto') { map.RTO.count++; map.RTO.amount += amt; }
       else { map.Other.count++; map.Other.amount += amt; }
     });
     const all = Object.values(map).filter(d => d.count > 0);
@@ -136,7 +136,7 @@ export default function TenantReports() {
       byMonth[key].orders += 1;
       if (hasActionableDiscrepancy(log)) {
         byMonth[key].discrepancies += 1;
-        byMonth[key].total_overcharge += log.discrepancy_amount ?? 0;
+        byMonth[key].total_overcharge += log.overcharge_amount ?? 0;
       }
     });
     return Object.values(byMonth)
@@ -158,10 +158,10 @@ export default function TenantReports() {
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, disputes: 0, resolved: 0, recovered: 0, disputed_amount: 0 };
       byMonth[key].disputes += 1;
-      byMonth[key].disputed_amount += log.discrepancy_amount ?? 0;
-      if (log.dispute_status === 'recovered') {
+      byMonth[key].disputed_amount += log.overcharge_amount ?? 0;
+      if (log.status === 'recovered') {
         byMonth[key].resolved += 1;
-        byMonth[key].recovered += log.recovery_amount ?? 0;
+        byMonth[key].recovered += log.overcharge_amount ?? 0;
       }
     });
     return Object.values(byMonth)
@@ -177,8 +177,8 @@ export default function TenantReports() {
   // Recovery summary metrics
   const recoverySummary = useMemo(() => {
     const disputed = auditLogs.filter(l => hasActionableDiscrepancy(l));
-    const resolved = disputed.filter(l => l.dispute_status === 'recovered');
-    const totalRecovered = resolved.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
+    const resolved = disputed.filter(l => l.status === 'recovered');
+    const totalRecovered = resolved.reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
     return {
       totalDisputes: disputed.length,
       totalResolved: resolved.length,
@@ -191,16 +191,17 @@ export default function TenantReports() {
   const financialImpact = useMemo(() => {
     const byMonth: Record<string, { month: string; sortKey: string; gross_savings: number; commission: number; net_savings: number; recovery_count: number }> = {};
     auditLogs.forEach(log => {
-      if (!log.recovery_amount) return;
-      const d = new Date(log.recovery_date ?? log.created_at ?? '');
+      if (log.status !== 'recovered') return;
+      const amt = log.overcharge_amount ?? 0;
+      if (amt <= 0) return;
+      const d = new Date(log.created_at ?? '');
       const key = format(d, 'yyyy-MM');
       const label = format(d, 'MMM yyyy');
       if (!byMonth[key]) byMonth[key] = { month: label, sortKey: key, gross_savings: 0, commission: 0, net_savings: 0, recovery_count: 0 };
-      const gross = log.recovery_amount ?? 0;
-      const comm = gross * commissionRate;
-      byMonth[key].gross_savings += gross;
+      const comm = amt * commissionRate;
+      byMonth[key].gross_savings += amt;
       byMonth[key].commission += comm;
-      byMonth[key].net_savings += gross - comm;
+      byMonth[key].net_savings += amt - comm;
       byMonth[key].recovery_count += 1;
     });
     return Object.values(byMonth)
@@ -211,7 +212,7 @@ export default function TenantReports() {
   const totalOrders = auditLogs.length;
   const totalDiscrepancies = auditLogs.filter(l => hasActionableDiscrepancy(l)).length;
   const detectionRate = totalOrders ? ((totalDiscrepancies / totalOrders) * 100).toFixed(1) : '0';
-  const totalGross = auditLogs.reduce((s, l) => s + (l.recovery_amount ?? 0), 0);
+  const totalGross = auditLogs.filter(l => l.status === 'recovered').reduce((s, l) => s + (l.overcharge_amount ?? 0), 0);
   const totalCommission = totalGross * commissionRate;
   const totalNet = totalGross - totalCommission;
 
@@ -356,21 +357,23 @@ export default function TenantReports() {
                 <DataTable
                   columns={[
                     { key: 'awb', header: 'AWB', sortable: true },
-                    { key: 'courier_name', header: 'Courier', sortable: true },
-                    { key: 'discrepancy_amount', header: 'Amount (₹)', sortable: true, render: (r: any) => formatCurrency(r.discrepancy_amount) },
-                    { key: 'dispute_status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.dispute_status || 'detected'}</Badge> },
+                    { key: 'awb_number', header: 'AWB', sortable: true },
+                    { key: 'courier', header: 'Courier', sortable: true },
+                    { key: 'overcharge_amount', header: 'Amount (₹)', sortable: true, render: (r: any) => formatCurrency(r.overcharge_amount) },
+                    { key: 'status', header: 'Status', render: (r: any) => <Badge variant="outline">{r.status || 'detected'}</Badge> },
                   ] as any}
                   data={auditLogs.filter(l => {
                     if (!hasActionableDiscrepancy(l)) return false;
-                    if (selectedType === 'Weight') return l.has_weight_discrepancy;
-                    if (selectedType === 'Zone') return l.has_zone_discrepancy;
-                    if (selectedType === 'RTO') return l.has_rto_overcharge;
-                    if (selectedType === 'Damage') return l.has_damage_misclassification;
-                    return (l.discrepancy_amount ?? 0) > 0 && !l.has_weight_discrepancy && !l.has_zone_discrepancy && !l.has_rto_overcharge && !l.has_damage_misclassification;
+                    const dtype = (l.discrepancy_type || '').toLowerCase();
+                    if (selectedType === 'Weight') return dtype === 'weight';
+                    if (selectedType === 'Zone') return dtype === 'zone';
+                    if (selectedType === 'RTO') return dtype === 'rto';
+                    if (selectedType === 'Damage') return dtype === 'damage';
+                    return (l.overcharge_amount ?? 0) > 0 && !['weight','zone','rto','damage'].includes(dtype);
                   })}
                   pageSize={10}
                   searchable
-                  searchKeys={['awb', 'courier_name']}
+                  searchKeys={['awb_number', 'courier']}
                   searchPlaceholder="Search within this type..."
                 />
               </CardContent>

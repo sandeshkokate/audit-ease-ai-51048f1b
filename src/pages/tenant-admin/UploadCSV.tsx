@@ -200,7 +200,7 @@ export default function UploadCSV() {
       if (!user?.tenant_id) return [];
       const { data, error } = await supabase
         .from("rate_cards")
-        .select("id, courier_name, is_active, rate_structure")
+        .select("id, courier, is_active, rate_structure")
         .eq("tenant_id", user.tenant_id)
         .eq("is_active", true);
       if (error) throw error;
@@ -209,7 +209,7 @@ export default function UploadCSV() {
     enabled: !!user?.tenant_id,
   });
   const hasActiveRateCards = rateCards.length > 0;
-  const configuredCouriers = rateCards.map((r: any) => r.courier_name?.toLowerCase());
+  const configuredCouriers = rateCards.map((r: any) => (r.courier || r.courier_name)?.toLowerCase());
 
   // Column mapper state
   const [showMapper, setShowMapper] = useState(false);
@@ -243,7 +243,7 @@ export default function UploadCSV() {
   const incompleteZoneCouriers = couriersInPreview
     .filter((c: string) => configuredCouriers.includes(c.toLowerCase()))
     .filter((c: string) => {
-      const rc = rateCards.find((r: any) => r.courier_name?.toLowerCase() === c.toLowerCase());
+      const rc = rateCards.find((r: any) => (r.courier || r.courier_name)?.toLowerCase() === c.toLowerCase());
       if (!rc?.rate_structure || typeof rc.rate_structure !== 'object') return true;
       const configuredZones = Object.keys(rc.rate_structure as Record<string, unknown>);
       return configuredZones.length < 3;

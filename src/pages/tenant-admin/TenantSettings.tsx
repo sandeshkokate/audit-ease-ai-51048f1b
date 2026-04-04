@@ -237,21 +237,19 @@ export default function TenantSettings() {
         .from("rate_cards")
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq("tenant_id", tenantId!)
-        .eq("courier_name", rateCardForm.courier_name)
+        .eq("courier", rateCardForm.courier_name)
         .eq("is_active", true);
 
       const { error } = await supabase.from("rate_cards").insert({
         tenant_id: tenantId,
-        courier_name: rateCardForm.courier_name,
+        courier: rateCardForm.courier_name,
         effective_from: rateCardForm.effective_from,
         effective_to: rateCardForm.effective_to || null,
-        divisor: rateCardForm.divisor,
-        min_chargeable_weight: rateCardForm.min_chargeable_weight,
         rto_percentage: rateCardForm.rto_percentage,
         rate_structure: rateStructure,
         is_active: true,
         created_by: user?.id,
-      });
+      } as any);
       if (error) throw error;
       toast({ title: "🎉 Rate card saved!", description: "You can now upload your courier bills and we'll find any overcharges." });
       setRateCardModal(false);
@@ -295,7 +293,7 @@ export default function TenantSettings() {
             .from("rate_cards")
             .update({ is_active: false, updated_at: new Date().toISOString() })
             .eq("tenant_id", tenantId!)
-            .eq("courier_name", card.courier_name)
+            .eq("courier", (card as any).courier || (card as any).courier_name)
             .eq("is_active", true);
         }
       }
