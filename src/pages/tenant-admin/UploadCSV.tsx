@@ -20,57 +20,102 @@ import {
   type ParsedShipmentRow,
 } from "@/lib/upload-location-lookup";
 
-/** Aliases: CSV column name (normalized) → internal column name */
+/**
+ * Aliases: CSV column name (normalized, no units) → RPC field name.
+ * The keys are what normalizeCol() produces from common CSV headers.
+ * The values MUST match what process_csv_upload() reads from the JSONB.
+ */
 const COLUMN_ALIASES: Record<string, string> = {
+  // AWB / Order
   awb: "awb_number",
-  zone: "charged_zone",
-  billing_zone: "charged_zone",
-  shipment_zone: "charged_zone",
-  weight: "charged_weight",
-  status: "shipment_status",
+  awb_number: "awb_number",
+  order_id: "order_id",
+
+  // Dates / Status
+  shipment_date: "shipment_date",
+  status: "status",
+  shipment_status: "status",
+
+  // Courier
+  courier: "courier",
   courier_name: "courier",
-  total_billed: "billed_amount",
-  total_amount: "billed_amount",
-  rto_charge: "rto_charge",
-  cod_charge: "cod_amount",
-  cod_amount: "cod_amount",
-  pickup_pincode: "origin_pincode",
-  sender_pincode: "origin_pincode",
-  customer_pincode: "destination_pincode",
-  delivery_pincode: "destination_pincode",
+
+  // Location
   origin_city: "origin_city",
   origin_state: "origin_state",
   destination_city: "destination_city",
   destination_state: "destination_state",
+  origin_pincode: "origin_pincode",
+  pickup_pincode: "origin_pincode",
+  sender_pincode: "origin_pincode",
+  destination_pincode: "destination_pincode",
+  customer_pincode: "destination_pincode",
+  delivery_pincode: "destination_pincode",
+
+  // Zone
+  zone: "billed_zone",
+  billed_zone: "billed_zone",
+  charged_zone: "billed_zone",
+  billing_zone: "billed_zone",
+  shipment_zone: "billed_zone",
+
+  // Weight
+  dead_weight: "actual_weight",
+  actual_weight: "actual_weight",
+  length: "length",
+  width: "width",
+  height: "height",
+  charged_weight: "billed_weight",
+  billed_weight: "billed_weight",
+  weight: "billed_weight",
+
+  // Charges
+  forward_charge: "forward_charge",
+  fuel_surcharge: "fuel_surcharge",
+  cod_charge: "cod_charge",
+  cod_amount: "cod_charge",
+  rto_charge: "rto_charge",
+  billed_amount: "billed_amount",
+  total_billed: "billed_amount",
+  total_amount: "billed_amount",
+
+  // Other
+  payment_mode: "payment_mode",
+  product_type: "product_type",
+  is_rto: "is_rto",
 };
 
-/** Columns always required */
+/** Columns always required — names match RPC fields */
 const ALWAYS_REQUIRED = [
   "awb_number",
   "courier",
   "order_id",
-  "shipment_status",
-  "charged_weight",
-  "dead_weight",
+  "status",
+  "billed_weight",
+  "actual_weight",
   "length",
   "width",
   "height",
-  "charged_zone",
+  "billed_zone",
   "billed_amount",
   "payment_mode",
 ];
 
 /** Optional fields that improve accuracy */
 const OPTIONAL_FIELDS = [
+  "shipment_date",
   "origin_pincode",
   "destination_pincode",
-  "is_rto",
+  "origin_city",
+  "origin_state",
+  "destination_city",
+  "destination_state",
+  "forward_charge",
+  "fuel_surcharge",
+  "cod_charge",
   "rto_charge",
-  "cod_amount",
-  "delivery_date",
-  "pickup_date",
-  "product_name",
-  "sku",
+  "is_rto",
+  "product_type",
 ];
 
 /** All fields the mapper shows */
@@ -100,20 +145,20 @@ const normalizeCol = (name: string): string =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\(.*?\)/g, "") // Remove parenthesized units like (kg), (cm)
+    .replace(/\(.*?\)/g, "") // Remove parenthesized units like (kg), (cm), (INR)
     .replace(/[_.\s\-]+/g, "_") // Collapse whitespace/underscores/hyphens/periods
     .replace(/[^a-z0-9_]/g, "")
     .replace(/_+$/, "") // Trim trailing underscores
     .trim();
 
-const OPTIONAL_COLUMNS = ["cod_amount", "delivery_date", "pickup_date", "product_name", "sku"];
+const OPTIONAL_COLUMNS = ["cod_charge", "shipment_date", "product_type", "forward_charge", "fuel_surcharge"];
 
-const SAMPLE_CSV = `awb_number,courier,order_id,shipment_status,charged_weight,dead_weight,length,width,height,charged_zone,origin_pincode,destination_pincode,billed_amount,is_rto,payment_mode
-AWB100001,CourierA,ORD-5001,delivered,2.5,1.8,20,15,10,B,400001,110001,125.00,no,prepaid
-AWB100002,CourierB,ORD-5002,delivered,1.8,1.2,15,12,8,A,400001,400071,95.50,no,cod
-AWB100003,CourierC,ORD-5003,rto,3.0,2.0,25,20,15,D,400001,560001,210.00,yes,prepaid
-AWB100004,CourierD,ORD-5004,delivered,0.5,0.3,10,8,5,C,400001,700001,68.00,no,prepaid
-AWB100005,CourierE,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,no,cod`;
+const SAMPLE_CSV = `AWB Number,Order ID,Shipment Date,Status,Courier,Origin City,Origin State,Destination City,Destination State,Zone,Dead Weight (kg),Length (cm),Width (cm),Height (cm),Charged Weight (kg),Forward Charge (INR),Fuel Surcharge (INR),COD Charge (INR),RTO Charge (INR),Total Billed (INR),Payment Mode,Product Type
+AWB100001,ORD-5001,2025-01-15,Delivered,Delhivery,Mumbai,Maharashtra,Delhi,Delhi,B,1.8,20,15,10,2.5,95.00,10.00,0,0,125.00,Prepaid,Electronics
+AWB100002,ORD-5002,2025-01-15,Delivered,DTDC,Mumbai,Maharashtra,Mumbai,Maharashtra,A,1.2,15,12,8,1.8,65.00,8.50,22.00,0,95.50,COD,Clothing
+AWB100003,ORD-5003,2025-01-16,RTO,Delhivery,Mumbai,Maharashtra,Bangalore,Karnataka,D,2.0,25,20,15,3.0,140.00,15.00,0,55.00,210.00,Prepaid,Home Decor
+AWB100004,ORD-5004,2025-01-16,Delivered,XpressBees,Mumbai,Maharashtra,Kolkata,West Bengal,C,0.3,10,8,5,0.5,48.00,8.00,0,0,68.00,Prepaid,Books
+AWB100005,ORD-5005,2025-01-17,Delivered,BlueDart,Mumbai,Maharashtra,Ahmedabad,Gujarat,E,3.5,30,25,20,4.2,200.00,35.00,50.00,0,285.00,COD,Furniture`;
 
 async function enrichRowsWithPincodes(rows: ParsedShipmentRow[]) {
   if (!hasRowsMissingPincodes(rows)) return rows;
