@@ -144,18 +144,18 @@ export default function Disputes() {
       if (!user?.tenant_id) return { draft: 0, raised: 0, recovered: 0, rejected: 0, cancelled: 0, all: 0 };
       const { data, error } = await supabase
         .from("audit_logs")
-        .select("dispute_status, discrepancy_amount")
+        .select("status, overcharge_amount")
         .eq("tenant_id", user.tenant_id)
-        .gt("discrepancy_amount", 0);
+        .gt("overcharge_amount", 0);
       if (error) throw error;
       const rows = data || [];
       return {
-        draft: rows.filter((r) => !r.dispute_status || ["draft", "detected", "pending", "email_copied"].includes(r.dispute_status))
+        draft: rows.filter((r) => !r.status || ["draft", "detected", "pending", "email_copied"].includes(r.status))
           .length,
-        raised: rows.filter((r) => ["raised", "disputed"].includes(r.dispute_status || "")).length,
-        recovered: rows.filter((r) => r.dispute_status === "recovered").length,
-        rejected: rows.filter((r) => r.dispute_status === "rejected").length,
-        cancelled: rows.filter((r) => r.dispute_status === "cancelled").length,
+        raised: rows.filter((r) => ["raised", "disputed"].includes(r.status || "")).length,
+        recovered: rows.filter((r) => r.status === "recovered").length,
+        rejected: rows.filter((r) => r.status === "rejected").length,
+        cancelled: rows.filter((r) => r.status === "cancelled").length,
         all: rows.length,
       };
     },
