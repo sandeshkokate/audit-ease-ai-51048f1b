@@ -582,7 +582,7 @@ export default function Disputes() {
     try {
       const { error } = await supabase
         .from("audit_logs")
-        .update({ escalated: true, escalated_at: new Date().toISOString(), priority: "high" })
+        .update({ resolution_notes: "Escalated to high priority" } as any)
         .eq("id", dispute.id);
       if (error) throw error;
       toast({ title: "Dispute escalated to high priority" });
