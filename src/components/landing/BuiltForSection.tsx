@@ -65,8 +65,7 @@ export default function BuiltForSection() {
             Built for Businesses Losing Money on Shipping
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            Whether you ship products, documents, or cards — if you're using Delhivery, BlueDart, DTDC,
-            India Post, or any major courier, you're likely overpaying by 8–15%.
+            Whether you ship products, documents, or cards — if you're using any major Indian courier partner, you may be overpaying due to billing errors.
           </p>
         </div>
 
