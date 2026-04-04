@@ -84,6 +84,8 @@ export default function TenantSettings() {
 
   // Rate card modal state
   const [rateCardModal, setRateCardModal] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
+  const TOTAL_STEPS = 3;
   const [rateCardForm, setRateCardForm] = useState({
     courier_name: "",
     effective_from: "",
