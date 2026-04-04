@@ -190,18 +190,20 @@ export default function Reports() {
     }));
 
     // Discrepancy types for pie chart
-    let weight = 0, zone = 0, rto = 0, damage = 0;
+    let weight = 0, zone = 0, rto = 0, damage = 0, rateOvercharge = 0;
     auditData.forEach(d => {
       const dtype = (d.discrepancy_type || '').toLowerCase();
       if (dtype === 'weight') weight++;
       if (dtype === 'zone') zone++;
       if (dtype === 'rto') rto++;
       if (dtype === 'damage') damage++;
+      if (dtype === 'overcharge') rateOvercharge++;
     });
     const discrepancyTypes = [
       { name: 'Weight', value: weight },
       { name: 'Zone', value: zone },
       { name: 'RTO', value: rto },
+      { name: 'Rate Overcharge', value: rateOvercharge },
       { name: 'Damage', value: damage },
     ].filter(d => d.value > 0);
 
