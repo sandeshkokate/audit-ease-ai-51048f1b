@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import ColumnHeader from '@/components/shared/ColumnHeader';
@@ -26,12 +26,13 @@ export default function AccountantReports() {
 
         const { data } = await supabase
           .from('audit_logs')
-          .select('recovery_amount')
+          .select('overcharge_amount, status')
           .eq('tenant_id', user.tenant_id)
+          .eq('status', 'recovered')
           .gte('created_at', monthStart.toISOString())
           .lte('created_at', monthEnd.toISOString());
 
-        const recovered = data?.reduce((s, d) => s + (d.recovery_amount || 0), 0) || 0;
+        const recovered = data?.reduce((s, d) => s + (d.overcharge_amount || 0), 0) || 0;
         months.push({ month: format(monthStart, 'MMM'), recovered });
       }
       return months;
@@ -46,17 +47,17 @@ export default function AccountantReports() {
       if (!user?.tenant_id) return [];
       const { data } = await supabase
         .from('audit_logs')
-        .select('courier_name, discrepancy_amount')
+        .select('courier, overcharge_amount')
         .eq('tenant_id', user.tenant_id);
 
       const courierMap: Record<string, { shipments: number; discrepancies: number; totalOvercharge: number }> = {};
       data?.forEach(d => {
-        const c = d.courier_name || 'Unknown';
+        const c = d.courier || 'Unknown';
         if (!courierMap[c]) courierMap[c] = { shipments: 0, discrepancies: 0, totalOvercharge: 0 };
         courierMap[c].shipments++;
-        if ((d.discrepancy_amount || 0) > 0) {
+        if ((d.overcharge_amount || 0) > 1) {
           courierMap[c].discrepancies++;
-          courierMap[c].totalOvercharge += d.discrepancy_amount || 0;
+          courierMap[c].totalOvercharge += d.overcharge_amount || 0;
         }
       });
 

@@ -11,7 +11,7 @@ import ChartCard from '@/components/dashboard/ChartCard';
 import DataTable, { Column } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
-import { getActionInfo, formatDetails, formatEntityType } from '@/lib/activity-actions';
+import { getActionInfo, formatDetails } from '@/lib/activity-actions';
 
 export default function PlatformDashboard() {
   const navigate = useNavigate();
@@ -32,10 +32,10 @@ export default function PlatformDashboard() {
     queryFn: async () => {
       const { data: auditLogs } = await supabase
         .from('audit_logs')
-        .select('id, discrepancy_amount, recovery_amount, dispute_status, created_at');
+        .select('id, overcharge_amount, status, created_at');
 
-      const totalRecovered = auditLogs?.reduce((sum, log) => sum + (log.recovery_amount || 0), 0) || 0;
-      const totalDiscrepancy = auditLogs?.reduce((sum, log) => sum + (log.discrepancy_amount || 0), 0) || 0;
+      const totalRecovered = auditLogs?.filter(l => l.status === 'recovered').reduce((sum, log) => sum + (log.overcharge_amount || 0), 0) || 0;
+      const totalDiscrepancy = auditLogs?.filter(l => (l.overcharge_amount || 0) > 1).reduce((sum, log) => sum + (log.overcharge_amount || 0), 0) || 0;
 
       const { data: invoices } = await supabase
         .from('invoices')
@@ -48,7 +48,7 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Tenant growth — chronologically sorted
+  // Tenant growth
   const { data: tenantGrowth = [] } = useQuery({
     queryKey: ['platform-tenant-growth'],
     queryFn: async () => {
@@ -71,7 +71,7 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Revenue by month — chronologically sorted
+  // Revenue by month
   const { data: revenueByMonth = [] } = useQuery({
     queryKey: ['platform-revenue-by-month'],
     queryFn: async () => {
@@ -95,7 +95,7 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Recent activity logs — same query shape as ActivityLogs page
+  // Recent activity logs
   const { data: activityLogs = [] } = useQuery({
     queryKey: ['platform-activity-logs'],
     queryFn: async () => {
@@ -121,7 +121,6 @@ export default function PlatformDashboard() {
     }
   });
 
-  // Unique action legends from actual data
   const uniqueActions = useMemo(() => {
     const seen = new Map<string, { label: string; color: string; description: string }>();
     activityLogs.forEach((log: any) => {
@@ -197,7 +196,6 @@ export default function PlatformDashboard() {
         <p className="text-sm text-muted-foreground">Platform overview and key metrics</p>
       </div>
 
-      {/* Metric Cards — each links to a specific report tab */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Total Tenants" value={String(totalTenants)} icon={Building2} iconColor="text-primary" onClick={() => navigate('/platform-admin/reports?tab=tenant')} />
         <MetricCard title="Active Tenants" value={String(activeTenants)} icon={Users} iconColor="text-success" onClick={() => navigate('/platform-admin/reports?tab=tenant')} />
@@ -205,7 +203,6 @@ export default function PlatformDashboard() {
         <MetricCard title="Total Recoveries" value={formatCurrency(totalRecoveries)} icon={TrendingUp} iconColor="text-accent" onClick={() => navigate('/platform-admin/reports?tab=courier')} />
       </div>
 
-      {/* Charts */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <ChartCard title="Tenant Growth">
           <ResponsiveContainer width="100%" height={280}>
@@ -244,11 +241,9 @@ export default function PlatformDashboard() {
         </ChartCard>
       </div>
 
-      {/* Recent Activity */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-2">Recent Activity</h2>
 
-        {/* Action Legends */}
         {uniqueActions.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {uniqueActions.map((legend) => (

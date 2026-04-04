@@ -52,23 +52,23 @@ export default function AuditLogs() {
   const [showTypeDefs, setShowTypeDefs] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // Lightweight stats query (two columns only)
+  // Lightweight stats query
   const { data: stats = { total: 0, detected: 0, disputed: 0, resolved: 0, totalAmount: 0 } } = useQuery({
     queryKey: ['audit-stats', user?.tenant_id],
     queryFn: async () => {
       if (!user?.tenant_id) return { total: 0, detected: 0, disputed: 0, resolved: 0, totalAmount: 0 };
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('discrepancy_amount, dispute_status')
+        .select('overcharge_amount, status')
         .eq('tenant_id', user.tenant_id);
       if (error) throw error;
       const rows = data || [];
       return {
         total: rows.length,
         detected: rows.filter(r => ['detected', 'pending'].includes(getStatus(r))).length,
-        disputed: rows.filter(r => hasActionableDiscrepancy(r) && ['raised', 'disputed', 'email_copied', 'draft'].includes(r.dispute_status || '')).length,
-        resolved: rows.filter(r => hasActionableDiscrepancy(r) && r.dispute_status === 'recovered').length,
-        totalAmount: rows.reduce((s, r) => s + (r.discrepancy_amount || 0), 0),
+        disputed: rows.filter(r => hasActionableDiscrepancy(r) && ['raised', 'disputed', 'email_copied', 'draft'].includes(r.status || '')).length,
+        resolved: rows.filter(r => hasActionableDiscrepancy(r) && r.status === 'recovered').length,
+        totalAmount: rows.reduce((s, r) => s + (r.overcharge_amount || 0), 0),
       };
     },
     enabled: !!user?.tenant_id,
@@ -81,51 +81,37 @@ export default function AuditLogs() {
       if (!user?.tenant_id) return [];
       const { data } = await supabase
         .from('audit_logs')
-        .select('courier_name')
+        .select('courier')
         .eq('tenant_id', user.tenant_id)
-        .not('courier_name', 'is', null);
-      return [...new Set((data || []).map(r => r.courier_name as string))].filter(Boolean).sort();
+        .not('courier', 'is', null);
+      return [...new Set((data || []).map(r => r.courier as string))].filter(Boolean).sort();
     },
     enabled: !!user?.tenant_id,
   });
 
-  // Build server-side filters (shared between main query and export)
+  // Build server-side filters
   const applyFilters = useCallback((query: any) => {
-    // Status filter
     if (statusFilter === 'no_issue') {
-      query = query.eq('dispute_status', 'no_issue');
+      query = query.eq('status', 'no_issue');
     } else if (statusFilter === 'detected') {
-      query = query.gt('discrepancy_amount', 0).or('dispute_status.is.null,dispute_status.eq.detected,dispute_status.eq.pending');
+      query = query.gt('overcharge_amount', 1).or('status.is.null,status.eq.detected,status.eq.pending');
     } else if (statusFilter !== 'all') {
-      query = query.eq('dispute_status', statusFilter).gt('discrepancy_amount', 0);
+      query = query.eq('status', statusFilter).gt('overcharge_amount', 1);
     }
 
-    // Courier filter
     if (courierFilter !== 'all') {
-      query = query.eq('courier_name', courierFilter);
+      query = query.eq('courier', courierFilter);
     }
 
-    // Type filter
-    if (typeFilter === 'weight') query = query.eq('has_weight_discrepancy', true).gt('discrepancy_amount', 0);
-    else if (typeFilter === 'zone') query = query.eq('has_zone_discrepancy', true).gt('discrepancy_amount', 0);
-    else if (typeFilter === 'rto') query = query.eq('has_rto_overcharge', true).gt('discrepancy_amount', 0);
-    else if (typeFilter === 'damage') query = query.eq('has_damage_misclassification', true).gt('discrepancy_amount', 0);
-    else if (typeFilter === 'no_issue') query = query.eq('dispute_status', 'no_issue');
-    else if (typeFilter === 'unclassified') {
-      query = query
-        .gt('discrepancy_amount', 0)
-        .eq('has_weight_discrepancy', false)
-        .eq('has_zone_discrepancy', false)
-        .eq('has_rto_overcharge', false)
-        .eq('has_damage_misclassification', false);
-    }
+    if (typeFilter === 'weight') query = query.eq('discrepancy_type', 'weight').gt('overcharge_amount', 1);
+    else if (typeFilter === 'zone') query = query.eq('discrepancy_type', 'zone').gt('overcharge_amount', 1);
+    else if (typeFilter === 'rto') query = query.eq('discrepancy_type', 'rto').gt('overcharge_amount', 1);
+    else if (typeFilter === 'no_issue') query = query.eq('status', 'no_issue');
 
-    // Search
     if (searchQuery.trim()) {
-      query = query.or(`awb.ilike.%${searchQuery}%,courier_name.ilike.%${searchQuery}%,order_id.ilike.%${searchQuery}%`);
+      query = query.or(`awb_number.ilike.%${searchQuery}%,courier.ilike.%${searchQuery}%`);
     }
 
-    // Date filters
     if (dateFrom) query = query.gte('created_at', dateFrom);
     if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
 
@@ -162,7 +148,7 @@ export default function AuditLogs() {
   const totalCount = auditResult?.total ?? 0;
   const totalPages = Math.ceil(totalCount / AUDIT_PAGE_SIZE);
 
-  // Export handler — fetches all filtered rows (up to 5000)
+  // Export handler
   const handleExport = async () => {
     if (!user?.tenant_id) return;
     setExporting(true);
@@ -181,9 +167,9 @@ export default function AuditLogs() {
       if (error) throw error;
 
       downloadCSV((data || []).map(l => ({
-        AWB: l.awb, Courier: l.courier_name, Order_ID: l.order_id,
-        Type: TYPE_LABELS[getType(l)], Charged_Weight: l.charged_weight,
-        Expected_Weight: l.max_expected_weight, Discrepancy_Amount: l.discrepancy_amount,
+        AWB: l.awb_number, Courier: l.courier,
+        Type: TYPE_LABELS[getType(l)], Billed_Weight: l.billed_weight,
+        Expected_Weight: l.expected_weight, Overcharge_Amount: l.overcharge_amount,
         Status: STATUS_LABELS[getStatus(l)], Date: l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy') : '',
       })), 'audit_logs');
     } catch (err: any) {
@@ -240,22 +226,21 @@ export default function AuditLogs() {
   }
 
   const columns: Column<any>[] = [
-    { key: 'awb', header: <ColumnHeader title="AWB" tooltip="Air Waybill Number — unique shipment tracking ID assigned by the courier partner" />, sortable: true },
-    { key: 'courier_name', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment" />, sortable: true },
-    { key: 'order_id', header: <ColumnHeader title="Order ID" tooltip="Your internal order reference number from your e-commerce platform" /> },
+    { key: 'awb_number', header: <ColumnHeader title="AWB" tooltip="Air Waybill Number — unique shipment tracking ID assigned by the courier partner" />, sortable: true },
+    { key: 'courier', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment" />, sortable: true },
     {
       key: 'type',
-      header: <ColumnHeader title="Type" tooltip="Category of billing error: Weight, Zone, RTO, Damage, or Unclassified" />,
+      header: <ColumnHeader title="Type" tooltip="Category of billing error: Weight, Zone, RTO, or Unclassified" />,
       render: (r) => {
         const t = getType(r);
         return <Badge variant="outline">{TYPE_LABELS[t]}</Badge>;
       }
     },
-    { key: 'charged_weight', header: <ColumnHeader title="Billed Wt" tooltip="Weight charged by courier (kg)." />, sortable: true, render: (r) => `${r.charged_weight ?? '—'} kg` },
-    { key: 'max_expected_weight', header: <ColumnHeader title="Actual Wt" tooltip="Expected chargeable weight" />, render: (r) => `${r.max_expected_weight ?? '—'} kg` },
-    { key: 'discrepancy_amount', header: <ColumnHeader title="Discrepancy" tooltip="Amount overcharged" />, sortable: true, render: (r) => (r.discrepancy_amount ?? 0) > 0 ? <span className="font-medium text-destructive">₹{r.discrepancy_amount}</span> : <span className="text-muted-foreground">—</span> },
+    { key: 'billed_weight', header: <ColumnHeader title="Billed Wt" tooltip="Weight charged by courier (kg)." />, sortable: true, render: (r) => `${r.billed_weight ?? '—'} kg` },
+    { key: 'expected_weight', header: <ColumnHeader title="Expected Wt" tooltip="Expected chargeable weight" />, render: (r) => `${r.expected_weight ?? '—'} kg` },
+    { key: 'overcharge_amount', header: <ColumnHeader title="Discrepancy" tooltip="Amount overcharged" />, sortable: true, render: (r) => (r.overcharge_amount ?? 0) > 1 ? <span className="font-medium text-destructive">₹{r.overcharge_amount}</span> : <span className="text-muted-foreground">—</span> },
     {
-      key: 'dispute_status',
+      key: 'status',
       header: <ColumnHeader title="Status" tooltip="Current dispute lifecycle stage" />,
       sortable: true,
       render: (r) => {
@@ -301,12 +286,12 @@ export default function AuditLogs() {
         ))}
       </div>
 
-      {/* Filters — all in one row */}
+      {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search AWB, courier, order..."
+            placeholder="Search AWB, courier..."
             className="pl-8 w-56 text-sm"
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
@@ -346,17 +331,14 @@ export default function AuditLogs() {
         </div>
       </div>
 
-      {/* Mobile scroll hint */}
       <p className="text-xs text-muted-foreground sm:hidden mb-1">← Scroll horizontally to see all columns →</p>
 
-      {/* Data table — no internal pagination/search since we handle it server-side */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="min-w-[800px]">
           <DataTable columns={columns} data={auditLogs} pageSize={AUDIT_PAGE_SIZE + 1} />
         </div>
       </div>
 
-      {/* Server-side pagination controls */}
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -364,18 +346,10 @@ export default function AuditLogs() {
           </p>
           {totalPages > 1 && (
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)}>
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(page - 1)}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)}>
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(0)}><ChevronsLeft className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage(page - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}><ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)}><ChevronsRight className="h-4 w-4" /></Button>
             </div>
           )}
         </div>
@@ -385,22 +359,20 @@ export default function AuditLogs() {
       {selectedLog && (
         <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
           <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Shipment Details — {selectedLog.awb}</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Shipment Details — {selectedLog.awb_number}</DialogTitle></DialogHeader>
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm py-2">
               {[
-                ['AWB', selectedLog.awb],
-                ['Order ID', selectedLog.order_id || '—'],
-                ['Courier', selectedLog.courier_name || '—'],
-                ['Shipment Status', selectedLog.shipment_status || '—'],
-                ['Charged Weight', selectedLog.charged_weight ? `${selectedLog.charged_weight} kg` : '—'],
-                ['Expected Weight', selectedLog.max_expected_weight ? `${selectedLog.max_expected_weight} kg` : '—'],
-                ['Charged Zone', selectedLog.charged_zone || '—'],
+                ['AWB', selectedLog.awb_number],
+                ['Courier', selectedLog.courier || '—'],
+                ['Billed Weight', selectedLog.billed_weight ? `${selectedLog.billed_weight} kg` : '—'],
+                ['Expected Weight', selectedLog.expected_weight ? `${selectedLog.expected_weight} kg` : '—'],
+                ['Billed Zone', selectedLog.billed_zone || '—'],
                 ['Expected Zone', selectedLog.expected_zone || '—'],
-                ['Billed Amount', selectedLog.billed_amount ? `₹${selectedLog.billed_amount}` : '—'],
-                ['Expected Amount', selectedLog.expected_amount ? `₹${selectedLog.expected_amount}` : '—'],
-                ['Discrepancy', selectedLog.discrepancy_amount ? `₹${selectedLog.discrepancy_amount}` : '—'],
+                ['Billed Value', selectedLog.billed_value ? `₹${selectedLog.billed_value}` : '—'],
+                ['Expected Value', selectedLog.expected_value ? `₹${selectedLog.expected_value}` : '—'],
+                ['Overcharge', selectedLog.overcharge_amount ? `₹${selectedLog.overcharge_amount}` : '—'],
+                ['Discrepancy Type', selectedLog.discrepancy_type || '—'],
                 ['Status', STATUS_LABELS[getStatus(selectedLog)] || getStatus(selectedLog)],
-                ['Type', TYPE_LABELS[getType(selectedLog)]],
                 ['Date', selectedLog.created_at ? format(new Date(selectedLog.created_at), 'dd MMM yyyy') : '—'],
               ].map(([label, value]) => (
                 <div key={label as string}>
@@ -413,7 +385,6 @@ export default function AuditLogs() {
         </Dialog>
       )}
 
-      {/* Status Definitions Modal */}
       <Dialog open={showStatusDefs} onOpenChange={setShowStatusDefs}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Status Definitions</DialogTitle></DialogHeader>
@@ -421,7 +392,6 @@ export default function AuditLogs() {
         </DialogContent>
       </Dialog>
 
-      {/* Type Definitions Modal */}
       <Dialog open={showTypeDefs} onOpenChange={setShowTypeDefs}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Discrepancy Type Definitions</DialogTitle></DialogHeader>

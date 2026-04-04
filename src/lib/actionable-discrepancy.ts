@@ -1,26 +1,23 @@
 export interface ActionableDiscrepancyRecord {
-  discrepancy_amount?: number | null;
-  dispute_status?: string | null;
-  has_weight_discrepancy?: boolean | null;
-  has_zone_discrepancy?: boolean | null;
-  has_rto_overcharge?: boolean | null;
-  has_damage_misclassification?: boolean | null;
+  overcharge_amount?: number | null;
+  status?: string | null;
+  discrepancy_type?: string | null;
 }
 
-export function hasActionableDiscrepancy(record: Pick<ActionableDiscrepancyRecord, 'discrepancy_amount'>): boolean {
-  return (record.discrepancy_amount ?? 0) > 0;
+export function hasActionableDiscrepancy(record: Pick<ActionableDiscrepancyRecord, 'overcharge_amount'>): boolean {
+  return (record.overcharge_amount ?? 0) > 1;
 }
 
-export function getActionableDiscrepancyType(record: ActionableDiscrepancyRecord): 'weight' | 'zone' | 'rto' | 'damage' | 'unclassified' | 'no_issue' {
+export function getActionableDiscrepancyType(record: ActionableDiscrepancyRecord): 'weight' | 'zone' | 'rto' | 'unclassified' | 'no_issue' {
   if (!hasActionableDiscrepancy(record)) return 'no_issue';
-  if (record.has_weight_discrepancy) return 'weight';
-  if (record.has_zone_discrepancy) return 'zone';
-  if (record.has_rto_overcharge) return 'rto';
-  if (record.has_damage_misclassification) return 'damage';
+  const t = record.discrepancy_type?.toLowerCase() ?? '';
+  if (t === 'weight') return 'weight';
+  if (t === 'zone') return 'zone';
+  if (t === 'rto') return 'rto';
   return 'unclassified';
 }
 
 export function getActionableDiscrepancyStatus(record: ActionableDiscrepancyRecord): string {
   if (!hasActionableDiscrepancy(record)) return 'no_issue';
-  return record.dispute_status || 'detected';
+  return record.status || 'detected';
 }

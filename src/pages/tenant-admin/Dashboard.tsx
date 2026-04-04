@@ -28,7 +28,6 @@ export default function TenantDashboard() {
   const [dateRange, setDateRange] = useState('30');
   useDocumentTitle('Dashboard');
 
-  // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useQuery({
     queryKey: ['dashboard-stats', user?.tenant_id, dateRange],
     queryFn: async () => {
@@ -42,12 +41,12 @@ export default function TenantDashboard() {
       const [{ data: currentPeriod, error: e1 }, { data: prevPeriod, error: e2 }] = await Promise.all([
         supabase
           .from('audit_logs')
-          .select('id, discrepancy_amount, recovery_amount, dispute_status')
+          .select('id, overcharge_amount, status')
           .eq('tenant_id', tenantId)
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('audit_logs')
-          .select('id, discrepancy_amount, recovery_amount, dispute_status')
+          .select('id, overcharge_amount, status')
           .eq('tenant_id', tenantId)
           .gte('created_at', prevStartDate.toISOString())
           .lt('created_at', startDate.toISOString()),
@@ -57,14 +56,14 @@ export default function TenantDashboard() {
 
       const currentOrders = currentPeriod?.length || 0;
       const currentDiscrepancies = currentPeriod?.filter(l => hasActionableDiscrepancy(l)) || [];
-      const currentRecovered = currentPeriod?.filter(l => l.dispute_status === 'recovered') || [];
-      const currentRecoveredAmount = currentRecovered.reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
-      const currentDiscrepancyAmount = currentDiscrepancies.reduce((sum, l) => sum + (l.discrepancy_amount ?? 0), 0);
-      const activeDisputes = currentPeriod?.filter(l => l.dispute_status === 'raised').length || 0;
+      const currentRecovered = currentPeriod?.filter(l => l.status === 'recovered') || [];
+      const currentRecoveredAmount = currentRecovered.reduce((sum, l) => sum + (l.overcharge_amount || 0), 0);
+      const currentDiscrepancyAmount = currentDiscrepancies.reduce((sum, l) => sum + (l.overcharge_amount ?? 0), 0);
+      const activeDisputes = currentPeriod?.filter(l => l.status === 'raised').length || 0;
 
       const lastOrders = prevPeriod?.length || 0;
-      const lastRecoveredAmount = prevPeriod?.filter(l => l.dispute_status === 'recovered')
-        .reduce((sum, l) => sum + (l.recovery_amount || 0), 0) || 0;
+      const lastRecoveredAmount = prevPeriod?.filter(l => l.status === 'recovered')
+        .reduce((sum, l) => sum + (l.overcharge_amount || 0), 0) || 0;
 
       const ordersChange = lastOrders > 0 ? ((currentOrders - lastOrders) / lastOrders * 100) : 0;
       const recoveryChange = lastRecoveredAmount > 0 ? ((currentRecoveredAmount - lastRecoveredAmount) / lastRecoveredAmount * 100) : 0;
@@ -86,7 +85,6 @@ export default function TenantDashboard() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Check if rate card exists for onboarding checklist
   const { data: hasRateCard } = useQuery({
     queryKey: ['dashboard-has-ratecard', user?.tenant_id],
     queryFn: async () => {
@@ -100,7 +98,6 @@ export default function TenantDashboard() {
     enabled: !!user?.tenant_id,
   });
 
-  // Fetch monthly trend (last 6 months)
   const { data: monthlyTrend, isLoading: trendLoading } = useQuery({
     queryKey: ['dashboard-trend', user?.tenant_id],
     queryFn: async () => {
@@ -110,7 +107,7 @@ export default function TenantDashboard() {
       const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
       const { data } = await supabase
         .from('audit_logs')
-        .select('id, discrepancy_amount, recovery_amount, dispute_status, created_at')
+        .select('id, overcharge_amount, status, created_at')
         .eq('tenant_id', tenantId)
         .gte('created_at', sixMonthsAgo.toISOString());
 
@@ -123,9 +120,9 @@ export default function TenantDashboard() {
           return d >= mStart && d <= mEnd;
         }) || [];
         const recovered = inMonth
-          .filter(l => l.dispute_status === 'recovered')
-          .reduce((sum, l) => sum + (l.recovery_amount || 0), 0);
-        const disputed = inMonth.reduce((sum, l) => sum + (l.discrepancy_amount || 0), 0);
+          .filter(l => l.status === 'recovered')
+          .reduce((sum, l) => sum + (l.overcharge_amount || 0), 0);
+        const disputed = inMonth.reduce((sum, l) => sum + (l.overcharge_amount || 0), 0);
         months.push({ month: format(mStart, 'MMM'), recovered, disputed });
       }
       return months;
@@ -134,7 +131,6 @@ export default function TenantDashboard() {
     staleTime: 1000 * 60 * 10,
   });
 
-  // Fetch discrepancy breakdown
   const { data: discrepancyTypes } = useQuery({
     queryKey: ['dashboard-discrepancy-types', user?.tenant_id],
     queryFn: async () => {
@@ -142,16 +138,16 @@ export default function TenantDashboard() {
       if (!tenantId) return [];
       const { data } = await supabase
         .from('audit_logs')
-        .select('has_weight_discrepancy, has_zone_discrepancy, has_rto_overcharge, has_damage_misclassification, discrepancy_amount')
+        .select('discrepancy_type, overcharge_amount')
         .eq('tenant_id', tenantId)
-        .gt('discrepancy_amount', 0);
+        .gt('overcharge_amount', 1);
 
-      const counts = { Weight: 0, Zone: 0, RTO: 0, Damage: 0, Other: 0 };
+      const counts: Record<string, number> = { Weight: 0, Zone: 0, RTO: 0, Other: 0 };
       data?.forEach(r => {
-        if (r.has_weight_discrepancy) counts.Weight++;
-        else if (r.has_zone_discrepancy) counts.Zone++;
-        else if (r.has_rto_overcharge) counts.RTO++;
-        else if (r.has_damage_misclassification) counts.Damage++;
+        const t = r.discrepancy_type?.toLowerCase() ?? '';
+        if (t === 'weight') counts.Weight++;
+        else if (t === 'zone') counts.Zone++;
+        else if (t === 'rto') counts.RTO++;
         else counts.Other++;
       });
       return Object.entries(counts)
@@ -162,7 +158,6 @@ export default function TenantDashboard() {
     staleTime: 1000 * 60 * 10,
   });
 
-  // Fetch recent audit logs
   const { data: recentLogs } = useQuery({
     queryKey: ['dashboard-recent-logs', user?.tenant_id],
     queryFn: async () => {
@@ -170,9 +165,9 @@ export default function TenantDashboard() {
       if (!tenantId) return [];
       const { data } = await supabase
         .from('audit_logs')
-        .select('id, awb, courier_name, discrepancy_amount, dispute_status, created_at')
+        .select('id, awb_number, courier, overcharge_amount, status, created_at')
         .eq('tenant_id', tenantId)
-        .gt('discrepancy_amount', 0)
+        .gt('overcharge_amount', 1)
         .order('created_at', { ascending: false })
         .limit(20);
       return data || [];
@@ -187,76 +182,27 @@ export default function TenantDashboard() {
     return <DashboardSkeleton />;
   }
 
-  // No tenant linked
-  if (!user?.tenant_id) {
+  if (statsError) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <AlertTriangle className="h-12 w-12 text-warning mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Account Not Linked</h2>
-        <p className="text-sm text-muted-foreground max-w-md mb-6">
-          Your account is not linked to a company yet. Please contact your administrator.
-        </p>
-        <Button variant="outline" onClick={() => navigate('/login')}>Back to Login</Button>
-      </div>
-    );
-  }
-
-  // Error state
-  if (statsError && (statsError as any).message !== 'NO_TENANT') {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Failed to Load Dashboard</h2>
-        <p className="text-sm text-muted-foreground max-w-md mb-6">
-          Failed to load dashboard data. Please try refreshing.
-        </p>
-        <Button variant="default" onClick={() => refetchStats()} className="gap-2">
+      <div className="flex flex-col items-center justify-center h-64 gap-4 text-center">
+        <AlertTriangle className="h-10 w-10 text-destructive" />
+        <h2 className="text-lg font-semibold text-foreground">Something went wrong</h2>
+        <p className="text-sm text-muted-foreground max-w-md">We could not load your dashboard data.</p>
+        <Button variant="outline" onClick={() => refetchStats()} className="gap-2">
           <RefreshCw className="h-4 w-4" /> Retry
         </Button>
       </div>
     );
   }
 
-  // Empty state with onboarding checklist
-  if (!isLoading && stats?.totalOrders === 0) {
-    const checklist = [
-      { label: 'Account Created', done: true },
-      { label: 'Rate Card Configured', done: !!hasRateCard, action: () => navigate('/tenant-admin/settings'), actionLabel: 'Configure' },
-      { label: 'First CSV Uploaded', done: false, action: () => navigate('/tenant-admin/upload'), actionLabel: 'Upload' },
-    ];
-
+  if (stats?.totalOrders === 0 && !hasRateCard) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        {/* Onboarding checklist */}
-        <div className="w-full max-w-sm mb-8 rounded-lg border border-border bg-card p-5 text-left">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Getting Started</h3>
-          <div className="space-y-3">
-            {checklist.map((item) => (
-              <div key={item.label} className="flex items-center gap-2.5">
-                {item.done ? (
-                  <CheckSquare className="h-5 w-5 text-success flex-shrink-0" />
-                ) : (
-                  <Square className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
-                )}
-                <span className={`text-sm flex-1 ${item.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                  {item.label}
-                </span>
-                {!item.done && item.action && (
-                  <Button variant="ghost" size="sm" className="h-6 text-xs text-primary px-2" onClick={item.action}>
-                    {item.actionLabel}
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold text-foreground mb-2">Welcome to AuditEase!</h2>
-        <p className="text-sm text-muted-foreground max-w-md mb-6">
-          Get started by uploading your first courier billing CSV. We'll analyze it against your rate cards and find billing errors.
-        </p>
-        <div className="flex items-center gap-3">
+      <div className="space-y-6">
+        {user?.tenant_id && <OnboardingChecklist tenantId={user.tenant_id} />}
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
+          <Package className="h-16 w-16 text-muted-foreground/50" />
+          <h2 className="text-xl font-bold text-foreground">Welcome to AuditEase!</h2>
+          <p className="text-muted-foreground max-w-md">Get started by uploading your courier billing CSV to detect overcharges.</p>
           <Button variant="default" onClick={() => navigate('/tenant-admin/upload')}>
             <Upload className="h-4 w-4 mr-2" /> Upload CSV
           </Button>
@@ -269,10 +215,10 @@ export default function TenantDashboard() {
   }
 
   const columns: Column<any>[] = [
-    { key: 'awb', header: 'AWB', sortable: true },
-    { key: 'courier_name', header: 'Courier', sortable: true },
-    { key: 'discrepancy_amount', header: 'Amount', sortable: true, render: (r) => <span className="font-medium text-destructive">₹{r.discrepancy_amount}</span> },
-    { key: 'dispute_status', header: 'Status', render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.dispute_status] || ''}>{r.dispute_status}</Badge> },
+    { key: 'awb_number', header: 'AWB', sortable: true },
+    { key: 'courier', header: 'Courier', sortable: true },
+    { key: 'overcharge_amount', header: 'Amount', sortable: true, render: (r) => <span className="font-medium text-destructive">₹{r.overcharge_amount}</span> },
+    { key: 'status', header: 'Status', render: (r) => <Badge variant="outline" className={STATUS_COLORS[r.status] || ''}>{r.status}</Badge> },
     { key: 'created_at', header: 'Time', render: (r) => <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span> },
   ];
 
@@ -332,7 +278,7 @@ export default function TenantDashboard() {
 
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Recent Discrepancies</h2>
-        <DataTable columns={columns} data={recentLogs || []} pageSize={10} searchable searchKeys={['awb', 'courier_name']} searchPlaceholder="Search AWB or courier..." />
+        <DataTable columns={columns} data={recentLogs || []} pageSize={10} searchable searchKeys={['awb_number', 'courier']} searchPlaceholder="Search AWB or courier..." />
       </div>
     </div>
   );
