@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://auditease.ai/</loc>
+    <loc>https://auditeasetechnologies.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://auditease.ai/about</loc>
+    <loc>https://auditeasetechnologies.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://auditease.ai/contact</loc>
+    <loc>https://auditeasetechnologies.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://auditease.ai/privacy</loc>
+    <loc>https://auditeasetechnologies.com/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://auditease.ai/terms</loc>
+    <loc>https://auditeasetechnologies.com/terms-of-service</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://auditease.ai/login</loc>
+    <loc>https://auditeasetechnologies.com/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
