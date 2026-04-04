@@ -7,8 +7,8 @@ export default function CaseStudies() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <SEOHead
-         title="Case Studies – AuditEase | Real Recovery Results"
-         description="See how Indian e-commerce brands recovered lakhs in courier overcharges using AuditEase automated billing audits."
+         title="Case Studies – AuditEase | Recovery Results"
+         description="See how businesses use AuditEase to identify courier billing discrepancies."
         path="/case-studies"
       />
       <div className="container mx-auto px-4 py-10 max-w-2xl">

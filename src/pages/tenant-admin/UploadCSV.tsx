@@ -109,11 +109,11 @@ const normalizeCol = (name: string): string =>
 const OPTIONAL_COLUMNS = ["cod_amount", "delivery_date", "pickup_date", "product_name", "sku"];
 
 const SAMPLE_CSV = `awb_number,courier,order_id,shipment_status,charged_weight,dead_weight,length,width,height,charged_zone,origin_pincode,destination_pincode,billed_amount,is_rto,payment_mode
-AWB100001,Delhivery,ORD-5001,delivered,2.5,1.8,20,15,10,B,400001,110001,125.00,no,prepaid
-AWB100002,BlueDart,ORD-5002,delivered,1.8,1.2,15,12,8,A,400001,400071,95.50,no,cod
-AWB100003,DTDC,ORD-5003,rto,3.0,2.0,25,20,15,D,400001,560001,210.00,yes,prepaid
-AWB100004,Ecom Express,ORD-5004,delivered,0.5,0.3,10,8,5,C,400001,700001,68.00,no,prepaid
-AWB100005,XpressBees,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,no,cod`;
+AWB100001,CourierA,ORD-5001,delivered,2.5,1.8,20,15,10,B,400001,110001,125.00,no,prepaid
+AWB100002,CourierB,ORD-5002,delivered,1.8,1.2,15,12,8,A,400001,400071,95.50,no,cod
+AWB100003,CourierC,ORD-5003,rto,3.0,2.0,25,20,15,D,400001,560001,210.00,yes,prepaid
+AWB100004,CourierD,ORD-5004,delivered,0.5,0.3,10,8,5,C,400001,700001,68.00,no,prepaid
+AWB100005,CourierE,ORD-5005,delivered,4.2,3.5,30,25,20,E,400001,380001,285.00,no,cod`;
 
 async function enrichRowsWithPincodes(rows: ParsedShipmentRow[]) {
   if (!hasRowsMissingPincodes(rows)) return rows;

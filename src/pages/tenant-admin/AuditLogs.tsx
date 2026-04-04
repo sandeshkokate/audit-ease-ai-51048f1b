@@ -241,7 +241,7 @@ export default function AuditLogs() {
 
   const columns: Column<any>[] = [
     { key: 'awb', header: <ColumnHeader title="AWB" tooltip="Air Waybill Number — unique shipment tracking ID assigned by the courier partner" />, sortable: true },
-    { key: 'courier_name', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment (e.g., Delhivery, Blue Dart)" />, sortable: true },
+    { key: 'courier_name', header: <ColumnHeader title="Courier" tooltip="The logistics company that handled this shipment" />, sortable: true },
     { key: 'order_id', header: <ColumnHeader title="Order ID" tooltip="Your internal order reference number from your e-commerce platform" /> },
     {
       key: 'type',

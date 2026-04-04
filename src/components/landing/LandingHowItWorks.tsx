@@ -4,9 +4,9 @@ import { Upload, Search, AlertTriangle, Mail, Sparkles } from 'lucide-react';
 
 const processSteps = [
   { icon: Upload, title: 'Upload Your Invoice', description: 'Drop your courier CSV or Excel file. We support standard shipping data formats from all major courier partners.', color: 'text-primary', bg: 'bg-primary/10' },
-  { icon: Search, title: 'System Finds Every Overcharge', description: 'Our platform compares every shipment against your rate card. Weight mismatches, zone errors, RTO overcharges — nothing slips through.', color: 'text-secondary', bg: 'bg-secondary/10' },
-  { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click auto-generated dispute emails tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
-  { icon: Mail, title: 'You Get Your Money Back', description: 'We generate dispute emails ready to send. Track all your disputes and recoveries in real-time.', color: 'text-success', bg: 'bg-success/10' },
+  { icon: Search, title: 'System Checks Your Data', description: 'Our system compares your shipments against your rate card to identify potential weight, zone, and RTO discrepancies.', color: 'text-secondary', bg: 'bg-secondary/10' },
+  { icon: AlertTriangle, title: 'Generate Dispute Emails', description: 'One-click dispute email templates tailored to each courier and discrepancy type.', color: 'text-warning', bg: 'bg-warning/10' },
+  { icon: Mail, title: 'Raise Disputes Easily', description: 'We generate dispute emails ready to send. Track your disputes and any recoveries in real-time from your dashboard.', color: 'text-success', bg: 'bg-success/10' },
 ];
 
 export default function LandingHowItWorks() {
