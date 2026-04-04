@@ -12,20 +12,22 @@ interface Props {
 
 const steps = [
   {
+    key: 'rate_card',
+    title: 'Add your rate card',
+    subtitle: 'so we know what you should pay',
+    link: '/tenant-admin/settings?tab=ratecards',
+  },
+  {
     key: 'upload_csv',
     title: 'Upload your first courier invoice',
     link: '/tenant-admin/upload',
-  },
-  {
-    key: 'rate_card',
-    title: 'Configure your rate card',
-    subtitle: 'so we know what you should pay',
-    link: '/tenant-admin/settings',
+    dependsOn: 'rate_card',
   },
   {
     key: 'review_discrepancy',
     title: 'Review your first audit results',
     link: '/tenant-admin/audit-logs',
+    dependsOn: 'upload_csv',
   },
 ];
 
