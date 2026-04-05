@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 const routeNames: Record<string, string> = {
   'tenant-admin': 'Dashboard',
+  'dashboard': 'Dashboard',
   'upload': 'Upload CSV',
   'audit-logs': 'Audit Logs',
   'disputes': 'Disputes',
