@@ -28,15 +28,15 @@ export default function LandingProblem() {
           <div className="mx-auto max-w-2xl space-y-4 text-left text-base text-muted-foreground md:text-lg">
             <p className="flex items-start gap-2">
               <span className="mt-1 text-primary font-bold">→</span>
-              <span>Your 1kg package? <strong className="text-foreground">Sometimes billed at a higher weight.</strong></span>
+              <span>Your 1kg package? <strong className="text-foreground"> Sometimes billed at a higher weight.</strong></span>
             </p>
             <p className="flex items-start gap-2">
               <span className="mt-1 text-primary font-bold">→</span>
-              <span>Mumbai to Pune? <strong className="text-foreground">Sometimes classified as a farther zone.</strong></span>
+              <span>Mumbai to Pune? <strong className="text-foreground"> Sometimes classified as a farther zone.</strong></span>
             </p>
             <p className="flex items-start gap-2">
               <span className="mt-1 text-primary font-bold">→</span>
-              <span>Customer refused delivery? <strong className="text-foreground">Return fees can be miscalculated.</strong></span>
+              <span>Customer refused delivery? <strong className="text-foreground"> Return fees can be miscalculated.</strong></span>
             </p>
           </div>
 
